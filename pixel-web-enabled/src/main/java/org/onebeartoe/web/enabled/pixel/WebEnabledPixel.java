@@ -48,6 +48,10 @@ public class WebEnabledPixel
 
     private HttpServer server;
 
+    private int httpPort;
+
+    private CliPixel cli;
+    
     private Timer searchTimer;
     
     private Pixel pixel;
@@ -71,8 +75,12 @@ public class WebEnabledPixel
 //TODO: MAKE THIS PRIVATE    
     public List<String> animationImageNames;
     
-    public WebEnabledPixel()
+    public WebEnabledPixel(String[] args)
     {
+        cli = new CliPixel(args);
+        cli.parse();
+        httpPort = cli.getPort();
+
         String name = getClass().getName();
         logger = Logger.getLogger(name);
         
@@ -84,12 +92,12 @@ public class WebEnabledPixel
         
         createControllers();
     }
-    
+        
     private void createControllers()
     {
         try
         {
-            InetSocketAddress anyhost = new InetSocketAddress(2007);
+            InetSocketAddress anyhost = new InetSocketAddress(httpPort);
             server = HttpServer.create(anyhost, 0);
             
             List<PixelHttpHandler> handlers = new ArrayList();
@@ -327,7 +335,7 @@ public class WebEnabledPixel
     
     public static void main(String[] args)
     {
-        WebEnabledPixel app = new WebEnabledPixel();
+        WebEnabledPixel app = new WebEnabledPixel(args);
         app.startServer();
     }
 

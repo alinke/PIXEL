@@ -153,7 +153,7 @@ public class Pixel
                 
         fonts = new HashMap();
         
-        scrollingText = "Scolling Text Inital Value";
+        scrollingText = "Scolling Text Initial Value";
         
         try
         {
@@ -1310,7 +1310,7 @@ public boolean GIFNeedsDecoding(String decodedDir, String gifName, int currentRe
 			    
         if (GIFNeedsDecoding(decodedAnimationsPath, selectedFileName, currentResolution) == true) 
         {
-            System.out.println("Selected LED panel is different than the encoded GIF, need to re-enocde...");
+            System.out.println("Selected LED panel is different than the encoded GIF, need to re-encode...");
             decodeGIFJar(decodedAnimationsPath, gifSourcePath, selectedFileName, currentResolution, KIND.width, KIND.height);
         }
 	
@@ -1366,7 +1366,7 @@ public boolean GIFNeedsDecoding(String decodedDir, String gifName, int currentRe
             System.out.println("A non PIXL, version of the timer is starting.");
             
             stopExistingTimer();
-            System.out.println("stopped the existingn timer again.");
+            System.out.println("stopped the existing timer again.");
             
             TimerTask animateTimer = new AnimateTimer();
             timer = new Timer();
