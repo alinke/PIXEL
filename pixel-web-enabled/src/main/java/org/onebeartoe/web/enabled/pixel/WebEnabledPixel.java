@@ -152,7 +152,7 @@ public class WebEnabledPixel
         } 
         catch (IOException ex)
         {
-            String message = "An error occured while creating the controllers";
+            String message = "An error occurred while creating the controllers";
             logger.log(Level.SEVERE, message, ex);
         }
     }

@@ -41,7 +41,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
         {
             imageClassPath = defaultImageClassPath;
             
-            String message = "An error occured while determining the image from the request.  " +
+            String message = "An error occurred while determining the image from the request.  " +
                              "The default is used now.";
             
             logger.log(Level.SEVERE, message, e);
@@ -57,7 +57,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                 
                 writeImageResource(imageClassPath);
                 
-                System.out.println(modeName + " image resouce was written to the Pixel");
+                System.out.println(modeName + " image resource was written to the Pixel");
             } 
             catch (ConnectionLostException ex)
             {
@@ -67,7 +67,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
         }
         catch (IOException ex)
         {
-            String message = "error with image resouce";
+            String message = "error with image resource";
             logger.log(Level.SEVERE, message, ex);
         }
         finally
