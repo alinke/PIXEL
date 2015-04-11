@@ -1,3 +1,9 @@
+// With JQuery
+$('#points-id').slider({
+	formatter: function(value) {
+		return 'Current value: ' + value;
+	}
+});
 
 function changeControls(mode)
 {
