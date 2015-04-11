@@ -192,7 +192,7 @@ public class WebEnabledPixel
 
         String pixelHomePath = pixel.getPixelHome();
         File pixelHomeDirectory = new File(pixelHomePath);
-            
+        
         extractClasspathResource(inpath, pixelHomeDirectory);
         
         inpath = contentClasspath + "pixel.js";
@@ -263,8 +263,8 @@ public class WebEnabledPixel
             // extract the list so on next run the app knows not to extract the default content
             extractClasspathResource(resourceListClasspath, resourceListFile);
             
-            String outputDrectoryPath = pixel.getPixelHome() + pathPrefix;
-            File outputDirectory = new File(outputDrectoryPath);
+            String outputDirectoryPath = pixel.getPixelHome() + pathPrefix;
+            File outputDirectory = new File(outputDirectoryPath);
             
             TextFileReader tfr = new TextFileReader();
             List<String> imageNames = tfr.readTextLinesFromClasspath(resourceListClasspath);
