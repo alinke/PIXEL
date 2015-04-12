@@ -28,6 +28,7 @@ function changeControls(mode)
             break;
         }
         default:
+	case "scrolling":
         {
             // scrolling text
             hideElement("animationsPanel");
@@ -85,7 +86,7 @@ function displayImage(imagePath, name)
     {
         logServerResponse(xmlhttp);
     }
-    var url = "/" + mode + name;
+    var url = "/api/" + mode + name;
     xmlhttp.open("POST", url, true);
     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     xmlhttp.send("&p=3");    
@@ -99,7 +100,7 @@ function hideElement(id)
 
 function loadAnimations()
 {
-    var url = "/animation/list";
+    var url = "/api/animation/list";
     var elementName = "animations";
     var imagePath = "animations/";
     
@@ -137,7 +138,7 @@ function loadImageList(url, elementName, imagePath)
                 if(name != "")
                 {
                     html += "<div class='thumb'>";
-                    html += "<img src=\"/files/" + imagePath + name + "\" " + 
+                    html += "<img src=\"/" + imagePath + name + "\" " + 
                                    "width=\"50\" height=\"50\" alt=\"" + name +  "\"" +  
                                    ">";
 //                    html += "<br/>";
@@ -178,7 +179,7 @@ function loadImageResources()
 
 function loadStillImages()
 {
-    var url = "/still/list";
+    var url = "/api/still/list";
     var elementName = "still";
     var imagePath = "images/";
     
@@ -217,7 +218,7 @@ function modeChanged(mode, imageName)
     {
         logServerResponse(xmlhttp);
     }
-    var url = "/" + mode;
+    var url = "/api/" + mode;
     
     if(imageName != "" && !(imageName === undefined))
     {
