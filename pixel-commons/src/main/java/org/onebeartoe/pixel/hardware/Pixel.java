@@ -159,7 +159,7 @@ public class Pixel
         {
             userHome = System.getProperty("user.home");
             
-            pixelHome = userHome + "/pixel/";
+            pixelHome = userHome + File.separator + "pixel" + File.separator;
             
             animationsPath = pixelHome + "animations/";            
             decodedAnimationsPath = animationsPath + "decoded/";
