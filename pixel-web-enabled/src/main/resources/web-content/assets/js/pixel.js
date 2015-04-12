@@ -137,15 +137,16 @@ function loadImageList(url, elementName, imagePath)
                 
                 if(name != "")
                 {
-                    html += "<div class='thumb'>";
+                    html += "<div class='col-sm-3 col-md-2'>";
+                    html += "<div class='thumbnail'>";
                     html += "<img src=\"/" + imagePath + name + "\" " + 
                                    "width=\"50\" height=\"50\" alt=\"" + name +  "\"" +  
                                    ">";
-//                    html += "<br/>";
-                    html += "<p>" + name + "</p>";                    
-                    html += "<center style=\"margin-bottom: 40px;\">";
-                    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Display</button>";
-                    html += "</center>";
+                    html += "<div class='caption text-center'>";
+                    html += "<h5>" + name + "</h5>";                    
+                    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" class=\"btn btn-primary text-center\">Display</button>";
+                    html += "</div>";
+                    html += "</div>";
                     html += "</div>";
                 }
                 
