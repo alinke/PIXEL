@@ -135,19 +135,19 @@ public class WebEnabledPixel
             }
             
 // ARE WE GONNA DO ANYTHING WITH THE HttpContext OBJECTS?            
-            HttpContext createContext =     server.createContext("/",     indexHttpHandler);
+//            HttpContext createContext =     server.createContext("/",     indexHttpHandler);
             
-            HttpContext animationsContext = server.createContext("/animation", animationsHttpHandler);
-                                            server.createContext("/animation/list", animationsListHttpHandler);
+            HttpContext animationsContext = server.createContext("/api/animation", animationsHttpHandler);
+                                            server.createContext("/api/animation/list", animationsListHttpHandler);
 
-            HttpContext staticContent =     server.createContext("/files", staticFileHttpHandler);
+            HttpContext staticContent =     server.createContext("/", staticFileHttpHandler);
             
-            HttpContext  stillContext =     server.createContext("/still", stillImageHttpHandler);
-                                            server.createContext("/still/list", stillImageListHttpHandler);
+            HttpContext  stillContext =     server.createContext("/api/still", stillImageHttpHandler);
+                                            server.createContext("/api/still/list", stillImageListHttpHandler);
                                             
-            HttpContext   textContext =     server.createContext("/text", scrollingTextHttpHander);
-                                            server.createContext("/text/speed", scrollingTextSpeedHttpHander);
-                                            server.createContext("/text/color", scrollingTextColorHttpHandler);
+            HttpContext   textContext =     server.createContext("/api/text", scrollingTextHttpHander);
+                                            server.createContext("/api/text/speed", scrollingTextSpeedHttpHander);
+                                            server.createContext("/api/text/color", scrollingTextColorHttpHandler);
                                             
         } 
         catch (IOException ex)
@@ -162,17 +162,18 @@ public class WebEnabledPixel
         String animationsListFilesystemPath = pixel.getPixelHome() + "animations.text";
         File animationsListFile = new File(animationsListFilesystemPath);
         
-        String pathPrefix = "animations/";
-        String animationsListClasspath = "/animations.text";
+        String pathPrefix = "";
+        String animationsListClasspath = "/web-animations.text";
         
-        extractClasspathResourcesList(animationsListFile, animationsListClasspath, pathPrefix);        
+        extractClasspathResourcesList2(animationsListFile, animationsListClasspath, pathPrefix);        
     }
     
     private void extractDefaultContent()
     {
         try
         {
-            extractHtmlAndJavascript();
+            extractWebContent();
+            //extractHtmlAndJavascript();
                         
             extractStillImages();
             
@@ -201,16 +202,98 @@ public class WebEnabledPixel
         inpath = contentClasspath + "images.css";
         extractClasspathResource(inpath, pixelHomeDirectory);
     }
-    
+
+    private void extractWebContent() throws IOException
+    {
+        String webContentListFilesystemPath = pixel.getPixelHome() + "web-content.text";
+        File webContentListFile = new File(webContentListFilesystemPath);
+        
+        String classpathPrefix = "web-content/";
+        String webContentListClasspath = "/web-content.text";
+        
+        extractClasspathResourcesList2(webContentListFile, webContentListClasspath, classpathPrefix);
+    }
+
+    private void extractClasspathResourcesList2(File resourceListFile, 
+                                                 String resourceListClasspath,
+                                                 String pathPrefix) throws IOException
+    {
+        if(resourceListFile.exists() )
+        {
+            String message = "Pixel app will not extract the contents of " + resourceListClasspath
+                        + ".  The list already exists at " + resourceListFile.getAbsolutePath();
+            logger.log(Level.INFO, message);
+        }
+        else
+        {
+            // extract the list so on next run the app knows not to extract the default content
+            extractClasspathResource2(resourceListClasspath, resourceListFile);
+                        
+            TextFileReader tfr = new TextFileReader();
+            List<String> fileNames = tfr.readTextLinesFromClasspath(resourceListClasspath);
+
+            for(String name : fileNames)
+            {
+                int i = name.lastIndexOf("/");
+                String outname = "";
+                String classpath = "";
+                if (i > 0)
+                {
+                    outname = name.substring(0,i);
+                    classpath = "/" + pathPrefix + outname + "/" + name.substring(i+1);
+                } else {
+                    classpath = "/" + pathPrefix + name;
+                }
+
+                String outputDirectoryPath = pixel.getPixelHome() + outname;
+                File outputDirectory = new File(outputDirectoryPath);
+                
+                System.out.println("Extracting " + classpath);
+                
+                extractClasspathResource2(classpath, outputDirectory);
+            }
+        }
+    }
+
+       private void extractClasspathResource2(String classpath, File parentDirectory) throws IOException
+    {
+        InputStream instream = getClass().getResourceAsStream(classpath);
+
+        if( !parentDirectory.exists() )
+        {
+            parentDirectory.mkdirs();
+        }
+
+        int i = classpath.lastIndexOf("/") + 1;
+        String outname = classpath.substring(i);
+        String outpath = parentDirectory.getAbsolutePath() + File.separator + outname;
+        File outfile = new File(outpath);
+        
+//TODO: UNCOMMENT THIS IF/ELSE WHEN YOU ARE DONE TESTING, as is, the code extracts 
+//      all files every run to make Web development faster.  That is, the existing 
+//      files don't need not be removed to get the latest changes extracted.
+//        if( outfile.exists() )
+//        {
+//            logger.log(Level.INFO, "Pixel app will not extract " + classpath + ".  It already exists.");
+//        }
+//        else
+        {
+            logger.log(Level.INFO, "Pixel app is extracting " + classpath + " to " + outpath);
+
+            FileOutputStream fos = new FileOutputStream(outfile);
+            IOUtils.copy(instream, fos);
+        }
+    }
+
     private void extractStillImages() throws IOException
     {
         String imagesListFilesystemPath = pixel.getPixelHome() + "images.text";
         File imagesListFile = new File(imagesListFilesystemPath);
         
-        String pathPrefix = "images/";
-        String imagesListClasspath = "/images.text";
+        String pathPrefix = "";
+        String imagesListClasspath = "/web-images.text";
         
-        extractClasspathResourcesList(imagesListFile, imagesListClasspath, pathPrefix);
+        extractClasspathResourcesList2(imagesListFile, imagesListClasspath, pathPrefix);
     }
 
     private void extractClasspathResource(String classpath, File parentDirectory) throws IOException
@@ -236,7 +319,7 @@ public class WebEnabledPixel
 //        }
 //        else
         {
-            logger.log(Level.INFO, "Pixel app is extracting " + classpath);
+            logger.log(Level.INFO, "Pixel app is extracting " + classpath + " to " + outpath);
 
             FileOutputStream fos = new FileOutputStream(outfile);
             IOUtils.copy(instream, fos);
