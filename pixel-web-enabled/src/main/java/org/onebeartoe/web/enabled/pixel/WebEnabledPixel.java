@@ -30,7 +30,6 @@ import org.onebeartoe.pixel.PixelEnvironment;
 import org.onebeartoe.pixel.hardware.Pixel;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsListHttpHandler;
-import org.onebeartoe.web.enabled.pixel.controllers.IndexHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.PixelHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ScrollingTextColorHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ScrollingTextHttpHander;
@@ -101,10 +100,7 @@ public class WebEnabledPixel
             server = HttpServer.create(anyhost, 0);
             
             List<PixelHttpHandler> handlers = new ArrayList();
-            
-            PixelHttpHandler indexHttpHandler = new IndexHttpHandler();
-            handlers.add(indexHttpHandler);
-            
+                        
             PixelHttpHandler scrollingTextHttpHander = new ScrollingTextHttpHander();
             handlers.add(scrollingTextHttpHander);
             
@@ -134,9 +130,7 @@ public class WebEnabledPixel
                 phh.setApp(this);
             }
             
-// ARE WE GONNA DO ANYTHING WITH THE HttpContext OBJECTS?            
-//            HttpContext createContext =     server.createContext("/",     indexHttpHandler);
-            
+// ARE WE GONNA DO ANYTHING WITH THE HttpContext OBJECTS?
             HttpContext animationsContext = server.createContext("/api/animation", animationsHttpHandler);
                                             server.createContext("/api/animation/list", animationsListHttpHandler);
 
@@ -165,7 +159,7 @@ public class WebEnabledPixel
         String pathPrefix = "";
         String animationsListClasspath = "/web-animations.text";
         
-        extractClasspathResourcesList2(animationsListFile, animationsListClasspath, pathPrefix);        
+        extractClasspathResourcesList(animationsListFile, animationsListClasspath, pathPrefix);        
     }
     
     private void extractDefaultContent()
@@ -173,7 +167,6 @@ public class WebEnabledPixel
         try
         {
             extractWebContent();
-            //extractHtmlAndJavascript();
                         
             extractStillImages();
             
@@ -185,24 +178,6 @@ public class WebEnabledPixel
         }
     }
     
-// AND CSS OR RENAME!    
-    private void extractHtmlAndJavascript() throws IOException
-    {
-        String contentClasspath = "/web-content/";
-        String inpath = contentClasspath + "index.html";
-
-        String pixelHomePath = pixel.getPixelHome();
-        File pixelHomeDirectory = new File(pixelHomePath);
-        
-        extractClasspathResource(inpath, pixelHomeDirectory);
-        
-        inpath = contentClasspath + "pixel.js";
-        extractClasspathResource(inpath, pixelHomeDirectory);
-        
-        inpath = contentClasspath + "images.css";
-        extractClasspathResource(inpath, pixelHomeDirectory);
-    }
-
     private void extractWebContent() throws IOException
     {
         String webContentListFilesystemPath = pixel.getPixelHome() + "web-content.text";
@@ -211,10 +186,15 @@ public class WebEnabledPixel
         String classpathPrefix = "web-content/";
         String webContentListClasspath = "/web-content.text";
         
-        extractClasspathResourcesList2(webContentListFile, webContentListClasspath, classpathPrefix);
+        extractClasspathResourcesList(webContentListFile, webContentListClasspath, classpathPrefix);
     }
 
-    private void extractClasspathResourcesList2(File resourceListFile, 
+    /**
+     * This method only extracts the resources to the file system if the list file
+     * does not exist on the filesystem.  This is to keep from extracting the default 
+     * content every time the application runs.
+     */
+    private void extractClasspathResourcesList(File resourceListFile, 
                                                  String resourceListClasspath,
                                                  String pathPrefix) throws IOException
     {
@@ -227,7 +207,7 @@ public class WebEnabledPixel
         else
         {
             // extract the list so on next run the app knows not to extract the default content
-            extractClasspathResource2(resourceListClasspath, resourceListFile);
+            extractClasspathResource(resourceListClasspath, resourceListFile);
                         
             TextFileReader tfr = new TextFileReader();
             List<String> fileNames = tfr.readTextLinesFromClasspath(resourceListClasspath);
@@ -250,12 +230,12 @@ public class WebEnabledPixel
                 
                 System.out.println("Extracting " + classpath);
                 
-                extractClasspathResource2(classpath, outputDirectory);
+                extractClasspathResource(classpath, outputDirectory);
             }
         }
     }
 
-       private void extractClasspathResource2(String classpath, File parentDirectory) throws IOException
+       private void extractClasspathResource(String classpath, File parentDirectory) throws IOException
     {
         InputStream instream = getClass().getResourceAsStream(classpath);
 
@@ -293,74 +273,7 @@ public class WebEnabledPixel
         String pathPrefix = "";
         String imagesListClasspath = "/web-images.text";
         
-        extractClasspathResourcesList2(imagesListFile, imagesListClasspath, pathPrefix);
-    }
-
-    private void extractClasspathResource(String classpath, File parentDirectory) throws IOException
-    {
-        InputStream instream = getClass().getResourceAsStream(classpath);
-
-        if( !parentDirectory.exists() )
-        {
-            parentDirectory.mkdirs();
-        }
-
-        int i = classpath.lastIndexOf("/") + 1;
-        String outname = classpath.substring(i);
-        String outpath = parentDirectory.getAbsolutePath() + File.separator + outname;
-        File outfile = new File(outpath);
-        
-//TODO: UNCOMMENT THIS IF/ELSE WHEN YOU ARE DONE TESTING, as is, the code extracts 
-//      all files every run to make Web development faster.  That is, the existing 
-//      files don't need not be removed to get the latest changes extracted.
-//        if( outfile.exists() )
-//        {
-//            logger.log(Level.INFO, "Pixel app will not extract " + classpath + ".  It already exists.");
-//        }
-//        else
-        {
-            logger.log(Level.INFO, "Pixel app is extracting " + classpath + " to " + outpath);
-
-            FileOutputStream fos = new FileOutputStream(outfile);
-            IOUtils.copy(instream, fos);
-        }
-    }
-    
-    /**
-     * This method only extracts the resources to the file system if the list file
-     * does not exist on the filesystem.  This is to keep from extracting the default 
-     * content every time the application runs.
-     */
-    private void extractClasspathResourcesList(File resourceListFile, 
-                                                 String resourceListClasspath,
-                                                 String pathPrefix) throws IOException
-    {
-        if(resourceListFile.exists() )
-        {
-            String message = "Pixel app will not extract the contents of " + resourceListClasspath
-                        + ".  The list already exists at " + resourceListFile.getAbsolutePath();
-            logger.log(Level.INFO, message);
-        }
-        else
-        {
-            // extract the list so on next run the app knows not to extract the default content
-            extractClasspathResource(resourceListClasspath, resourceListFile);
-            
-            String outputDirectoryPath = pixel.getPixelHome() + pathPrefix;
-            File outputDirectory = new File(outputDirectoryPath);
-            
-            TextFileReader tfr = new TextFileReader();
-            List<String> imageNames = tfr.readTextLinesFromClasspath(resourceListClasspath);
-            
-            for(String name : imageNames)
-            {
-                String classpath = "/" + pathPrefix + name;
-                
-                System.out.println("Extracting " + classpath);
-                
-                extractClasspathResource(classpath, outputDirectory);
-            }
-        }
+        extractClasspathResourcesList(imagesListFile, imagesListClasspath, pathPrefix);
     }
 
     public Pixel getPixel()
