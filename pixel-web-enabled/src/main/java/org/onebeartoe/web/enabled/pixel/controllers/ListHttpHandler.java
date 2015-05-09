@@ -3,6 +3,8 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.util.List;
+import org.onebeartoe.network.TextHttpHandler;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @deprecated use the version in the onebeartoe Java Libraries
@@ -12,6 +14,13 @@ import java.util.List;
 @Deprecated
 public abstract class ListHttpHandler extends TextHttpHandler
 {
+    protected WebEnabledPixel application;
+    
+    public ListHttpHandler(WebEnabledPixel application)
+    {
+        this.application = application;
+    }
+    
     @Override
     protected String getHttpText(HttpExchange t)
     {

@@ -4,13 +4,22 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 import com.sun.net.httpserver.HttpExchange;
 import java.awt.Color;
 import java.net.URI;
+import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.hardware.Pixel;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
  */
 public class ScrollingTextColorHttpHandler extends TextHttpHandler
 {
+    protected WebEnabledPixel application;
+    
+    public ScrollingTextColorHttpHandler(WebEnabledPixel application)
+    {
+        this.application = application;
+    }
+    
     @Override
     protected String getHttpText(HttpExchange exchange)
     {
@@ -23,7 +32,7 @@ public class ScrollingTextColorHttpHandler extends TextHttpHandler
 // I think in head less environment decode() did not work        
 //        Color color = Color.decode(hex);
         
-        Pixel pixel = app.getPixel();
+        Pixel pixel = application.getPixel();
         pixel.stopExistingTimer();
         pixel.setScrollTextColor(color);
         pixel.scrollText();

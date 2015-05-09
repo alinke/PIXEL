@@ -5,14 +5,19 @@ import ioio.lib.api.exception.ConnectionLostException;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.onebeartoe.pixel.hardware.Pixel;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
  */
 public class AnimationsHttpHandler extends ImageResourceHttpHandler
 {
-    public AnimationsHttpHandler()
+    
+    
+    public AnimationsHttpHandler(WebEnabledPixel application)
     {
+        super(application);
+        
         basePath = "animations/";
         defaultImageClassPath = basePath + "arrows.png";
         modeName = "animation";
@@ -28,7 +33,7 @@ public class AnimationsHttpHandler extends ImageResourceHttpHandler
             
         boolean saveAnimation = false;
         
-        Pixel pixel = app.getPixel();
+        Pixel pixel = application.getPixel();
         pixel.writeAnimation(animationName, saveAnimation);
     }
 }

@@ -2,6 +2,7 @@
 package org.onebeartoe.web.enabled.pixel;
 
 import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import ioio.lib.api.RgbLedMatrix;
 import ioio.lib.api.exception.ConnectionLostException;
@@ -40,6 +41,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.StillImageListHttpHandler;
 //import org.onebeartoe.web.enabled.pixel.controllers.ApiHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsApiHttpHandler;
 
+import org.onebeartoe.web.enabled.pixel.controllers.UploadHttpHandler;
 
 /**
  * @author Roberto Marquez
@@ -91,6 +93,7 @@ public class WebEnabledPixel
         extractDefaultContent();
         
         loadImageLists();
+        loadAnimationList();
         
         createControllers();
     }
@@ -102,39 +105,27 @@ public class WebEnabledPixel
             InetSocketAddress anyhost = new InetSocketAddress(httpPort);
             server = HttpServer.create(anyhost, 0);
             
-            List<PixelHttpHandler> handlers = new ArrayList();
-                        
-            PixelHttpHandler scrollingTextHttpHander = new ScrollingTextHttpHander();
-            handlers.add(scrollingTextHttpHander);
+//            HttpHandler indexHttpHandler = new IndexHttpHandler();
             
-            PixelHttpHandler scrollingTextSpeedHttpHander = new ScrollingTextSpeedHttpHandler();
-            handlers.add(scrollingTextSpeedHttpHander);
+            HttpHandler scrollingTextHttpHander = new ScrollingTextHttpHander(this);
             
-            PixelHttpHandler scrollingTextColorHttpHandler = new ScrollingTextColorHttpHandler();
-            handlers.add(scrollingTextColorHttpHandler);
+            HttpHandler scrollingTextSpeedHttpHander = new ScrollingTextSpeedHttpHandler(this);
             
-            PixelHttpHandler staticFileHttpHandler = new StaticFileHttpHandler();
-            handlers.add(staticFileHttpHandler);
+            HttpHandler scrollingTextColorHttpHandler = new ScrollingTextColorHttpHandler(this);
             
-            PixelHttpHandler stillImageHttpHandler = new StillImageHttpHandler() ;
-            handlers.add(stillImageHttpHandler);
+            HttpHandler staticFileHttpHandler = new StaticFileHttpHandler(this);
             
-            PixelHttpHandler stillImageListHttpHandler = new StillImageListHttpHandler();
-            handlers.add(stillImageListHttpHandler);            
+            HttpHandler stillImageHttpHandler = new StillImageHttpHandler(this) ;
             
-            PixelHttpHandler animationsHttpHandler = new AnimationsHttpHandler();
-            handlers.add(animationsHttpHandler);
+            HttpHandler stillImageListHttpHandler = new StillImageListHttpHandler(this);
             
-            PixelHttpHandler animationsListHttpHandler = new AnimationsListHttpHandler();
-            handlers.add(animationsListHttpHandler);
+            HttpHandler animationsHttpHandler = new AnimationsHttpHandler(this);
+            
+            HttpHandler animationsListHttpHandler = new AnimationsListHttpHandler(this);
 
             PixelHttpHandler animationsApiHttpHandler = new AnimationsApiHttpHandler();
-            handlers.add(animationsApiHttpHandler);
 
-            for(PixelHttpHandler phh : handlers)
-            {
-                phh.setApp(this);
-            }
+            HttpHandler uploadHttpHandler = new UploadHttpHandler(this);
             
 // ARE WE GONNA DO ANYTHING WITH THE HttpContext OBJECTS?
             HttpContext animationsContext = server.createContext("/api/animation", animationsHttpHandler);
@@ -151,6 +142,8 @@ public class WebEnabledPixel
 
             HttpContext animationsApiContext = server.createContext("/api/animationtest", animationsApiHttpHandler);
 
+            HttpContext uploadContext =    server.createContext("/upload", uploadHttpHandler);                                            
+                                            
         } 
         catch (IOException ex)
         {
@@ -289,6 +282,20 @@ public class WebEnabledPixel
         return pixel;
     }
     
+    public List<String> loadAnimationList()
+    {
+        try
+        {
+            animationImageNames = loadImageList("animations");
+        } 
+        catch (Exception ex)
+        {
+            logger.log(Level.SEVERE, "could not load image resources on the filesystem", ex);
+        }
+        
+        return animationImageNames;
+    }
+    
     private List<String> loadImageList(String directoryName) throws Exception
     {
         String dirPath = pixel.getPixelHome() + directoryName;
@@ -324,17 +331,18 @@ public class WebEnabledPixel
         return namesList;
     }
     
-    private void loadImageLists()
+    public List<String> loadImageLists()
     {
         try
         {        
             stillImageNames = loadImageList("images");
-            animationImageNames = loadImageList("animations");
         } 
         catch (Exception ex)
         {
             logger.log(Level.SEVERE, "could not load image resources on the filesystem", ex);
         }
+        
+        return stillImageNames;
     }
     
     public static void main(String[] args)
@@ -369,8 +377,7 @@ public class WebEnabledPixel
 //      CALL ITS addXxxxxListeners() methods
 //      AND then its initialize() method
     }
-    
-    
+
     /**
      * @deprecated Use the version in pixel-commons from Alinke's github.com repository.
      */

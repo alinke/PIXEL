@@ -3,13 +3,21 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.net.URI;
+import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.hardware.Pixel;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
  */
 public class ScrollingTextSpeedHttpHandler extends TextHttpHandler
 {
+    protected WebEnabledPixel application;
+    
+    public ScrollingTextSpeedHttpHandler(WebEnabledPixel application)
+    {
+        this.application = application;
+    }
 
     @Override
     protected String getHttpText(HttpExchange exchange)
@@ -30,7 +38,7 @@ public class ScrollingTextSpeedHttpHandler extends TextHttpHandler
             speed = 600L;
         }
         
-        Pixel pixel = app.getPixel();
+        Pixel pixel = application.getPixel();
         pixel.stopExistingTimer();
         pixel.setScrollDelay(speed);
         pixel.scrollText();

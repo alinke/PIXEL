@@ -7,18 +7,26 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.onebeartoe.network.TextHttpHandler;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
  */
 public class ScrollingTextHttpHander extends TextHttpHandler
 {
+    private Logger logger;
     
-//TODO: delete?        
-//    public ScrollingTextHttpHander()
-//    {
-//        
-//    }
+    protected WebEnabledPixel app;
+    
+    public ScrollingTextHttpHander(WebEnabledPixel application)
+    {
+        String name = getClass().getName();
+        logger = Logger.getLogger(name);
+        
+        this.app = application;
+    }
 
     @Override
     protected String getHttpText(HttpExchange exchange)

@@ -1578,11 +1578,13 @@ public boolean GIFNeedsDecoding(String decodedDir, String gifName, int currentRe
             
             g2d.dispose();
 
+// uncomment this to see how often the pixel is communicated with the host            
 //            System.out.print(".");
 
             if(matrix == null)
             {
-                logger.log(Level.INFO, "There is no matrix for the text scrolller.");
+// uncomment this for debugging
+//                logger.log(Level.INFO, "There is no matrix for the text scrolller.");
             }
             else
             {

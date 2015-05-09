@@ -3,6 +3,7 @@
 package org.onebeartoe.web.enabled.pixel.controllers;
 
 import java.util.List;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  *
@@ -10,9 +11,16 @@ import java.util.List;
  */
 public class AnimationsListHttpHandler extends ListHttpHandler
 {
+
+    public AnimationsListHttpHandler(WebEnabledPixel application)
+    {
+        super(application);
+    }
     @Override
     protected List<String> getList()
     {
-        return getApp().animationImageNames;
+        List<String> animations = application.loadAnimationList();
+        
+        return animations;
     }
 }

@@ -38,22 +38,36 @@
 	</nav>
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-md-12" id="stillPanel">
-				<div class="panel panel-default">
-					<div class="panel-heading">Still Images</div>
-					<div id="still" class="panel-body">
-					</div>
-				</div>
-			</div>
+                    <div class="col-md-12" id="stillPanel">
+                            <div class="panel panel-default">
+                                    <div class="panel-heading">Still Images</div>
+                                    <div id="still" class="panel-body">
+                                        <h3>Upload a New Still Image</h3>
+
+                                        <form method="POST" enctype="multipart/form-data" action="/upload">
+                                            <input type="file" name="upload"/>
+                                            <input type="hidden" name="upload-type" value="STILL_IMAGE"/>
+                                            <input type="submit" value="Upload"/>
+                                        </form>
+                                    </div>
+                            </div>
+                    </div>
         </div>
 		<div class="row">
-			<div class="col-md-12" id="animationsPanel">
-				<div class="panel panel-default">
-					<div class="panel-heading">Animations</div>
-					<div id="animations" class="panel-body">
-					</div>
-				</div>
-			</div>
+                    <div class="col-md-12" id="animationsPanel">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Animations</div>
+                            <div id="animations" class="panel-body">
+                                <h3>Upload a New Animation</h3>
+
+                                <form method="POST" enctype="multipart/form-data" action="/upload">
+                                    <input type="file" name="upload"/>
+                                    <input type="hidden" name="upload-type" value="ANIMATED_GIF"/>
+                                    <input type="submit" value="Upload"/>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
         </div>
 		<div class="row">
 			<div class="col-md-12" id="scrollingTextPanel">
@@ -96,12 +110,12 @@
 				</div>        
 			</div>        
 		</div>
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="assets/js/bootstrap-slider.min.js"></script>
-    <script type="text/javascript" src="assets/js/pixel.js"></script>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="assets/js/bootstrap.min.js"></script>
+        <script src="assets/js/bootstrap-slider.min.js"></script>
+        <script type="text/javascript" src="assets/js/pixel.js"></script>
     </body>
 
 </html>

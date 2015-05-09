@@ -21,6 +21,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.eh.http</groupId>
+            <artifactId>easy-httpserver</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
+        <dependency>
 	    <groupId>org.ioio</groupId>
 	    <artifactId>pc</artifactId>
 	    <version>1.0-SNAPSHOT</version>
@@ -29,6 +35,12 @@
         <dependency>
             <groupId>org.onebeartoe</groupId>
             <artifactId>onebeartoe-system</artifactId>  
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+            
+        <dependency>
+            <groupId>org.onebeartoe.network</groupId>
+            <artifactId>network</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
             

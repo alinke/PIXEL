@@ -7,14 +7,17 @@ import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import org.onebeartoe.pixel.hardware.Pixel;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
  */
 public class StillImageHttpHandler extends ImageResourceHttpHandler
 {
-    public StillImageHttpHandler()
+    public StillImageHttpHandler(WebEnabledPixel application)
     {
+        super(application);
+        
         basePath = "images/";
         defaultImageClassPath = basePath + "Robot.png";
         modeName = "still";
@@ -29,7 +32,7 @@ public class StillImageHttpHandler extends ImageResourceHttpHandler
         
         BufferedImage originalImage = ImageIO.read(url);
         
-        Pixel pixel = app.getPixel();
+        Pixel pixel = application.getPixel();
         pixel.stopExistingTimer();
         pixel.writeImagetoMatrix(originalImage, pixel.KIND.width, pixel.KIND.height);
     }        

@@ -5,6 +5,9 @@ import ioio.lib.api.exception.ConnectionLostException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.onebeartoe.network.TextHttpHandler;
+import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 /**
  * @author Roberto Marquez
@@ -14,7 +17,19 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
     protected String basePath;
     protected String defaultImageClassPath;
     protected String modeName;
+    
+    protected WebEnabledPixel application;
+    
+    protected Logger logger;
         
+    public ImageResourceHttpHandler(WebEnabledPixel application)
+    {
+        String name = getClass().getName();
+        logger = Logger.getLogger(name);
+        
+        this.application = application;
+    }
+    
     @Override
     protected String getHttpText(HttpExchange exchange)
     {        
