@@ -37,6 +37,9 @@ import org.onebeartoe.web.enabled.pixel.controllers.ScrollingTextSpeedHttpHandle
 import org.onebeartoe.web.enabled.pixel.controllers.StaticFileHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.StillImageHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.StillImageListHttpHandler;
+//import org.onebeartoe.web.enabled.pixel.controllers.ApiHttpHandler;
+import org.onebeartoe.web.enabled.pixel.controllers.AnimationsApiHttpHandler;
+
 
 /**
  * @author Roberto Marquez
@@ -125,6 +128,9 @@ public class WebEnabledPixel
             PixelHttpHandler animationsListHttpHandler = new AnimationsListHttpHandler();
             handlers.add(animationsListHttpHandler);
 
+            PixelHttpHandler animationsApiHttpHandler = new AnimationsApiHttpHandler();
+            handlers.add(animationsApiHttpHandler);
+
             for(PixelHttpHandler phh : handlers)
             {
                 phh.setApp(this);
@@ -142,7 +148,9 @@ public class WebEnabledPixel
             HttpContext   textContext =     server.createContext("/api/text", scrollingTextHttpHander);
                                             server.createContext("/api/text/speed", scrollingTextSpeedHttpHander);
                                             server.createContext("/api/text/color", scrollingTextColorHttpHandler);
-                                            
+
+            HttpContext animationsApiContext = server.createContext("/api/animationtest", animationsApiHttpHandler);
+
         } 
         catch (IOException ex)
         {
