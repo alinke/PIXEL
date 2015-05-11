@@ -1,135 +1,121 @@
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-
+<!DOCTYPE html>
+<html lang="en">
     <head>
-		
-        <meta name="keywords" content="onebeartoe.com, cross platform remote volume control application">
-	
-        <meta name="description" content="onebeartoe.com remote volume control is a Java-powered desktop application.">
-
-        <link rel="stylesheet" type="text/css" href="images.css" />
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="keywords" content="onebeartoe.com, java powered PIXEL web controller">
+        <meta name="description" content="onebeartoe.com java powered PIXEL web controller.">
+        <!-- Bootstrap -->
+        <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+        <link href="assets/css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="assets/css/bootstrap-slider.min.css" rel="stylesheet">
         
         <title>onebeartoe Pixel Web Application</title>
     </head>
 
     <body onload="loadImageResources(); changeScrollingText('Hello, Pixel World');">
-        
-        <script type="text/javascript" src="pixel.js"></script>
-        
-	<div style="display: block; 										  				 
-             text-align: center;											  
-             font-size:1.875em; 
-             margin-bottom: 1%;">
-				 
-            <h3>Pixel Web Controls</h3>
-	</div>
-											 
-	<br/>
+	<nav class="navbar navbar-inverse"> 
+        <div class="container-fluid">
+			<div class="navbar-header">
+                            <a class="navbar-brand" href="#"><span><img alt="Pixel" width="32" height="32" src="assets/img/pixel.png"></span>Pixel Web Controls</a>
+			</div>
+			<form class="navbar-form navbar-right" role="pixelmode">
+				<div class="form-group">
+					<p class="navbar-text">
+						Pixel Display Mode:
+						<select class="form-control" name="mode" 
+								onchange="modeChanged(this.value);">
+							<option value="animations">Animations</option>
+							<option value="still">Still Images</option>
+							<option value="text" selected>Scrolling Text</option>
+						</select>
+					</p>
+				</div>
+			</form>
+		</div>
+	</nav>
+	<div class="container-fluid">
+		<div class="row">
+                    <div class="col-md-12" id="stillPanel">
+                            <div class="panel panel-default">
+                                    <div class="panel-heading">Still Images</div>
+                                    <div id="still" class="panel-body">
+                                        <h3>Upload a New Still Image</h3>
 
-        <hr/>
-        
-        <br/>
-        
-        <center >
-            <span style="font-size:1.875em;">
-                Mode:
-            </span>
-            
-            <select name="mode" 
-                    onchange="modeChanged(this.value);"
-                    style="width: 50%; height: 2em; font-size: 3em;">
-                
-                <option value="animations">Animations</option>
-                <option value="still">Still Images</option>
-                <option value="text" selected>Scrolling Text</option>
-            </select>
-        </center>
-
-        <div id="stillPanel">
-            <div>
-                <h3>Upload a New Still Image</h3>
-                
-                <form method="POST" enctype="multipart/form-data" action="/upload">
-                    <input type="file" name="upload"/>
-                    <input type="hidden" name="upload-type" value="STILL_IMAGE"/>
-                    <input type="submit" value="Upload"/>
-                </form>
-            </div>
-            
-            <br/>
-        
-            <hr/>
-
-            <h3>Still Images</h3>
-
-            <div id="still">
-
-            </div>
-
-            <br/>
+                                        <form method="POST" enctype="multipart/form-data" action="/upload">
+                                            <input type="file" name="upload"/>
+                                            <input type="hidden" name="upload-type" value="STILL_IMAGE"/>
+                                            <input type="submit" value="Upload"/>
+                                        </form>
+                                    </div>
+                            </div>
+                    </div>
         </div>
-        
-        <div id="animationsPanel">
-            <div>
-                <h3>Upload a New Animation</h3>
-                
-                <form method="POST" enctype="multipart/form-data" action="/upload">
-                    <input type="file" name="upload"/>
-                    <input type="hidden" name="upload-type" value="ANIMATED_GIF"/>
-                    <input type="submit" value="Upload"/>
-                </form>
-            </div>
-            <hr/>
+		<div class="row">
+                    <div class="col-md-12" id="animationsPanel">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Animations</div>
+                            <div id="animations" class="panel-body">
+                                <h3>Upload a New Animation</h3>
 
-            <h3>Animations</h3>
-
-            <div id="animations" >
-
-            </div>
+                                <form method="POST" enctype="multipart/form-data" action="/upload">
+                                    <input type="file" name="upload"/>
+                                    <input type="hidden" name="upload-type" value="ANIMATED_GIF"/>
+                                    <input type="submit" value="Upload"/>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
         </div>
+		<div class="row">
+			<div class="col-md-12" id="scrollingTextPanel">
+				<div class="panel panel-default">
+					<div class="panel-heading">Scrolling Text</div>
+					<div class="panel-body">
+						<div class="col-md-4">
+							<label for="textInput">Scrolling Text:</label>
+							<input id="textInput" type="text" onchange="changeScrollingText(this.value);" placeholder="Enter text here">
+						</div>
+						<div class="col-md-4">
+							<label for="points">Scroll Speed: </label> 100
+							<input id="points-id" data-slider-id='points' type="range" data-slider-min="100" data-slider-max="600" data-slider-step="1" data-slider-value="300" onmouseup="changeScrollingTextSpeed(this.value);"/> 600
+						</div>
+						<div class="col-md-4">
+							<label for="color">Text Color:</label>
+							<input type="color" name="color" onchange="changeScrollingTextColor(this.value);">
+						</div>
+					</div>        
+				</div>
+			</div>        
+		</div>
 
-        <div id="scrollingTextPanel">
-            <hr/>
-
-            <h3>Scrolling Text</h3>
-
-            
-            <input type="text" onchange="changeScrollingText(this.value);"/>
-            
-            <br/>
-            
-            <label for="points">Speed:</label>
-            <input type="range" onmouseup="changeScrollingTextSpeed(this.value);" name="points" min="100" max="600">
-                
-            <br/>
-            
-            <label for="color">Color:</label>
-            <input type="color" name="color" onchange="changeScrollingTextColor(this.value);">
-        </div>        
-        
-        <hr/>
-        
-        <h3>Logs</h3>
-        
-        <div id="logs" class="logs" style="">
-
-        </div>
-        
-        <br/>
-
-        <hr/>
-        
-	<br/>
-
-	<a href="http://www.onebeartoe.com" 
-            style="display: block; 										  											 
-            text-align: center;											  
-            font-size:1.875em; ">
-            brought to you by onebeartoe.com
-	</a>
-											 
+		<div class="row">
+			<div class="col-md-12" id="logsPanel">
+				<div class="panel panel-default">
+					<div class="panel-heading">Logs</div>
+					<div id="logs" class="panel-body">
+					</div>
+				</div>
+			</div>        
+		</div>
+		<div class="row">
+			<div class="col-md-12" id="logsPanel">
+				<div class="panel panel-default">
+					<div id="logs" class="panel-body">
+						<a href="http://www.onebeartoe.com">
+						brought to you by onebeartoe.com</a>
+					</div>
+				</div>        
+			</div>        
+		</div>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="assets/js/bootstrap.min.js"></script>
+        <script src="assets/js/bootstrap-slider.min.js"></script>
+        <script type="text/javascript" src="assets/js/pixel.js"></script>
     </body>
 
 </html>

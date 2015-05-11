@@ -40,10 +40,16 @@ public class StaticFileHttpHandler implements HttpHandler//extends PixelHttpHand
         
         Pixel pixel = application.getPixel();
         String root = pixel.getPixelHome();
-        File rootDir = new File(root);
-        root = rootDir.getCanonicalPath() + File.separatorChar;
-        
-        URI uri = t.getRequestURI();
+
+        URI uri;
+        if (t.getRequestURI().equals(URI.create("/")))
+        {
+            uri = URI.create("/index.html");
+        }
+        else
+        {
+            uri = t.getRequestURI();
+        }
         String request = uri.getPath();
         String urlPrefix = t.getHttpContext().getPath() + "/";
         request = request.replaceFirst(urlPrefix, "");

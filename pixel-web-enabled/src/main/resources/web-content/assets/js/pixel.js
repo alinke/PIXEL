@@ -1,3 +1,9 @@
+// With JQuery
+$('#points-id').slider({
+	formatter: function(value) {
+		return 'Current value: ' + value;
+	}
+});
 
 function changeControls(mode)
 {
@@ -22,6 +28,7 @@ function changeControls(mode)
             break;
         }
         default:
+	case "scrolling":
         {
             // scrolling text
             hideElement("animationsPanel");
@@ -79,7 +86,7 @@ function displayImage(imagePath, name)
     {
         logServerResponse(xmlhttp);
     }
-    var url = "/" + mode + name;
+    var url = "/api/" + mode + name;
     xmlhttp.open("POST", url, true);
     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     xmlhttp.send("&p=3");    
@@ -93,7 +100,7 @@ function hideElement(id)
 
 function loadAnimations()
 {
-    var url = "/animation/list";
+    var url = "/api/animation/list";
     var elementName = "animations";
     var imagePath = "animations/";
     
@@ -130,15 +137,16 @@ function loadImageList(url, elementName, imagePath)
                 
                 if(name != "")
                 {
-                    html += "<div class='thumb'>";
-                    html += "<img src=\"/files/" + imagePath + name + "\" " + 
+                    html += "<div class='col-sm-3 col-md-2'>";
+                    html += "<div class='thumbnail'>";
+                    html += "<img src=\"/" + imagePath + name + "\" " + 
                                    "width=\"50\" height=\"50\" alt=\"" + name +  "\"" +  
                                    ">";
-//                    html += "<br/>";
-                    html += "<p>" + name + "</p>";                    
-                    html += "<center style=\"margin-bottom: 40px;\">";
-                    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Display</button>";
-                    html += "</center>";
+                    html += "<div class='caption text-center'>";
+                    html += "<h5>" + name + "</h5>";                    
+                    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" class=\"btn btn-primary text-center\">Display</button>";
+                    html += "</div>";
+                    html += "</div>";
                     html += "</div>";
                 }
                 
@@ -172,7 +180,7 @@ function loadImageResources()
 
 function loadStillImages()
 {
-    var url = "/still/list";
+    var url = "/api/still/list";
     var elementName = "still";
     var imagePath = "images/";
     
@@ -211,7 +219,7 @@ function modeChanged(mode, imageName)
     {
         logServerResponse(xmlhttp);
     }
-    var url = "/" + mode;
+    var url = "/api/" + mode;
     
     if(imageName != "" && !(imageName === undefined))
     {
