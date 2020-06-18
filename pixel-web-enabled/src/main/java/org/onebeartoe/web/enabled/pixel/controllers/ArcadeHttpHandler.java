@@ -41,20 +41,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     Pixel pixel = this.application.getPixel();
     pixel.writeArcadeImage(arcadeFilePNGFullPath, saveAnimation, loop, consoleNameMapped, PNGNameWithExtension, WebEnabledPixel.pixelConnected);
     
-     if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-         String arcadeNameOnly = FilenameUtils.removeExtension(PNGNameWithExtension);
-         String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png";
-         //File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);
-         System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-         LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-       
-            if (this.lcdDisplay == null)
-               this.lcdDisplay = new LCDPixelcade();
-
-            lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-       
-     }
-    
   }
   
   public void handleGIF(String consoleName, String arcadeName, Boolean saveAnimation, int loop) {
@@ -64,24 +50,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     } catch (NoSuchAlgorithmException ex) {
       Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
     }
-    
-    
-//     if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//         String arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
-//         String arcadeLCDFilePathGIF = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".gif";
-//        // File arcadeLCDFileGIF = new File(arcadeLCDFilePathGIF);
-//         System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathGIF);
-//         LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathGIF);
-//       
-//            if (this.lcdDisplay == null)
-//               this.lcdDisplay = new LCDPixelcade();
-//
-//             try {
-//                 lcdDisplay.displayImage(arcadeNameOnly, consoleName);
-//             } catch (IOException ex) {
-//                 Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, null, ex);
-//             }
-//     }
   }
   
   public void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
@@ -292,28 +260,31 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       if (!CliPixel.getSilentMode()) 
         System.out.println("Looking for: " + requestedPath + ".png or .gif");
         LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
-        
-	
-	//String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png";
-        //System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-        //File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);
 
-//         if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//                if (arcadeLCDFilePNG.exists()) {
-//                        System.out.println("FOUND: " + arcadeLCDFilePathPNG);
-//                       // handlePNG(arcadeLCDFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, FilenameUtils.getName(arcadeFilePathPNG));
-//                        if (this.lcdDisplay == null) {
-//                            this.lcdDisplay = new LCDPixelcade();
-//                            lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-//                        }    
-//                } 
-//                else { 
-//                   if (!text_.equals("")) {
-//                        lcdDisplay.setNumLoops(loop_);   
-//                        lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
-//                   }
-//                } 
-//        }
+         if (WebEnabledPixel.getLCDMarquee().equals("yes")) {  //if the lcdmarquee is enabled in settings, then let's go here
+            String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
+            System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
+            LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
+            File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);  
+             
+            if (arcadeLCDFilePNG.exists()) {
+                    System.out.println("FOUND: " + arcadeLCDFilePathPNG);
+                    LogMe.aLogger.info("FOUND: " + arcadeLCDFilePathPNG);
+                   // handlePNG(arcadeLCDFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, FilenameUtils.getName(arcadeFilePathPNG));
+                     if (this.lcdDisplay == null) 
+                            this.lcdDisplay = new LCDPixelcade();
+
+                     lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
+            } 
+            else if (!text_.equals("")) {          // do we have scrolling text to display
+                    lcdDisplay.setNumLoops(loop_);   
+                    lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
+            }
+
+            else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
+                    lcdDisplay.displayImage("pixelcade", consoleNameMapped);
+            }
+    }
 
       
       if (streamOrWrite.equals("write")) {
@@ -339,15 +310,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             color = WebEnabledPixel.getColorFromHexOrName(color_);
           
           pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
-         
-          if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-                 if(lcdDisplay == null)
-                    lcdDisplay = new LCDPixelcade();
-
-            lcdDisplay.setNumLoops(loop_);  
-            lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15); //int speed
-          }
-          
           
         } else {
           consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
@@ -449,17 +411,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         else
             Pixel.setDoubleLine(false); //don't forget to set it back
           
-          
           pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
           
-         if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-                if(lcdDisplay == null)
-                   lcdDisplay = new LCDPixelcade();
-                
-               lcdDisplay.setNumLoops(loop_);      
-               lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15); //int speed
-         }
-          
+         
         } else {
           consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
           File consoleFilePNG = new File(consoleFilePathPNG);
@@ -506,598 +460,25 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     } 
     return false;
   }
+  
+  public int getMaxAnimationsPerGame(String baseName) { //this will tell us how many GIFs there are per rom, ex. pacman_01, pacman_02, pacman_03, etc.
+      
+      int max = 0;
+      Boolean match = true;     
+      int i = 0;
+      while (match) {
+          i++;
+          File targetFile = new File(String.format("%s/%s_%d.gif",WebEnabledPixel.getHome(),baseName,i));
+          if (targetFile.exists() && !targetFile.isDirectory())
+              match = true;
+          else
+              match = false;
+      } 
+      // ok we didn't have a match so are done with the while loop, let's set max to i
+      max = i;
+      return max;
+  }
 }
+   
 
-//package org.onebeartoe.web.enabled.pixel.controllers;
-//
-//import ioio.lib.api.exception.ConnectionLostException;
-//import java.awt.Color;
-//import java.awt.Font;
-//import java.io.File;
-//import java.io.IOException;
-//import java.net.MalformedURLException;
-//import java.net.URI;
-//import java.net.URISyntaxException;
-//import java.security.NoSuchAlgorithmException;
-//import java.util.List;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
-//import org.apache.commons.io.FilenameUtils;
-//import org.apache.http.NameValuePair;
-//import org.apache.http.client.utils.URLEncodedUtils;
-//import org.onebeartoe.pixel.LogMe;
-//import org.onebeartoe.pixel.hardware.Pixel;
-//import org.onebeartoe.web.enabled.pixel.CliPixel;
-//import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
-//
-//
-//public class ArcadeHttpHandler extends ImageResourceHttpHandler {
-//  protected LCDPixelcade lcdDisplay = null;
-//
-//  public ArcadeHttpHandler(WebEnabledPixel application) {
-//    super(application);
-//    
-//    if(WebEnabledPixel.getLCDMarquee().equals("yes"))
-//       lcdDisplay = new LCDPixelcade();
-//
-//    this.basePath = "";
-//    this.defaultImageClassPath = "pacman.png";
-//    this.modeName = "arcade";
-//  }
-//  
-//  public void handlePNG(File arcadeFilePNGFullPath, Boolean saveAnimation, int loop, String consoleNameMapped, String PNGNameWithExtension) throws MalformedURLException, IOException, ConnectionLostException {
-//    LogMe logMe = LogMe.getInstance();
-//    Pixel pixel = this.application.getPixel();
-//    pixel.writeArcadeImage(arcadeFilePNGFullPath, saveAnimation, loop, consoleNameMapped, PNGNameWithExtension, WebEnabledPixel.pixelConnected);
-//    
-//     if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//        if (this.lcdDisplay == null)
-//            this.lcdDisplay = new LCDPixelcade();
-//            String arcadeNameOnly = FilenameUtils.removeExtension(PNGNameWithExtension);
-//            lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-//      }
-//    
-//  }
-//  
-//  public void handleGIF(String consoleName, String arcadeName, Boolean saveAnimation, int loop) {
-//    Pixel pixel = this.application.getPixel();
-//    try {
-//      pixel.writeArcadeAnimation(consoleName, arcadeName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
-//    } catch (NoSuchAlgorithmException ex) {
-//      Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-//    }
-//    
-//    if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//        if (this.lcdDisplay == null)
-//            this.lcdDisplay = new LCDPixelcade();
-//            String arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
-//        try {
-//            lcdDisplay.displayImage(arcadeNameOnly, consoleName);
-//        } catch (IOException ex) {
-//            Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//      }
-//    
-//   
-//  }
-//  
-//  public void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
-//    Pixel pixel = this.application.getPixel();
-//    String streamOrWrite = null;
-//    String consoleName = null;
-//    String arcadeName = null;
-//    String arcadeNameExtension = null;
-//    String arcadeNameOnly = null;
-//    String arcadeFilePathPNG = null;
-//    String arcadeFilePathGIF = null;
-//    String consoleFilePathPNG = null;
-//    String consoleFilePathGIF = null;
-//    String defaultConsoleFilePathPNG = null;
-//    String consoleNameMapped = null;
-//    LogMe logMe = null;
-//    
-//    String[] consoleArray = { 
-//        "mame", "atari2600", "daphne", "nes", "neogeo", "atarilynx", "snes", "atari5200", "atari7800", "atarijaguar", 
-//        "c64", "genesis", "capcom", "n64", "psp", "psx", "coleco", "dreamcast", "fba", "gb", 
-//        "gba", "ngp", "ngpc", "odyssey", "saturn", "megadrive", "gbc", "gamegear", "mastersystem", "sega32x", 
-//        "3do", "msx", "atari800", "pc", "nds", "amiga", "fds", "futurepinball", "amstradcpc", "apple2", 
-//        "intellivision", "macintosh", "ps2", "pcengine", "segacd", "sg-1000", "ti99", "vectrex", "virtualboy", "visualpinball", 
-//        "wonderswan", "wonderswancolor", "zinc", "sss", "zmachine", "zxspectrum" };
-//    
-//    boolean saveAnimation = false;
-//    int loop_ = 0;
-//    String text_ = "";
-//    int scrollsmooth_ = 1;
-//    Long speeddelay_ = Long.valueOf(10L);
-//    String speed_ = null;
-//    Long speed = null;
-//    String color_ = null;
-//    Color color = null;
-//    int i = 0;
-//    boolean textSelected = false;
-//    int fontSize_ = 0;
-//    int yOffset_ = 0;
-//    int lines_ = 1;
-//    String font_ = null;
-//    if (WebEnabledPixel.isWindows())
-//      scrollsmooth_ = 3; 
-//    List<NameValuePair> params = null;
-//    try {
-//      params = URLEncodedUtils.parse(new URI(urlParams), "UTF-8");
-//    } catch (URISyntaxException ex) {
-//      Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-//    } 
-//    URI tempURI = null;
-//    
-//    try {
-//      tempURI = new URI("http://localhost:8080" + urlParams);
-//    } catch (URISyntaxException ex) {
-//      Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-//    } 
-//    
-//    String URLPath = tempURI.getPath();
-//    String[] arcadeURLarray = URLPath.split("/");
-//    logMe = LogMe.getInstance();
-//    
-//    if (!CliPixel.getSilentMode()) {
-//      System.out.println("arcade handler received: " + urlParams);
-//      LogMe.aLogger.info("arcade handler received: " + urlParams);
-//    } 
-//    
-//    if (arcadeURLarray.length == 5) {
-//      streamOrWrite = arcadeURLarray[2];
-//      consoleName = arcadeURLarray[3];
-//      arcadeName = arcadeURLarray[4];
-//      arcadeName = arcadeName.trim();
-//      arcadeName = arcadeName.replace("\n", "").replace("\r", "");
-//      arcadeNameExtension = FilenameUtils.getExtension(arcadeName);
-//      
-//      if (arcadeNameExtension.length() > 3) {
-//        arcadeNameOnly = arcadeName;
-//      } else {
-//        arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
-//      } 
-//      
-//      i = 0;
-//      for (NameValuePair param : params) {
-//        i++;
-//        switch (param.getName()) {
-//          case "t":
-//            text_ = param.getValue();
-//            textSelected = true;
-//            break;
-//          case "text":
-//            text_ = param.getValue();
-//            textSelected = true;
-//             break;
-//          case "l":
-//            loop_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "loop":
-//            loop_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "gt":
-//            text_ = WebEnabledPixel.getGameName(arcadeNameOnly);
-//             break;
-//          case "gametitle":
-//            text_ = WebEnabledPixel.getGameName(arcadeNameOnly);
-//             break;
-//          case "ss":
-//            scrollsmooth_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "font":
-//            font_ = param.getValue();
-//             break;
-//          case "size":
-//            fontSize_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "yoffset":
-//            yOffset_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "lines":
-//            lines_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "scrollsmooth":
-//            scrollsmooth_ = Integer.valueOf(param.getValue()).intValue();
-//             break;
-//          case "speed":
-//            speed_ = param.getValue();
-//             break;
-//          case "c":
-//            color_ = param.getValue();
-//             break;
-//          case "color":
-//            color_ = param.getValue();
-//            break;
-//        } 
-//      } 
-//      consoleName = consoleName.toLowerCase();
-//      if (!consoleMatch(consoleArray, consoleName)) {
-//        consoleNameMapped = WebEnabledPixel.getConsoleMapping(consoleName);
-//      } else {
-//        consoleNameMapped = consoleName;
-//      } 
-//      if (consoleNameMapped.equals("mame-libretro"))
-//        consoleNameMapped = "mame"; 
-//      
-//      if (!CliPixel.getSilentMode()) {
-//        System.out.println(streamOrWrite.toUpperCase() + " MODE");
-//        System.out.println("Console Before Mapping: " + consoleName);
-//        System.out.println("Console Mapped: " + consoleNameMapped);
-//        System.out.println("Game Name Only: " + arcadeNameOnly);
-//        
-//        if (loop_ == 0) {
-//          System.out.println("# of Times to Loop: null");
-//        } else {
-//          System.out.println("# of Times to Loop: " + loop_);
-//        } 
-//        
-//        if (text_ != "")
-//          System.out.println("alt text if game file not found: " + text_); 
-//        LogMe.aLogger.info(streamOrWrite.toUpperCase() + " MODE");
-//        LogMe.aLogger.info("Console Before Mapping: " + consoleName);
-//        LogMe.aLogger.info("Console Mapped: " + consoleNameMapped);
-//        LogMe.aLogger.info("Game Name Only: " + arcadeNameOnly);
-//        if (loop_ == 0) {
-//          LogMe.aLogger.info("# of Times to Loop: null");
-//        } else {
-//          LogMe.aLogger.info("# of Times to Loop: " + loop_);
-//        } 
-//        if (text_ != "")
-//          LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
-//      } 
-//     
-////      if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-////        if (this.lcdDisplay == null)
-////            this.lcdDisplay = new LCDPixelcade();
-////
-////            lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-////      }
-//      
-//      //is their a matching PNG and/or GIF
-//
-//      arcadeFilePathPNG = application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnly + ".png";
-//      
-//      File arcadeFilePNG = new File(arcadeFilePathPNG);
-//      
-//      arcadeFilePathGIF = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
-//      
-//      File arcadeFileGIF = new File(arcadeFilePathGIF);
-//      
-//      //let's check for matching PNG first
-//      
-//      if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-//          arcadeNameOnly = FilenameUtils.removeExtension(arcadeName); //great we have a matching PNG
-//      } 
-//      else {
-//            // no matching PNG but let's check a couple things  
-//            // on windows, the spaces can get replaces with an underscore so we'll need to check for this
-//            String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");  //replaces all underscores with blank
-//            
-//            String arcadeFilePathPNGUnderscore = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".png";
-//            
-//            arcadeFilePNG = new File(arcadeFilePathPNGUnderscore);
-//            
-//            if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-//              arcadeNameOnly = arcadeNameOnlyUnderscore;  //ok great, there is a match so let's use the name with the spaces and not with _ as the file name has spaces
-//            } 
-//            else {  // to do, not sure if this check is actaully needed, might have been happening on the Pi?
-//              String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
-//              String arcadeFilePathPNGlowerCase = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".png";
-//              arcadeFilePNG = new File(arcadeFilePathPNGlowerCase);
-//              if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory())
-//                arcadeNameOnly = arcadeNamelowerCase; 
-//            } 
-//      }
-//      
-//      if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-//        arcadeNameOnly = FilenameUtils.removeExtension(arcadeName); //great we have a matching GIF
-//      } 
-//      else {
-//        String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
-//        String arcadeFilePathGIFUnderscore = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
-//        arcadeFileGIF = new File(arcadeFilePathGIFUnderscore);
-//        if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-//          arcadeNameOnly = arcadeNameOnlyUnderscore;
-//        } else {
-//          String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
-//          String arcadeFilePathGIFlowerCase = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".gif";
-//          arcadeFileGIF = new File(arcadeFilePathGIFlowerCase);
-//          if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory())
-//            arcadeNameOnly = arcadeNamelowerCase; 
-//        } 
-//      } 
-//      String requestedPath = this.application.getPixel().getPixelHome() + consoleNameMapped + "\\" + arcadeNameOnly;
-//      if (!CliPixel.getSilentMode()) 
-//        System.out.println("Looking for: " + requestedPath + ".png or .gif");
-//        LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
-//        
-//	// LCD Marquee call
-//	if (WebEnabledPixel.getLCDMarquee().equals("yes")) {  //is the LCD marquee enabled in settings
-//            String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; //what about gifs?
-//            System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-//            File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG); 
-//            
-//            if (arcadeLCDFilePNG.exists() == false && !text_.equals("")) { //so let's scroll text then but only if text was supplied as a param
-//                System.out.println("NOT FOUND: " + arcadeLCDFilePathPNG);
-//                if(lcdDisplay == null){ lcdDisplay = new LCDPixelcade();}
-//                lcdDisplay.setNumLoops(loop_);  
-//                lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 5);
-//            }
-//            else {
-//                lcdDisplay.displayImage(arcadeNameOnly, consoleName);  //if there is not match then should display a generic image
-//            }
-//        }    
-//       
-//
-//      ////**************************************************
-//      if (streamOrWrite.equals("write")) {
-//        saveAnimation = true;
-//        if (WebEnabledPixel.arduino1MatrixConnected) {
-//          WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-//          LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-//        } 
-//        if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-//          handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
-//        
-//        } else if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-//          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, FilenameUtils.getName(arcadeFilePathPNG));
-//
-//        } else if (text_ != "" && !text_.equals("nomatch")) {
-//          int LED_MATRIX_ID = WebEnabledPixel.getMatrixID();
-//          speed = Long.valueOf(10L);
-//          speed = Long.valueOf(WebEnabledPixel.getScrollingTextSpeed(LED_MATRIX_ID));
-//          
-//          if (speeddelay_.longValue() != 10L)
-//            speed = speeddelay_; 
-//          if (color_ != null)
-//            color = WebEnabledPixel.getColorFromHexOrName(color_);
-//          
-//          pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
-//          
-//           if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//                if(lcdDisplay == null)
-//                   lcdDisplay = new LCDPixelcade();
-//            
-//           lcdDisplay.setNumLoops(loop_);  
-//           lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 5); //int speed
-//        }
-//          
-//          
-//        } else {
-//          consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
-//          File consoleFileGIF = new File(consoleFilePathGIF);
-//          consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
-//          
-//          File consoleFilePNG = new File(consoleFilePathPNG);
-//          if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
-//            if (!CliPixel.getSilentMode()) {
-//              System.out.println("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-//              LogMe.aLogger.info("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-//            } 
-//            handleGIF("console", "default-" + consoleNameMapped + ".gif", Boolean.valueOf(saveAnimation), loop_);
-//          
-//          } else if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
-//            handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG));
-//          
-//          } else {
-//            
-//              if (!CliPixel.getSilentMode()) {
-//              System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-//              LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-//            } 
-//            defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
-//            File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
-//            if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
-//              handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG));
-//            } else if (!CliPixel.getSilentMode()) {
-//              System.out.println("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-//              System.out.println("Skipping LED marquee " + streamOrWrite + ", please check the files");
-//              LogMe.aLogger.info("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-//              LogMe.aLogger.info("Skipping LED marquee " + streamOrWrite + ", please check the files");
-//            } 
-//          } 
-//        } 
-//      } else {
-//        saveAnimation = false;
-//        
-//        if (WebEnabledPixel.arduino1MatrixConnected) {
-//          WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-//          LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-//        } 
-//        
-//        if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory() && arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-//          handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");
-//          handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), 1);
-//          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), 99999, consoleNameMapped, arcadeNameOnly + ".png");
-//          //to part does not work with the Q and looping, address later
-//        
-//        } else if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-//            handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, arcadeNameOnly + ".png");
-//
-//	} else if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-//            handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
-//        
-//        } else if (text_ != "" && !text_.equals("nomatch")) {
-//          if (color_ == null) {
-//              
-//            if (WebEnabledPixel.getTextColor().equals("random")) {
-//              color = WebEnabledPixel.getRandomColor();
-//              
-//            } else {
-//                
-//              color = WebEnabledPixel.getColorFromHexOrName(WebEnabledPixel.getTextColor());
-//            } 
-//            
-//          } else {
-//            color = WebEnabledPixel.getColorFromHexOrName(color_);
-//          } 
-//          int LED_MATRIX_ID = WebEnabledPixel.getMatrixID();
-//          speed = Long.valueOf(WebEnabledPixel.getScrollingTextSpeed(LED_MATRIX_ID));
-//          if (speed_ != null) {
-//            speed = Long.valueOf(speed_);
-//            if (speed.longValue() == 0L)
-//              speed = Long.valueOf(10L); 
-//          } 
-//          if (scrollsmooth_ == 0) {
-//            String scrollSpeedSettings = WebEnabledPixel.getTextScrollSpeed();
-//            scrollsmooth_ = WebEnabledPixel.getScrollingSmoothSpeed(scrollSpeedSettings);
-//          } 
-//          if (font_ == null)
-//            font_ = WebEnabledPixel.getDefaultFont(); 
-//          this.application.getPixel();
-//          Pixel.setFontFamily(font_);
-//          if (yOffset_ == 0)
-//            yOffset_ = WebEnabledPixel.getDefaultyTextOffset(); 
-//          this.application.getPixel();
-//          Pixel.setYOffset(yOffset_);
-//          if (fontSize_ == 0)
-//            fontSize_ = WebEnabledPixel.getDefaultFontSize(); 
-//          this.application.getPixel();
-//          Pixel.setFontSize(fontSize_);
-//          
-//          
-//        if (lines_ == 2) 
-//            Pixel.setDoubleLine(true);
-//        else if (lines_ == 4)
-//            Pixel.setFourLine(true);
-//        else
-//            Pixel.setDoubleLine(false); //don't forget to set it back
-//          
-//          
-//          pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
-//          
-//           if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-//                if(lcdDisplay == null)
-//                   lcdDisplay = new LCDPixelcade();
-//                
-//               lcdDisplay.setNumLoops(loop_);      
-//               lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 5); //int speed
-//        }
-//          
-//        } else {
-//          consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
-//          File consoleFilePNG = new File(consoleFilePathPNG);
-//          consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
-//          File consoleFileGIF = new File(consoleFilePathGIF);
-//          if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
-//            handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG));
-//          } else if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
-//            if (!CliPixel.getSilentMode()) {
-//              System.out.println("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-//              LogMe.aLogger.info("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-//            } 
-//            handleGIF("console", "default-" + consoleNameMapped + ".gif", Boolean.valueOf(saveAnimation), loop_);
-//          } else {
-//            if (!CliPixel.getSilentMode()) {
-//              System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-//              LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-//            } 
-//            defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
-//            File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
-//            if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
-//              handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG));
-//            } else if (!CliPixel.getSilentMode()) {
-//              System.out.println("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-//              System.out.println("Skipping LED marquee " + streamOrWrite + ", please check the files");
-//              LogMe.aLogger.info("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-//              LogMe.aLogger.info("Skipping LED marquee " + streamOrWrite + ", please check the files");
-//            } 
-//          } 
-//        } 
-//      } 
-//    } else {
-//      System.out.println("** ERROR ** URL format incorect, use http://localhost:8080/arcade/<stream or write>/<platform name>/<game name .gif or .png>");
-//      System.out.println("Example: http://localhost:8080/arcade/write/mame/pacman.png or http://localhost:8080/arcade/stream/atari2600/digdug.gif");
-//      LogMe.aLogger.severe("** ERROR ** URL format incorect, use http://localhost:8080/arcade/<stream or write>/<platform name>/<game name .gif or .png>");
-//      LogMe.aLogger.severe("Example: http://localhost:8080/arcade/write/mame/pacman.png or http://localhost:8080/arcade/stream/atari2600/digdug.gif");
-//    } 
-//  }
-//  
-//  public int getMaxAnimationsPerGame(String baseName) {
-//      
-//     // write a function to get the filenames of the files in the target with the basename you 
-//     //and set maxOptions to that number
-//      int max = 0;
-//      Boolean match = true;     
-//      int i = 0;
-//      while (match) {
-//          i++;
-//          File targetFile = new File(String.format("%s/%s_%d.gif",WebEnabledPixel.getHome(),baseName,i));
-//          if (targetFile.exists() && !targetFile.isDirectory())
-//              match = true;
-//          else
-//              match = false;
-//      } 
-//      // ok we didn't have a match so are done with the while loop, let's set max to i
-//      max = i;
-//      return max;
-//  }
-//  
-//  public void getMatch(String romName) {
-//      
-//  //  private static final string FAILOVER = "path to default"
-// //   maxOptions = 20 
-//      
-////      String staticDefault = File(String.format("%s/%s.gif",WebEnabledPixel.pixelHome,romName));
-////    String theResult = File(staticDefault).exists ? staticDefault : FAILOVER;
-////    //So, theResult is either gonna be staticDefault,,,if it even exists, or FAILOVER if it don’t” 
-//////    if(File(staticDefault).exists){
-//////  theResult = staticDefault
-//////} else {
-//////   theResult = FAILOVER
-//////}
-////    
-////    
-////    String targettfile = String.format("%s/%s_%d.gif",rootpath,forGameName,fileNumber);
-////
-////    if File(targettfile.exists())
-////        return targetfile;
-////    else
-////        return staticDefault;
-//
-//        //randoGIF = getRandomAnim()
-//
-//    // getRandomAnim(String forGameName)
-//     //private static final string FAILOVER = "path to default"
-//     //maxOptions = 20      
-//     //int fileNumber = rng(0, maxOptions) + 1
-//     
-////     string rootpath = "some/known/location/"
-////      string targettfile = String.format("%s/%s_%d.gif",rootpath,forGameName,fileNumber)
-//        //rootpath + "/" + forGameName + "_" + fileNumber + ".gif"
-////      if File(targetfile).exist 
-////       return targetfile
-////      else
-////   return FAILOVER
-//
-////and if you want to write more code, heheh
-////12:36
-////write a function to get the filenames of the files in the target with the basename you want
-////
-////
-////
-////
-////
-////12:37
-////and set maxOptions to that number
-////12:37
-////of course
-////12:37
-////you subtract one for pacman.gif
-////12:38
-////Heheheh
-////12:40
-////Make sense?
-////      
-//  } 
-//  
-//  public static boolean consoleMatch(String[] arr, String targetValue) {
-//    for (String s : arr) {
-//      if (s.equals(targetValue))
-//        return true; 
-//    } 
-//    return false;
-//  }
-//}
-
+ 

@@ -156,26 +156,19 @@ public void setLCDFont(Font font, String fontFilename) {
 	} else if (named.contains("resetti")) 
             theCommand = PNG_COMMAND.replace("${named}", "black");
 
-       if(doGif){
-	  theCommand = GIF_COMMAND.replace("${named}", named).replace("${system}", gifSystem);
- 	}
+        if(doGif){
+          theCommand = GIF_COMMAND.replace("${named}", named).replace("${system}", gifSystem);
+        }
 
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("sh", "-c", RESET_COMMAND + theCommand);
         System.out.println("Running cmd: " + "sh -c " +  RESET_COMMAND + theCommand);
         Process process = builder.start();
-	if (named.contains("resetti") && doGif == false)
-	scrollText(currentMessage,new Font("Helvetica", Font.PLAIN, 18), Color.red,15);
-	
-	if(doGif) doGif = false;
-       // int exitCode = 0;
-       // try {
-       //     exitCode = process.waitFor();
-       // } catch (InterruptedException e) {
-       //     e.printStackTrace();
-       // }
-       // assert exitCode == 0;
-       
+	    
+        if (named.contains("resetti") && doGif == false)
+        scrollText(currentMessage,new Font("Helvetica", Font.PLAIN, 18), Color.red,15);
+        
+        if(doGif) doGif = false;
     }
 
     static public void scrollText(String message, Font font, Color color, int speed) {
