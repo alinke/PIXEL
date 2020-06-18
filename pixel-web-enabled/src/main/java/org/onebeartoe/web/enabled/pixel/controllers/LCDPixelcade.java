@@ -115,6 +115,10 @@ public void setLCDFont(Font font, String fontFilename) {
 //        if (new File(String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system)).exists())
 //            DEFAULT_COMMAND = "sudo fbi /home/pi/pixelcade/lcdmarquees/console/default-" + system + ".png -T 1  --noverbose --nocomments --fixwidth -a";
         System.out.print("System: " + system + "Game:" + named + "\n");
+	if(named.contains("nodata")) {
+		System.out.print("[NODATA DETECTED]: Bail " + "\n");
+		return;
+	}
 
 	String marqueePath = NOT_FOUND;
         if (new File(String.format("%slcdmarquees/%s.png",pixelHome, named)).exists()){
@@ -154,15 +158,16 @@ public void setLCDFont(Font font, String fontFilename) {
 
        if(doGif){
 	  theCommand = GIF_COMMAND.replace("${named}", named).replace("${system}", gifSystem);
-	  doGif = false;
  	}
 
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("sh", "-c", RESET_COMMAND + theCommand);
         System.out.println("Running cmd: " + "sh -c " +  RESET_COMMAND + theCommand);
         Process process = builder.start();
-	if (named.contains("resetti"))
+	if (named.contains("resetti") && doGif == false)
 	scrollText(currentMessage,new Font("Helvetica", Font.PLAIN, 18), Color.red,15);
+	
+	if(doGif) doGif = false;
        // int exitCode = 0;
        // try {
        //     exitCode = process.waitFor();
