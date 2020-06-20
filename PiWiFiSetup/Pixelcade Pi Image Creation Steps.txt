@@ -1,9 +1,0 @@
- image steps
-
-sudo curl -LO pixelcade.org/pi/setup-alu.sh && sudo chmod +x setup-alu.sh && ./setup-alu.sh
-don't reboot
-git clone https://github.com/jasbur/RaspiWiFi.git
-sudo python3 initial_setup.py
-update html files for jasbur
-delete wpa_supplicant.conf.old
-now create image using mac disk utility before rebooting, compressed image
