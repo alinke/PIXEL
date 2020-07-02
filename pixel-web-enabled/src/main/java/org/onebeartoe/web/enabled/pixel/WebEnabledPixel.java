@@ -17,6 +17,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -166,13 +169,15 @@ public class WebEnabledPixel {
 
   //public static String pixelHome = System.getProperty("user.dir") + File.separator;
   
-  public static String pixelHome = "/home/pi/pixelcade/";
+  //public static String pixelHome = "/home/pi/pixelcade/";
+  
+  public static String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
   
   public static LCDPixelcade lcdDisplay = null;
   
   //private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
   
-  private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin/java");
+  private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -188,8 +193,8 @@ public class WebEnabledPixel {
       System.out.println("Pixelcade Listener (pixelweb) Version " + pixelwebVersion);
     } 
     
-    //Map<String, String> map = System.getenv();
-    //map.entrySet().forEach(System.out::println);
+    Map<String, String> map = System.getenv();
+    map.entrySet().forEach(System.out::println);
     
     defaultyTextOffset = this.cli.getyTextOffset();
     LED_MATRIX_ID = this.cli.getLEDMatrixType();
@@ -202,7 +207,8 @@ public class WebEnabledPixel {
    
     if (isWindows()) {
           pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
-    } else if (isALU){       
+    } else if (isALU){   
+          System.out.println("ALU Detected");
           pixelHome = "/opt/pixelcade/";
     }
     
@@ -472,8 +478,10 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     pixel.setScrollDelay(speed_);
     pixel.setScrollTextColor(Color.red);
     
-    if (!silentMode_)
+    if (!silentMode_) {
       LogMe.aLogger.info("Pixelcade HOME DIRECTORY: " + pixelHome); 
+      System.out.println("Pixelcade HOME DIRECTORY: " + pixelHome);
+    }  
     //extractDefaultContent();  //saving space by removing this as the retropie installer now includes all these files so no need to include here and make the .jar bigger
     
     createControllers();
@@ -568,7 +576,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         }catch (FontFormatException|IOException| NullPointerException e){
           System.out.println("Could not set lcd font from: " + pixelHome + "fonts/" + defaultFont + ".ttf" +" :(...\n");
         }
-
     }
     
     if (this.SubDisplayAccessory_.equals("yes")) {
@@ -1478,18 +1485,22 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                     pixel.ioiO = ioio_;
 
             StringBuilder message = new StringBuilder();
+            
             if (WebEnabledPixel.pixel.matrix == null) {
               message.append("wtffff\n");
             } else {
               message.append("Found PIXEL: " + WebEnabledPixel.pixel.matrix + "\n");
             } 
+            
             message.append("You may now interact with PIXEL!\n");
             message.append("LED matrix type is: " + WebEnabledPixel.LED_MATRIX_ID + "\n");
             WebEnabledPixel.this.searchTimer.cancel();
             message.append("PIXEL Status: Connected");
             WebEnabledPixel.pixelConnected = true;
+            
             if (!WebEnabledPixel.this.playLastSavedMarqueeOnStartup_.equals("no"))
               WebEnabledPixel.pixel.playLocalMode(); 
+            
             if (!WebEnabledPixel.pixel.PixelQueue.isEmpty()) {
               WebEnabledPixel.pixel.doneLoopingCheckQueue();
               if (!WebEnabledPixel.silentMode_) {
@@ -1500,10 +1511,27 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               System.out.println("No Items in the Queue at Startup...");
               LogMe.aLogger.info("No Items in the Queue at Startup...");
             } 
+            
             if (!WebEnabledPixel.silentMode_) {
               System.out.println(message);
               LogMe.aLogger.info(message.toString());
             } 
+            
+            Date date = new Date();
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int year  = localDate.getYear();
+            int month = localDate.getMonthValue();
+            int day   = localDate.getDayOfMonth();
+            
+            if (month == 7 && day == 4) {
+                
+            }
+            
+            System.out.println("year:" + year + "month: " + month + "day " + day);
+            
+            
+            
+            
           }
         };
     }
