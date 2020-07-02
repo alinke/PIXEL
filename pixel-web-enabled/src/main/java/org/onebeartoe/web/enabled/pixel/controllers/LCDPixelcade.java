@@ -5,6 +5,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
 
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
@@ -32,15 +35,38 @@ public class LCDPixelcade {
     public static String currentMessage = "Welcome and Game On!";
     public static String gifSystem = "";
     public static  WindowsLCD windowsLCD = null;
+    public static boolean dxEnvironment = WebEnabledPixel.dxEnvironment;
+    private boolean dxChecked = false;
     public static boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
     public static boolean  doGif = false;
+
+    {
+        if (!dxChecked){
+            try {
+                if (InetAddress.getByName("pixelcadedx.local").isReachable(20000)) {
+
+                    dxChecked = true;
+                    System.out.print("Setting DXEnvironment\n");
+                } else {
+                    System.out.print("LCD used in non-DXE...YMMV/Ill-Advised :)\n");
+                    WebEnabledPixel.dxEnvironment = false;
+                    dxChecked = true;
+                }
+
+            } catch (Exception e) {
+            }
+    }
+    }
     public static void main(String[] args) {
+
 
         String shell = "bash";
         if(isWindows) {
             windowsLCD = new WindowsLCD();
             pixelHome =  WebEnabledPixel.getHome();
         }
+
+
    
         boolean haveFBI = new File(ENGINE_PATH).exists();
         //boolean haveExtraDisplay = new File("/dev/fb1").exists();
@@ -73,6 +99,7 @@ public class LCDPixelcade {
     }
 
 public void setLCDFont(Font font, String fontFilename) {
+        if (dxEnvironment) return;
         if(!isWindows) {
             this.fontPath = fontFilename; 
 	   System.out.print("fontPath: " + fontFilename +"\n");
@@ -89,6 +116,7 @@ public void setLCDFont(Font font, String fontFilename) {
     }
 
     public void setAltText(String text){
+        if (dxEnvironment) return;
         this.currentMessage = text;
         System.out.print("AltMessage set\n");
         if(isWindows && windowsLCD != null)
@@ -96,6 +124,7 @@ public void setLCDFont(Font font, String fontFilename) {
     }
 
     public void setNumLoops(int loops){
+        if (dxEnvironment) return;
         this.loops = loops;
 	System.out.print("Loops set\n");
         if(isWindows && windowsLCD != null)
@@ -103,6 +132,8 @@ public void setLCDFont(Font font, String fontFilename) {
     }
 
     static public void displayImage(String named, String system) throws IOException {
+        if (dxEnvironment) return;
+        System.out.println(String.format("[INTERNAL] Asked to display marquee for %s, %s",named,system));
         if(!WebEnabledPixel.getLCDMarquee().contains("yes"))
             return;
 
@@ -111,22 +142,22 @@ public void setLCDFont(Font font, String fontFilename) {
             windowsLCD = new WindowsLCD();
             
             windowsLCD.displayImage(named, system);
+            System.out.println(String.format("[INTERNAL] Switching to WindowsSubsytem because IsWindows:%d",isWindows));
             return;
         }
 		
 	String marqueePath = NOT_FOUND;
 
-        if (new File(String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system)).exists()){
-            //DEFAULT_COMMAND = "sudo fbi /home/pi/pixelcade/lcdmarquees/console/default-" + system + ".png -T 1  --noverbose --nocomments --fixwidth -a";
-            DEFAULT_COMMAND = wrapperHome + "gsho -platform linuxfb " + pixelHome + "lcdmarquees/console/default-" + system + ".png";
-            marqueePath = String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system);
-	}
-
         if (new File(String.format("%slcdmarquees/%s.png",pixelHome, named)).exists()){
             //DEFAULT_COMMAND = "sudo fbi" + pixelHome + "lcdmarquees/" + named + ".png -T 1 -/d /dev/fb0  --noverbose --nocomments --fixwidth -a";
             DEFAULT_COMMAND = wrapperHome + "gsho  -platform linuxfb " + pixelHome + "lcdmarquees/" + named + ".png";
             marqueePath = String.format("%slcdmarquees/%s.png",pixelHome, named);
-	}
+        }
+        if (new File(String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system)).exists()) {
+            //DEFAULT_COMMAND = "sudo fbi /home/pi/pixelcade/lcdmarquees/console/default-" + system + ".png -T 1  --noverbose --nocomments --fixwidth -a";
+            DEFAULT_COMMAND = wrapperHome + "gsho -platform linuxfb " + pixelHome + "lcdmarquees/console/default-" + system + ".png";
+            marqueePath = String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system);
+        }
 
         doGif = new File(String.format("%s%s/%s.gif",pixelHome, system,named)).exists();
         gifSystem = system;
@@ -143,7 +174,7 @@ public void setLCDFont(Font font, String fontFilename) {
 	}
 
     static public void  displayImage(String named) throws IOException {  //note this is Pi/linux only!
-        if (named == null) return;
+        if (named == null || dxEnvironment) return;
 
 
         if (named != null) if (named.contains("slideshow")) {
@@ -160,10 +191,10 @@ public void setLCDFont(Font font, String fontFilename) {
         if(doGif){
           theCommand = GIF_COMMAND.replace("${named}", named).replace("${system}", gifSystem);
         }
-
+        System.out.println(String.format("[INTERNAL] Running command: %s  For Marquee: %s",theCommand,named));
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("sh", "-c", RESET_COMMAND + theCommand);
-        System.out.println("Running cmd: " + "sh -c " +  RESET_COMMAND + theCommand);
+        System.out.println("[INTERNAL] Running cmd: " + "sh -c " +  RESET_COMMAND + theCommand);
         Process process = builder.start();
 	    
         if (named.contains("resetti") && doGif == false)
@@ -173,8 +204,9 @@ public void setLCDFont(Font font, String fontFilename) {
     }
 
     static public void scrollText(String message, Font font, Color color, int speed) {
+        if (dxEnvironment) return;
         if(isWindows){
-		System.out.println("Switching to WindowsSubsystem");
+		System.out.println("[INTERNAL]Scroller Switching to WindowsSubsystem");
             if(windowsLCD == null)
                 windowsLCD = new WindowsLCD();
 

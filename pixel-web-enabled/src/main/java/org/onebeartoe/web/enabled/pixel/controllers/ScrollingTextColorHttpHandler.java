@@ -2,7 +2,12 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.awt.Color;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.URL;
+
 import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.pixel.hardware.Pixel;
@@ -24,6 +29,18 @@ public class ScrollingTextColorHttpHandler extends TextHttpHandler {
     int i = path.lastIndexOf("/") + 1;
     String colorString = path.substring(i);
     Color color = Color.red;
+
+    try {
+      if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+        WebEnabledPixel.dxEnvironment = true;
+        System.out.println("Requested: " + requestURI.getPath());
+        URL url = new URL("http://pixelcadedx.local:8080" + requestURI.getPath());
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.getResponseCode();
+        con.disconnect();
+      }
+    }catch (  Exception e){}
     
     if (colorString != null)
       color = WebEnabledPixel.getColorFromHexOrName(colorString); 

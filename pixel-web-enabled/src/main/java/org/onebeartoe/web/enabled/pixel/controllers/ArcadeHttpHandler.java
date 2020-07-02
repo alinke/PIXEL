@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.UnhandledException;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.onebeartoe.pixel.LogMe;
@@ -40,13 +41,17 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     LogMe logMe = LogMe.getInstance();
     Pixel pixel = this.application.getPixel();
     pixel.writeArcadeImage(arcadeFilePNGFullPath, saveAnimation, loop, consoleNameMapped, PNGNameWithExtension, WebEnabledPixel.pixelConnected);
-    
+    //lcdDisplay.displayImage(PNGNameWithExtension,consoleNameMapped);
   }
   
   public void handleGIF(String consoleName, String arcadeName, Boolean saveAnimation, int loop) {
     Pixel pixel = this.application.getPixel();
+   /* try {
+        lcdDisplay.displayImage(arcadeName, consoleName);
+    } catch (IOException e){} */
     try {
       pixel.writeArcadeAnimation(consoleName, arcadeName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
+
     } catch (NoSuchAlgorithmException ex) {
       Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
     }

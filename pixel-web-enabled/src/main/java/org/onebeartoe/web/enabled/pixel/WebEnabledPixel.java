@@ -68,8 +68,8 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 
 public class WebEnabledPixel {
+  public static boolean dxEnvironment = true;
   public static String pixelwebVersion = "2.9.2";
-  
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -164,7 +164,7 @@ public class WebEnabledPixel {
   
   public static PrintWriter Arduino1MatrixOutput;
 
-  public static String pixelHome = System.getProperty("user.dir") + "\\";
+  public static String pixelHome = System.getProperty("user.dir") + File.separator;
   
   public static LCDPixelcade lcdDisplay = null;
   
@@ -197,7 +197,7 @@ public class WebEnabledPixel {
     } 
     
     if (isWindows()) {
-          pixelHome = System.getProperty("user.dir") + "\\";  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
+          pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
     } else {       
           //pixelHome = System.getProperty("user.home") + "/pixelcade/";  //let's force user.home since we don't have an installer for Pi or Mac
           String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath(); //get the path that pixelweb.jar is launched from 

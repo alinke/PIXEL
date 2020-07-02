@@ -34,6 +34,60 @@
     </repositories--> 
 
     <dependencies>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>11.0.2</version>
+    <classifier>win</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-media</artifactId>
+    <version>11.0.2</version>
+    <classifier>win</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-swing</artifactId>
+    <version>11.0.2</version>
+    <classifier>win</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>11.0.2</version>
+    <classifier>linux</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-media</artifactId>
+    <version>11.0.2</version>
+    <classifier>linux</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-swing</artifactId>
+    <version>11.0.2</version>
+    <classifier>linux</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>11.0.2</version>
+    <classifier>mac</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-media</artifactId>
+    <version>11.0.2</version>
+    <classifier>mac</classifier>
+</dependency>
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-swing</artifactId>
+    <version>11.0.2</version>
+    <classifier>mac</classifier>
+</dependency>
         <dependency>
             <groupId>org.eh.http</groupId>
             <artifactId>easy-httpserver</artifactId>
@@ -118,6 +172,14 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>-->
+
+<!-- https://mvnrepository.com/artifact/com.igormaznitsa/mvn-jlink-wrapper -->
+<dependency>
+    <groupId>com.igormaznitsa</groupId>
+    <artifactId>mvn-jlink-wrapper</artifactId>
+    <version>1.1.0</version>
+</dependency>
+
     </dependencies>
             
     <build>
@@ -145,6 +207,22 @@
 		    </execution>
 		</executions>
 	    </plugin>
+<plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.4</version>
+        <configuration>
+            <mainClass>org.onebeartoe.web.enabled.pixel.WebEnabledPixel</mainClass>
+	    <stripDebug>true</stripDebug>
+        <compress>2</compress>
+        <noHeaderFiles>true</noHeaderFiles>
+        <noManPages>true</noManPages>
+	<launcher>PixelWeb</launcher>
+        <jlinkImageName>pixelweb</jlinkImageName>
+        <jlinkZipName>pixelweb</jlinkZipName>
+	<jmodsPath>${java.home}${file.separator}jmods</jmodsPath>
+        </configuration>
+    </plugin>
         </plugins>
     </build>
 </project>

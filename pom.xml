@@ -37,6 +37,14 @@
       <!--  <module>pixelcade-front-end</module> -->
     </modules>
 
+<dependencies>
+  <dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>14</version>
+  </dependency>
+</dependencies>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -68,7 +76,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>3.0.3</version>
-            </plugin>      
+            </plugin>
         </plugins>
     </build>
   

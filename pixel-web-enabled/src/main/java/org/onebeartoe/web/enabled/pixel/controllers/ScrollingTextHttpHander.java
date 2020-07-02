@@ -5,10 +5,9 @@ import com.sun.net.httpserver.HttpExchange;
 import java.awt.Color;
 import java.awt.Font;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
+import java.net.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,12 +64,27 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
         LogMe logMe = LogMe.getInstance();
         URI requestURI = exchange.getRequestURI();
         Font font = null;
-        
+
+
+
         
          if (!CliPixel.getSilentMode()) {
              logMe.aLogger.info("Scrolling text handler received a request: " + requestURI);
              System.out.println("Scrolling text handler received a request: " + requestURI);
          }
+
+        try {
+            if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                WebEnabledPixel.dxEnvironment = true;
+                System.out.println("Requested: " + requestURI.getPath());
+                URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                con.getResponseCode();
+                con.disconnect();
+            }
+        }catch (  Exception e){}
+
         
         String encodedQuery = requestURI.getQuery();
         
@@ -211,7 +225,7 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
         
     app.getPixel().scrollText(text_, loop, speed, color,WebEnabledPixel.pixelConnected,scrollsmooth_);
     
-    if (Pixel.isWindows() && WebEnabledPixel.getLCDMarquee().equals("yes")) {
+    if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
                 if(lcdDisplay == null)
                    lcdDisplay = new LCDPixelcade();
                 
