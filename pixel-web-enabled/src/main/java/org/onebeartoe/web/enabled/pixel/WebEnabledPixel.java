@@ -17,6 +17,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +31,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -1471,6 +1475,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             LogMe.aLogger.severe(message);
           }
           
+          
           protected void setup() throws ConnectionLostException, InterruptedException {
              pixel = new Pixel(pixelEnvironment.LED_MATRIX, pixelEnvironment.currentResolution);
                     pixel.matrix = ioio_.openRgbLedMatrix(pixel.KIND);
@@ -1486,9 +1491,12 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             message.append("LED matrix type is: " + WebEnabledPixel.LED_MATRIX_ID + "\n");
             WebEnabledPixel.this.searchTimer.cancel();
             message.append("PIXEL Status: Connected");
+            
             WebEnabledPixel.pixelConnected = true;
+            
             if (!WebEnabledPixel.this.playLastSavedMarqueeOnStartup_.equals("no"))
               WebEnabledPixel.pixel.playLocalMode(); 
+            
             if (!WebEnabledPixel.pixel.PixelQueue.isEmpty()) {
               WebEnabledPixel.pixel.doneLoopingCheckQueue();
               if (!WebEnabledPixel.silentMode_) {
@@ -1499,10 +1507,37 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               System.out.println("No Items in the Queue at Startup...");
               LogMe.aLogger.info("No Items in the Queue at Startup...");
             } 
+            
             if (!WebEnabledPixel.silentMode_) {
               System.out.println(message);
               LogMe.aLogger.info(message.toString());
             } 
+            
+            Date date = new Date();
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int month = localDate.getMonthValue();
+            int day   = localDate.getDayOfMonth();
+            
+            if ( WebEnabledPixel.pixelConnected = true && month == 7 && (day == 2 || day == 3) || (day == 4)) {
+                System.out.println("Fourth of July Easter Egg Match");
+                Thread.sleep(1000);
+                
+                 pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+                
+                try {
+                     pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+                 } catch (NoSuchAlgorithmException ex) {
+                     Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                 }
+                 
+                 // pixel.scrollText("Happy Fourth of July!", 2, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+                 
+                 
+            }
+            
+            
+            
+            
           }
         };
     }
