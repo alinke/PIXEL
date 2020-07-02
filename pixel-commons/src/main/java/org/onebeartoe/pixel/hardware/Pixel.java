@@ -104,7 +104,9 @@ public class Pixel
     
     private String userHome;
     
-    private static String pixelHome = "/home/pi/pixelcade/";
+    //private static String pixelHome = "/home/pi/pixelcade/";
+    
+    private static String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
   
     private String animationsPath = pixelHome + "animations/";     
     
@@ -234,9 +236,7 @@ public class Pixel
     private Boolean loop99999FlagGIF = false;
     private Boolean loop99999FlagText = false;
     
-    private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin/java");
-    
-   
+    private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
     
     //private TimerTask animateTimer = new AnimateTimer();
     
@@ -290,16 +290,27 @@ public class Pixel
         
         if (isWindows()) {
             pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
-            animationsPath = pixelHome + "animations\\";            
-            decodedAnimationsPath = animationsPath + "decoded\\";
-            imagesPath = pixelHome + "images\\";
             scrollingTextMultiplier = 3; //to do this may no longer be needed
         } else if (isALU){       
             pixelHome = "/opt/pixelcade/";
-            animationsPath = pixelHome + "animations/";            
-            decodedAnimationsPath = animationsPath + "decoded/";
-            imagesPath = pixelHome + "images/";
         }
+        
+        animationsPath = pixelHome + "animations" + File.separator;            
+        decodedAnimationsPath = animationsPath + "decoded" + File.separator;
+        imagesPath = pixelHome + "images" + File.separator;
+        
+//        if (isWindows()) {
+//            pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
+//            animationsPath = pixelHome + "animations\\";            
+//            decodedAnimationsPath = animationsPath + "decoded\\";
+//            imagesPath = pixelHome + "images\\";
+//            scrollingTextMultiplier = 3; //to do this may no longer be needed
+//        } else if (isALU){       
+//            pixelHome = "/opt/pixelcade/";
+//            animationsPath = pixelHome + "animations/";            
+//            decodedAnimationsPath = animationsPath + "decoded/";
+//            imagesPath = pixelHome + "images/";
+//        }
     
         
 //        try

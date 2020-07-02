@@ -65,8 +65,6 @@ public class LCDPixelcade {
             windowsLCD = new WindowsLCD();
             pixelHome =  WebEnabledPixel.getHome();
         }
-
-
    
         boolean haveFBI = new File(ENGINE_PATH).exists();
         //boolean haveExtraDisplay = new File("/dev/fb1").exists();

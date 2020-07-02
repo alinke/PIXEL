@@ -1,0 +1,34 @@
+#!/bin/bash
+DIR="$(dirname "$(readlink -f "$0")")"
+ZEROJ=`which java`
+if [ ! -f "/home/pi/pixelcade/.dxe" ]; then
+# $DIR/skrola -platform linuxfb "Starting Up..." "Vectroid" "#ffffff" 6 &
+# sleep 3;
+# killall -9 skrola 
+ $DIR/gsho -platform linuxfb $DIR/load.gif &
+  #OMX=`which omxplayer`
+  #$OMX --display 7 --vol 100 --win 0,0,1280,390 $DIR/pixelcade3s.mp4 > /dev/null 2>&1 
+  #killall -9 skrola
+  #$DIR/skrola -platform eglfs "Hello..." "Vectroid" "#00ff00" 2 &
+  #$DIR/skrola -platform eglfs "Starting Up..." "Vectroid" "#ffffff" 6 &#
+ sleep 3; 
+ killall -9 gsho
+  #export JAVA_HOME=$DIR/usr/
+ FILE=$DIR/.pif.png
+ if [ -f "$FILE" ]; then
+   $DIR/gsho -platform linuxfb $FILE &
+   cp $FILE /home/pi/pixelcade/lcdmarquees/
+ else 
+   $DIR/gsho -platform linuxfb $DIR/logo.png &
+ fi
+fi
+cd ~/pixelcade
+$ZEROJ -jar $DIR/pixelweb.jar "$@" &
+if [ ! -f "/home/pi/pixelcade/.dxe" ]; then
+ if [ -f "/home/pi/pixelcade/.saver" ]; then
+  sleep 4;
+  sudo /usr/bin/fbi /home/pi/pixelcade/lcdmarquees/*.png -T 1 -d /dev/fb0 -t 2 --noverbose --nocomments --fixwidt$
+ fi
+fi
+disown
+exit 0
