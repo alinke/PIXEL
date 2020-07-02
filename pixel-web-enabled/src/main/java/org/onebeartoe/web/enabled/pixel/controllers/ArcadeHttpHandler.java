@@ -229,6 +229,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       File arcadeFilePNG = new File(arcadeFilePathPNG);
       arcadeFilePathGIF = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
       File arcadeFileGIF = new File(arcadeFilePathGIF);
+      
       if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
         arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
       } else {
@@ -279,7 +280,8 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         } 
       
       
-      if (WebEnabledPixel.getLCDMarquee().equals("yes") && !consoleNameMapped.equals("retropie") && !consoleNameMapped.equals("power")) { 
+      //if (WebEnabledPixel.getLCDMarquee().equals("yes") && !consoleNameMapped.equals("retropie") && !consoleNameMapped.equals("power")) { 
+      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
             String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
             System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
             LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
@@ -315,7 +317,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                 System.out.println("went to generic image");
             }
       } else {
-           System.out.println("SKIPPED");
+           System.out.println("SKIPPED LCD Update");
       }
       
       if (streamOrWrite.equals("write")) {
