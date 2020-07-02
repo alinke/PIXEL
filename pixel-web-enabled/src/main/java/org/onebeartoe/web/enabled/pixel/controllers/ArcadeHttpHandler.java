@@ -51,6 +51,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
     }
   }
+   
   
   public void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
     Pixel pixel = this.application.getPixel();

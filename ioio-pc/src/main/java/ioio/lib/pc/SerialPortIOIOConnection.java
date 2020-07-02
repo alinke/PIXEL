@@ -63,10 +63,10 @@ class SerialPortIOIOConnection implements IOIOConnection {
 				synchronized (this) {
 					if (!abort_) {
 						serialPort_ = (SerialPort) commPort;
-						serialPort_.enableReceiveThreshold(1);
-						serialPort_.enableReceiveTimeout(500);
-						serialPort_.setDTR(true);
-						Thread.sleep(100);
+						serialPort_.enableReceiveThreshold(1); //1
+						serialPort_.enableReceiveTimeout(500); //500
+						serialPort_.setDTR(true);  //true
+						Thread.sleep(100); //100
 						inputStream_ = new GracefullyClosingInputStream(
 								serialPort_.getInputStream());
 						outputStream_ = serialPort_.getOutputStream();
