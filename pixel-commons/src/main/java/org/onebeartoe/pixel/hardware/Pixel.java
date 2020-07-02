@@ -104,17 +104,15 @@ public class Pixel
     
     private String userHome;
     
-    private static String pixelHome;
+    private static String pixelHome = "/home/pi/pixelcade/";
   
-    private String animationsPath;
+    private String animationsPath = pixelHome + "animations/";     
     
-    private String decodedAnimationsPath;
+    private String decodedAnimationsPath = animationsPath + "decoded/";
     
-    //private String arcadePath;
+    private String imagesPath = pixelHome + "images/";
     
-    private String decodedArcadePath;
-    
-    private String imagesPath;
+    private String decodedArcadePath; //to do
     
     private int currentResolution;
     
@@ -236,6 +234,8 @@ public class Pixel
     private Boolean loop99999FlagGIF = false;
     private Boolean loop99999FlagText = false;
     
+    private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin/java");
+    
    
     
     //private TimerTask animateTimer = new AnimateTimer();
@@ -288,53 +288,49 @@ public class Pixel
         
         scrollingText = "Scolling Text";
         
-        try
-        {
-            //userHome = System.getProperty("user.home");
-            //userHome = System.getProperty("user.dir"); //this isn't working if user not launched from current dir
-            
-            //String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            //String decodedPath = URLDecoder.decode(path, "UTF-8"); //path/pixelweb.jar , so we need just the path
-            
-            //String pixelwebHomePath = FilenameUtils.getFullPath(decodedPath);
-            
-            //userHome = pixelwebHomePath;
-
-            //pixelHome = userHome + "/pixelcade/";
-            
-            if (isWindows()) {
-                //pixelHome = userHome + "\\";
-                pixelHome = System.getProperty("user.dir") + "\\";  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
-                animationsPath = pixelHome + "animations\\";            
-                decodedAnimationsPath = animationsPath + "decoded\\";
-                imagesPath = pixelHome + "images\\";
-                scrollingTextMultiplier = 3; //to do this may no longer be needed
-            } 
-            else {
-               // pixelHome = userHome + "/";                 
-               // pixelHome = System.getProperty("user.home") + "/pixelcade/";  //let's force user.home since we don't have an installer for Pi or Mac
-                
-                String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath(); //get the path that pixelweb.jar is launched from 
-                String decodedPath = URLDecoder.decode(path, "UTF-8");
-                pixelHome = "/" + FilenameUtils.getPath(decodedPath) ;  //important won't work without the "/" in front
-                
-                animationsPath = pixelHome + "animations/";            
-                decodedAnimationsPath = animationsPath + "decoded/";
-                imagesPath = pixelHome + "images/";
-            }
-            
-            //logger.info("Home Directory: " + pixelHome);  
-            
-            //pixelHome = userHome + "/";
-            //animationsPath = pixelHome + "animations/";            
-            //decodedAnimationsPath = animationsPath + "decoded/";
-            //imagesPath = pixelHome + "images/";
-            
+        if (isWindows()) {
+            pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
+            animationsPath = pixelHome + "animations\\";            
+            decodedAnimationsPath = animationsPath + "decoded\\";
+            imagesPath = pixelHome + "images\\";
+            scrollingTextMultiplier = 3; //to do this may no longer be needed
+        } else if (isALU){       
+            pixelHome = "/opt/pixelcade/";
+            animationsPath = pixelHome + "animations/";            
+            decodedAnimationsPath = animationsPath + "decoded/";
+            imagesPath = pixelHome + "images/";
         }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+    
+        
+//        try
+//        {
+//            
+//            if (isWindows()) {
+//                //pixelHome = userHome + "\\";
+//                pixelHome = System.getProperty("user.dir") + "\\";  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
+//                animationsPath = pixelHome + "animations\\";            
+//                decodedAnimationsPath = animationsPath + "decoded\\";
+//                imagesPath = pixelHome + "images\\";
+//                scrollingTextMultiplier = 3; //to do this may no longer be needed
+//            } 
+//            else {
+//                pixelHome = userHome + "/";                 
+//                pixelHome = System.getProperty("user.home") + "/pixelcade/";  //let's force user.home since we don't have an installer for Pi or Mac
+//                
+////              this won't work with appimage
+////                String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath(); //get the path that pixelweb.jar is launched from 
+////                String decodedPath = URLDecoder.decode(path, "UTF-8");
+////                pixelHome = "/" + FilenameUtils.getPath(decodedPath) ;  //important won't work without the "/" in front
+//                
+//                animationsPath = pixelHome + "animations/";            
+//                decodedAnimationsPath = animationsPath + "decoded/";
+//                imagesPath = pixelHome + "images/";
+//            }
+//        }
+//        catch(Exception e)
+//        {
+//            e.printStackTrace();
+//        }
     }
 
     /**

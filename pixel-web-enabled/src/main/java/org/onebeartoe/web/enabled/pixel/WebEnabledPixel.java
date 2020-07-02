@@ -164,11 +164,15 @@ public class WebEnabledPixel {
   
   public static PrintWriter Arduino1MatrixOutput;
 
-  public static String pixelHome = System.getProperty("user.dir") + File.separator;
+  //public static String pixelHome = System.getProperty("user.dir") + File.separator;
+  
+  public static String pixelHome = "/home/pi/pixelcade/";
   
   public static LCDPixelcade lcdDisplay = null;
   
-  private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
+  //private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
+  
+  private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin/java");
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -195,14 +199,11 @@ public class WebEnabledPixel {
     } else {
       alreadyRunningErrorMsg = "*** ERROR *** \nPixel Listener (pixelweb.jar) is already running\nYou don't need to launch it again\nYou may also want to add the Pixel Listener to your system.d startup";
     } 
-    
+   
     if (isWindows()) {
           pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
-    } else {       
-          //pixelHome = System.getProperty("user.home") + "/pixelcade/";  //let's force user.home since we don't have an installer for Pi or Mac
-          String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath(); //get the path that pixelweb.jar is launched from 
-          String decodedPath = URLDecoder.decode(path, "UTF-8");
-          pixelHome = "/" + FilenameUtils.getPath(decodedPath) ;  //important won't work without the "/" in front
+    } else if (isALU){       
+          pixelHome = "/opt/pixelcade/";
     }
     
     File file = new File("settings.ini");
