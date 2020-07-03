@@ -106,15 +106,15 @@ public class Pixel
     
     //private static String pixelHome = "/home/pi/pixelcade/";
     
-    private static String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
+    private static String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
   
-    private String animationsPath = pixelHome + "animations/";     
+    private String animationsPath = ""; 
     
-    private String decodedAnimationsPath = animationsPath + "decoded/";
+    private String decodedAnimationsPath = "";
     
-    private String imagesPath = pixelHome + "images/";
+    private String imagesPath = "";
     
-    private String decodedArcadePath; //to do
+    private String decodedArcadePath;//to do look into
     
     private int currentResolution;
     
