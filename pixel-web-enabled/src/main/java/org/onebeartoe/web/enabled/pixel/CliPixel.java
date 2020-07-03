@@ -25,6 +25,7 @@ public class CliPixel
  private int ledMatrixTypeMax = 25;
  private static boolean silentMode = false;
  private static boolean backgroundMode = false;
+ private static boolean aluInit = false;
  
  private int yTextOffset = 0;
 
@@ -55,6 +56,7 @@ public class CliPixel
   options.addOption("y", "y text offset", true, "This is the y offset for scrolling text.");
   options.addOption("b", "background", false, "Run in the background as a service, ex. java -jar pixelweb.jar &");
   options.addOption("s", "silent", false, "No console messages or logging to pixelcade.log");
+  options.addOption("a", "alu-init", false, "First time startup for ALU");
  }
 
  public void parse() 
@@ -84,6 +86,10 @@ public class CliPixel
    
    if (cmd.hasOption("b")) {
         backgroundMode = true;
+   }
+   
+    if (cmd.hasOption("a")) {
+        aluInit = true;
    }
    
    if( cmd.hasOption("y") )
@@ -153,6 +159,10 @@ public class CliPixel
    
    public static boolean getBackgroundMode() {
         return backgroundMode;
+    }
+   
+   public static boolean getALUInitMode() {
+        return aluInit;
     }
  
 }
