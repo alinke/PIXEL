@@ -222,7 +222,8 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             } 
              else {  //we don't have a matching lcd marquee so just display generic pixelcade image
                 System.out.println("Console LCD marquee not found, displaying generic Pixelcade marquee: " + consoleLCDFilePNG);
-                lcdDisplay.displayImage("pixelcade", consoleNameMapped);
+                //lcdDisplay.displayImage("pixelcade", consoleNameMapped);
+               lcdDisplay.displayImage("console/pixelcade");
             }
       }
       

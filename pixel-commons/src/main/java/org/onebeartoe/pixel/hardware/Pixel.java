@@ -506,10 +506,10 @@ public class Pixel
         return mode;
     }
 
-    public String getPixelHome()
-    {
-        return pixelHome;
-    }
+//    public String getPixelHome()
+//    {
+//        return pixelHome;
+//    }
     
     public boolean getLoopStatus()
     {
@@ -582,9 +582,9 @@ public class Pixel
         return animationsPath;
     }
     
-    public static String getHomePath() {
-        return pixelHome;
-    }
+//    public static String getHomePath() {
+//        return pixelHome;
+//    }
     
     public String getDecodedAnimationsPath()
     {
@@ -2254,7 +2254,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 //since this decoding may take awhile, let's add a pls wait message to pixelcade letting the user know what is happening
                 
                 
-                String plsWaitFilePathPNG = getPixelHome() + "system" + "/" + "wait.png";
+                String plsWaitFilePathPNG = pixelHome + "system" + "/" + "wait.png";
                 File plsWaitFilePathPNG_ = new File(plsWaitFilePathPNG);
                
                 //the please wait here screws up the Q so let's do a hack and not call if this is the q is not empty
@@ -3831,7 +3831,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                            //public void writeArcadeImage(File PNGFileFullPath, Boolean writeMode, int loop, String consoleNameMapped, String PNGNameWithExtension) 
                            //first we need to construct the full PNG path
                             System.out.println("Processing PNG Queue item...");
-                            String arcadeFilePathPNG = getPixelHome() + console_ + "/" + filenameWithExt_;
+                            String arcadeFilePathPNG = pixelHome + console_ + "/" + filenameWithExt_;
                             File arcadeFilePNG = new File(arcadeFilePathPNG);
                             PixelQueue.remove();
                             if (arcadeFilePNG.exists()) {

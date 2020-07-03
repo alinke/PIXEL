@@ -14,7 +14,7 @@ import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 public class LCDPixelcade {
 
     public static String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
-    //private static String pixelHome = WebEnabledPixel.getHome();
+    // TO DO this will fail on ALU as ALU is located in /opt/pixelcade
     private static String sep = File.separator;
     private static String fontPath = pixelHome + "fonts/";
     private static int loops = 0;
@@ -128,63 +128,52 @@ public void setLCDFont(Font font, String fontFilename) {
         if(isWindows && windowsLCD != null)
             windowsLCD.marqueePanel.setNumLoops(loops);
     }
-
+    
     static public void displayImage(String named, String system) throws IOException {
-        if (dxEnvironment) return;
-        System.out.println(String.format("[INTERNAL] Asked to display marquee for %s, %s",named,system));
-        if(!WebEnabledPixel.getLCDMarquee().contains("yes"))
-            return;
-
-        if(isWindows) {
-            if(windowsLCD == null)
-            windowsLCD = new WindowsLCD();
-            
-            windowsLCD.displayImage(named, system);
-            System.out.println(String.format("[INTERNAL] Switching to WindowsSubsytem because IsWindows:%d",isWindows));
-            return;
+       if(!WebEnabledPixel.getLCDMarquee().contains("yes"))
+           return;
+       if(isWindows) {
+           if(windowsLCD == null)
+           windowsLCD = new WindowsLCD();
+           windowsLCD.displayImage(named, system);
+           return;
+       }
+       String marqueePath = NOT_FOUND;
+               String OVERRIDE = DEFAULT_COMMAND;
+               if (new File(String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system)).exists()){
+                   OVERRIDE = wrapperHome + "gsho -platform linuxfb " + pixelHome + "lcdmarquees/console/default-" + system + ".png";
+                   marqueePath = String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system);
         }
-		
-	String marqueePath = NOT_FOUND;
-
-        if (new File(String.format("%slcdmarquees/%s.png",pixelHome, named)).exists()){
-            //DEFAULT_COMMAND = "sudo fbi" + pixelHome + "lcdmarquees/" + named + ".png -T 1 -/d /dev/fb0  --noverbose --nocomments --fixwidth -a";
-            DEFAULT_COMMAND = wrapperHome + "gsho  -platform linuxfb " + pixelHome + "lcdmarquees/" + named + ".png";
-            marqueePath = String.format("%slcdmarquees/%s.png",pixelHome, named);
+               if (new File(String.format("%slcdmarquees/%s.png",pixelHome, named)).exists()){
+                   //DEFAULT_COMMAND = "sudo fbi" + pixelHome + "lcdmarquees/" + named + ".png -T 1 -/d /dev/fb0  --noverbose --nocomments --fixwidth -a";
+                   OVERRIDE = wrapperHome + "gsho  -platform linuxfb " + pixelHome + "lcdmarquees/" + named + ".png";
+                   marqueePath = String.format("%slcdmarquees/%s.png",pixelHome, named);
         }
-        if (new File(String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system)).exists()) {
-            //DEFAULT_COMMAND = "sudo fbi /home/pi/pixelcade/lcdmarquees/console/default-" + system + ".png -T 1  --noverbose --nocomments --fixwidth -a";
-            DEFAULT_COMMAND = wrapperHome + "gsho -platform linuxfb " + pixelHome + "lcdmarquees/console/default-" + system + ".png";
-            marqueePath = String.format("/home/pi/pixelcade/lcdmarquees/console/default-%s.png", system);
-        }
+               doGif = new File(String.format("%s%s/%s.gif",pixelHome, system,named)).exists();
+               gifSystem = system;
+               theCommand = OVERRIDE;
+        if(marqueePath.contains(NOT_FOUND)){
+             System.out.print(String.format("[INTERNAL] Could not locate %s.png in %slcdmarquees\nmp:%s\nnf:%s\n",named, pixelHome,marqueePath,NOT_FOUND));
+             //currentMessage = String.format("%s - %s",named,system);
+            named = "resetti";
+        } 
+        displayImage(named);
+}
 
-        doGif = new File(String.format("%s%s/%s.gif",pixelHome, system,named)).exists();
-        gifSystem = system;
-	theCommand = DEFAULT_COMMAND;
-    	
-	if(marqueePath.contains(NOT_FOUND)){
-	     System.out.print(String.format("[INTERNAL] Could not locate %s.png in %slcdmarquees\nmp:%s\nnf:%s\n",named, pixelHome,marqueePath,NOT_FOUND));
-	     //currentMessage = String.format("%s - %s",named,system);
-	    named = "resetti";
-	} 
-      
-	displayImage(named);
-
-	}
 
     static public void  displayImage(String named) throws IOException {  //note this is Pi/linux only!
         if (named == null || dxEnvironment) return;
 
-
+        
         if (named != null) if (named.contains("slideshow")) {
-            theCommand = SLIDESHOW;
-	} else if (new File(MARQUEE_PATH + named + ".png").exists()) {
-            theCommand = PNG_COMMAND.replace("${named}", named);
+           theCommand = SLIDESHOW;
         } else if (new File(MARQUEE_PATH + named + ".png").exists()) {
-            theCommand = PNG_COMMAND.replace("${named}", named);
-        } else if (new File(MARQUEE_PATH + named + ".jpg").exists()) {
-            theCommand = JPG_COMMAND.replace("${named}", named);
-	} else if (named.contains("resetti")) 
-            theCommand = PNG_COMMAND.replace("${named}", "black");
+           theCommand = PNG_COMMAND.replace("${named}", named);
+       } else if (new File(MARQUEE_PATH + named + ".png").exists()) {
+           theCommand = PNG_COMMAND.replace("${named}", named);
+       } else if (new File(MARQUEE_PATH + named + ".jpg").exists()) {
+           theCommand = JPG_COMMAND.replace("${named}", named);
+        } 
 
         if(doGif){
           theCommand = GIF_COMMAND.replace("${named}", named).replace("${system}", gifSystem);
@@ -194,7 +183,8 @@ public void setLCDFont(Font font, String fontFilename) {
         builder.command("sh", "-c", RESET_COMMAND + theCommand);
         System.out.println("[INTERNAL] Running cmd: " + "sh -c " +  RESET_COMMAND + theCommand);
         Process process = builder.start();
-	    
+	   
+        
         if (named.contains("resetti") && doGif == false)
         scrollText(currentMessage,new Font("Helvetica", Font.PLAIN, 18), Color.red,15);
         

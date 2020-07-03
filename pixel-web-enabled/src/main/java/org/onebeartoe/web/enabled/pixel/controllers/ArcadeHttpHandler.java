@@ -38,17 +38,16 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
   }
   
   public void handlePNG(File arcadeFilePNGFullPath, Boolean saveAnimation, int loop, String consoleNameMapped, String PNGNameWithExtension) throws MalformedURLException, IOException, ConnectionLostException {
+    
     LogMe logMe = LogMe.getInstance();
     Pixel pixel = this.application.getPixel();
     pixel.writeArcadeImage(arcadeFilePNGFullPath, saveAnimation, loop, consoleNameMapped, PNGNameWithExtension, WebEnabledPixel.pixelConnected);
-    //lcdDisplay.displayImage(PNGNameWithExtension,consoleNameMapped);
+    
   }
   
   public void handleGIF(String consoleName, String arcadeName, Boolean saveAnimation, int loop) {
     Pixel pixel = this.application.getPixel();
-   /* try {
-        lcdDisplay.displayImage(arcadeName, consoleName);
-    } catch (IOException e){} */
+   
     try {
       pixel.writeArcadeAnimation(consoleName, arcadeName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
 
@@ -192,12 +191,14 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             break;
         } 
       } 
+      
       consoleName = consoleName.toLowerCase();
       if (!consoleMatch(consoleArray, consoleName)) {
         consoleNameMapped = WebEnabledPixel.getConsoleMapping(consoleName);
       } else {
         consoleNameMapped = consoleName;
       } 
+      
       if (consoleNameMapped.equals("mame-libretro"))
         consoleNameMapped = "mame"; 
       
@@ -232,6 +233,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       
       arcadeFilePathPNG = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".png";
       File arcadeFilePNG = new File(arcadeFilePathPNG);
+      
       arcadeFilePathGIF = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
       File arcadeFileGIF = new File(arcadeFilePathGIF);
       
@@ -241,6 +243,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
         String arcadeFilePathPNGUnderscore = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".png";
         arcadeFilePNG = new File(arcadeFilePathPNGUnderscore);
+        
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
           arcadeNameOnly = arcadeNameOnlyUnderscore;
         } else {
@@ -251,6 +254,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             arcadeNameOnly = arcadeNamelowerCase; 
         } 
       } 
+      
       if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
         arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
       } 
@@ -258,6 +262,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
         String arcadeFilePathGIFUnderscore = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
         arcadeFileGIF = new File(arcadeFilePathGIFUnderscore);
+        
         if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           arcadeNameOnly = arcadeNameOnlyUnderscore;
         } else {
@@ -268,7 +273,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             arcadeNameOnly = arcadeNamelowerCase; 
         } 
       } 
+      
       String requestedPath = pixelHome + consoleNameMapped + "\\" + arcadeNameOnly;
+      
       if (!CliPixel.getSilentMode()) {
             System.out.println("Looking for: " + requestedPath + ".png or .gif");
             LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
@@ -286,43 +293,43 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       
       
       //if (WebEnabledPixel.getLCDMarquee().equals("yes") && !consoleNameMapped.equals("retropie") && !consoleNameMapped.equals("power")) { 
-      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
-            String arcadeLCDFilePathPNG = pixelHome + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
-            System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-            LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-            File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);  
-            
-            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png";
-            System.out.println("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
-            LogMe.aLogger.info("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
-            File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
-            
-            if (arcadeLCDFilePNG.exists()) {
-                System.out.println("FOUND: " + arcadeLCDFilePathPNG);
-                LogMe.aLogger.info("FOUND: " + arcadeLCDFilePathPNG);
-                if (this.lcdDisplay == null) {
-                   this.lcdDisplay = new LCDPixelcade();
-                }  
-                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-            } else if (consoleLCDFilePNG.exists()) {
-                System.out.println("FOUND: " + consoleLCDFilePathPNG);
-                LogMe.aLogger.info("FOUND: " + consoleLCDFilePathPNG);
-                if (this.lcdDisplay == null) {
-                   this.lcdDisplay = new LCDPixelcade();
-                }  
-                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-            } 
-            else if (text_ != "") {  //if not matching png, do we have some scrolling text we can show?
-                lcdDisplay.setAltText(text_);	
-                lcdDisplay.setNumLoops(loop_);   
-                lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
-            }
-             else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
-                lcdDisplay.displayImage("pixelcade", consoleNameMapped);
-            }
-      } else {
-           System.out.println("SKIPPED LCD Update");
-      }
+//      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
+//            String arcadeLCDFilePathPNG = pixelHome + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
+//            System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
+//            LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
+//            File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);  
+//            
+//            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png";
+//            System.out.println("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
+//            LogMe.aLogger.info("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
+//            File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
+//            
+//            if (arcadeLCDFilePNG.exists()) {
+//                System.out.println("FOUND: " + arcadeLCDFilePathPNG);
+//                LogMe.aLogger.info("FOUND: " + arcadeLCDFilePathPNG);
+//                if (this.lcdDisplay == null) {
+//                   this.lcdDisplay = new LCDPixelcade();
+//                }  
+//                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
+//            } else if (consoleLCDFilePNG.exists()) {
+//                System.out.println("FOUND: " + consoleLCDFilePathPNG);
+//                LogMe.aLogger.info("FOUND: " + consoleLCDFilePathPNG);
+//                if (this.lcdDisplay == null) {
+//                   this.lcdDisplay = new LCDPixelcade();
+//                }  
+//                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
+//            } 
+//            else if (text_ != "") {  //if not matching png, do we have some scrolling text we can show?
+//                lcdDisplay.setAltText(text_);	
+//                lcdDisplay.setNumLoops(loop_);   
+//                lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
+//            }
+//             else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
+//                lcdDisplay.displayImage("pixelcade", consoleNameMapped);
+//            }
+//      } else {
+//           System.out.println("SKIPPED LCD Update");
+//      }
       
       if (streamOrWrite.equals("write")) {
                 saveAnimation = true;
@@ -384,7 +391,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                   } 
                 } 
       } else {
-        saveAnimation = false;
+        saveAnimation = false; //we're streaming which would be the most common case
         
         if (WebEnabledPixel.arduino1MatrixConnected) {
           WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
@@ -412,16 +419,20 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             if (speed.longValue() == 0L)
               speed = Long.valueOf(10L); 
           } 
+          
           if (scrollsmooth_ == 0) {
             String scrollSpeedSettings = WebEnabledPixel.getTextScrollSpeed();
             scrollsmooth_ = WebEnabledPixel.getScrollingSmoothSpeed(scrollSpeedSettings);
           } 
+          
           if (font_ == null)
             font_ = WebEnabledPixel.getDefaultFont(); 
+          
           this.application.getPixel();
           Pixel.setFontFamily(font_);
           if (yOffset_ == 0)
             yOffset_ = WebEnabledPixel.getDefaultyTextOffset(); 
+          
           this.application.getPixel();
           Pixel.setYOffset(yOffset_);
           if (fontSize_ == 0)

@@ -59,7 +59,8 @@ public class StillImageHttpHandler extends ImageResourceHttpHandler
         String ext = FilenameUtils.getExtension(imageClassPath); //get the extension, we want to know if PNG or GIF   
             
         //path = application.getPixel().getPixelHome() + imageClassPath; //home/pixelcade/images/1941.gif so full path
-        path = application.getPixel().getPixelHome() + "images/" + arcadeName; //to do need to regression test this
+        //path = application.getPixel().getPixelHome() + "images/" + arcadeName; //to do need to regression test this
+        path = WebEnabledPixel.getHome() + "images/" + arcadeName; //to do need to regression test this
         File targetFilePath = new File(path);
         url = targetFilePath.toURI().toURL();
         

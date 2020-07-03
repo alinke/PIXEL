@@ -145,14 +145,14 @@ public class UploadPlatformHttpHandler implements HttpHandler//extends TextHttpH
                 {
                     case ANIMATED_GIF:
                     {
-                        path = application.getPixel().getPixelHome() + "/" + PixelcadeConsole + "/"; 
+                        path = WebEnabledPixel.getHome() + "/" + PixelcadeConsole + "/"; 
                         
                         break;
                     }
                     case STILL_IMAGE:
                     {
                         
-                        path = application.getPixel().getPixelHome() + "/" + PixelcadeConsole + "/"; 
+                        path = WebEnabledPixel.getHome() + "/" + PixelcadeConsole + "/"; 
                         
                         break;
                     }
