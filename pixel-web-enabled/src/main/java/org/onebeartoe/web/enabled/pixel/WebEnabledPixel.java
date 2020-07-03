@@ -72,7 +72,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 
 public class WebEnabledPixel {
-  public static String pixelwebVersion = "2.9.1";
+  public static String pixelwebVersion = "2.9.2";
   
   public static LogMe logMe = null;
   
@@ -115,6 +115,8 @@ public class WebEnabledPixel {
   private static long speed = 10L;
   
   private static boolean backgroundMode_ = false;
+  
+  private static boolean aluInitMode_ = false;
   
   private static boolean stayConnected = true;
   
@@ -174,6 +176,8 @@ public class WebEnabledPixel {
   
   private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
   
+ 
+  
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
     this.cli = new CliPixel(args);
@@ -181,6 +185,7 @@ public class WebEnabledPixel {
     this.httpPort = this.cli.getWebPort();
     silentMode_ = CliPixel.getSilentMode();
     backgroundMode_ = CliPixel.getBackgroundMode();
+    aluInitMode_ = CliPixel.getALUInitMode();
     logMe = LogMe.getInstance();
     
     if (!silentMode_) {
@@ -1518,24 +1523,35 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             int month = localDate.getMonthValue();
             int day   = localDate.getDayOfMonth();
             
-            if ( WebEnabledPixel.pixelConnected = true && month == 7 && (day == 2 || day == 3) || (day == 4)) {
-                System.out.println("Fourth of July Easter Egg Match");
+            //Thread.sleep(3000); //thought this might help with the disconnect issue but no luck
+            
+           // if (WebEnabledPixel.aluInitMode_) {   //the first connect try on ALU so don't send anything until we do the second try
+            
                 Thread.sleep(1000);
                 
-                 pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
-                
-                try {
-                     pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
-                 } catch (NoSuchAlgorithmException ex) {
-                     Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
-                 }
-                 
-                 // pixel.scrollText("Happy Fourth of July!", 2, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
-                 
-                 
-            }
-            
-            
+                if ( WebEnabledPixel.pixelConnected == true && month == 7 && (day == 2 || day == 3) || (day == 4)) {
+                    System.out.println("Fourth of July Easter Egg Match");
+                    
+
+                     pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+
+                    try {
+                         pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+                     } catch (NoSuchAlgorithmException ex) {
+                         Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                     }
+                }
+                else if (WebEnabledPixel.pixelConnected == true) {
+                    System.out.println("No Holiday Match");
+                    pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+
+                     try {
+                         pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+                     } catch (NoSuchAlgorithmException ex) {
+                         Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                     }
+                }
+           // }
             
             
           }
