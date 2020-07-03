@@ -13,7 +13,7 @@ import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 public class LCDPixelcade {
 
-    private static String pixelHome = "/home/pi/pixelcade/";
+    public static String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
     //private static String pixelHome = WebEnabledPixel.getHome();
     private static String sep = File.separator;
     private static String fontPath = pixelHome + "fonts/";
