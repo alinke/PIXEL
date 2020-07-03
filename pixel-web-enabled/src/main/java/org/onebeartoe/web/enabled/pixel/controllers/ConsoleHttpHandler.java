@@ -86,6 +86,9 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
     String font_ = null;
     List<NameValuePair> params = null;
     Font font = null;
+    String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
+    
+    pixelHome = WebEnabledPixel.getHome();
     
     try {
       params = URLEncodedUtils.parse(new URI(urlParams), "UTF-8");
@@ -187,7 +190,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
       } 
       
-      String requestedPath = this.application.getPixel().getPixelHome() + "console\\" + consoleNameMapped;
+      String requestedPath = pixelHome + "console\\" + consoleNameMapped;
       if (!CliPixel.getSilentMode()) {
         System.out.println("Looking for: " + requestedPath + ".png or .gif");
         LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
@@ -203,35 +206,31 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             color = WebEnabledPixel.getColorFromHexOrName(color_);
         } 
        
-      if (WebEnabledPixel.getLCDMarquee().equals("yes") && !consoleNameMapped.equals("retropie") && !consoleNameMapped.equals("power")) { 
-            String consoleLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
-            System.out.println("Looking for console lcd marquee @: " + consoleLCDFilePathPNG);
-            LogMe.aLogger.info("Looking for console lcd marquee @: " + consoleLCDFilePathPNG);
+      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
+            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
+            System.out.println("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
+            LogMe.aLogger.info("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
             File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
             
             if (consoleLCDFilePNG.exists()) {
-                 System.out.println("FOUND: " + consoleLCDFilePNG);
-                LogMe.aLogger.info("FOUND: " + consoleLCDFilePNG);
+                 System.out.println("FOUND LCD: " + consoleLCDFilePNG);
+                LogMe.aLogger.info("FOUND LCD: " + consoleLCDFilePNG);
                 if (this.lcdDisplay == null) {
                    this.lcdDisplay = new LCDPixelcade();
                 }  
                 lcdDisplay.displayImage("no-game", consoleNameMapped);
-            } else if (text_ != "") {  //if not matching png, do we have some scrolling text we can show?
-                lcdDisplay.setAltText(text_);	
-                lcdDisplay.setNumLoops(loop_);   
-                lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
-            }
-             else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
+            } 
+             else {  //we don't have a matching lcd marquee so just display generic pixelcade image
+                System.out.println("Console LCD marquee not found, displaying generic Pixelcade marquee: " + consoleLCDFilePNG);
                 lcdDisplay.displayImage("pixelcade", consoleNameMapped);
-                System.out.println("went to generic image");
             }
       }
       
       if (streamOrWrite.equals("write")) {
         saveAnimation = true;
-        consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+        consoleFilePathGIF = pixelHome + "console/default-" + consoleNameMapped + ".gif";
         File consoleFileGIF = new File(consoleFilePathGIF);
-        consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+        consoleFilePathPNG = pixelHome + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
             
@@ -252,7 +251,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getConsoleMetaData(consoleName));
             LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
           } 
-          handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG),consoleNameMapped);
+        handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG),consoleNameMapped);
           
           
         } else if (text_ != "") {
@@ -274,7 +273,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
             LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
           } 
-          defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+          defaultConsoleFilePathPNG = pixelHome + "console/default-marquee.png";
           File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
           if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) 
           {
@@ -289,9 +288,9 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
         } 
       } else {
         saveAnimation = false;
-        consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+        consoleFilePathGIF = pixelHome + "console/default-" + consoleNameMapped + ".gif";
         File consoleFileGIF = new File(consoleFilePathGIF);
-        consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+        consoleFilePathPNG = pixelHome + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
           if (WebEnabledPixel.arduino1MatrixConnected) {
@@ -360,7 +359,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
             LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
           } 
-          defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+          defaultConsoleFilePathPNG = pixelHome + "console/default-marquee.png";
           File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
           if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
             handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG),consoleNameMapped);
