@@ -70,7 +70,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     String consoleFilePathGIF = null;
     String defaultConsoleFilePathPNG = null;
     String consoleNameMapped = null;
-    String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
+    String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
     LogMe logMe = null;
     
     String[] consoleArray = { 
@@ -319,7 +319,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             }
              else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
                 lcdDisplay.displayImage("pixelcade", consoleNameMapped);
-                System.out.println("went to generic image");
             }
       } else {
            System.out.println("SKIPPED LCD Update");
