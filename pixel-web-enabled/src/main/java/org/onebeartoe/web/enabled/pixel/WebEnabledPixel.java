@@ -1,9 +1,5 @@
 package org.onebeartoe.web.enabled.pixel;
 
-import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortDataListener;
-import com.fazecast.jSerialComm.SerialPortEvent;
-import com.fazecast.jSerialComm.SerialPortMessageListener;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -159,16 +155,6 @@ public class WebEnabledPixel {
   private static int defaultyTextOffset = 0;
   
   private static int  scrollsmooth_ = 1;
-  
-  public static boolean arduino1MatrixConnected = false;
-  
-  public static SerialPort arduino1MatrixPort;
-  
-  public static SerialPort arduino2OLED1Port;
-  
-  public static SerialPort arduino3OLED2Port;
-  
-  public static PrintWriter Arduino1MatrixOutput;
 
   public static String pixelHome = System.getProperty("user.dir") + "\\";
   
@@ -576,38 +562,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         }catch (FontFormatException|IOException| NullPointerException e){
           System.out.println("Could not set lcd font from: " + pixelHome + "fonts/" + defaultFont + ".ttf" +" :(...\n");
         }
-
     }
-    
-    if (this.SubDisplayAccessory_.equals("yes")) {
-      System.out.println("Attempting to connect to Pixelcade Sub Display Accessory...");
-      arduino1MatrixPort = SerialPort.getCommPort(this.SubDisplayAccessoryPort_);
-      arduino1MatrixPort.setComPortTimeouts(4096, 0, 0);
-      arduino1MatrixPort.setBaudRate(57600);
-      if (!arduino1MatrixPort.openPort()) {
-        try {
-          throw new Exception("Serial port \"" + this.SubDisplayAccessoryPort_ + "\" could not be opened.");
-        } catch (Exception e) {
-          e.printStackTrace();
-        } 
-      } else {
-        try {
-          Thread.sleep(1000L);
-        } catch (InterruptedException e1) {
-          e1.printStackTrace();
-        } 
-        MessageListener listener = new MessageListener();
-        arduino1MatrixPort.addDataListener((SerialPortDataListener)listener);
-        try {
-          Thread.sleep(1000L);
-        } catch (Exception e) {
-          e.printStackTrace();
-        } 
-        Arduino1MatrixOutput = new PrintWriter(arduino1MatrixPort.getOutputStream());
-        Arduino1MatrixOutput.print("pixelcadeh\n");
-        Arduino1MatrixOutput.flush();
-      } 
-    } 
   }
   
   private void createControllers()
@@ -1081,11 +1036,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     PixelIntegration pi = new PixelIntegration();
   }
   
-  public static void writeArduino1Matrix(String Arduino1MatrixText) {
-    Arduino1MatrixOutput.print(Arduino1MatrixText + "\n");
-    Arduino1MatrixOutput.flush();
-  }
-  
   public static String getConsoleNamefromMapping(String originalConsoleName) {
     String consoleNameMapped = null;
     originalConsoleName = originalConsoleName.toLowerCase();
@@ -1492,6 +1442,29 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             } else {
               message.append("Found PIXEL: " + WebEnabledPixel.pixel.matrix + "\n");
             } 
+            
+            //Holiday Easter Egg check section 
+            
+            Date date = new Date();
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int month = localDate.getMonthValue();
+            int day   = localDate.getDayOfMonth();
+            
+            if (!aluInitMode_)  {
+                if (month == 7 && (day == 2 || day == 3) || (day == 4)) {
+                        System.out.println("Fourth of July Easter Egg Match");
+                        pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+
+                        try {
+                             pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+                         } catch (NoSuchAlgorithmException ex) {
+                             Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                         }
+                } else {
+                         pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+                }
+            }
+            
             message.append("You may now interact with PIXEL!\n");
             message.append("LED matrix type is: " + WebEnabledPixel.LED_MATRIX_ID + "\n");
             WebEnabledPixel.this.searchTimer.cancel();
@@ -1517,43 +1490,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               System.out.println(message);
               LogMe.aLogger.info(message.toString());
             } 
-            
-            Date date = new Date();
-            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            int month = localDate.getMonthValue();
-            int day   = localDate.getDayOfMonth();
-            
-            //Thread.sleep(3000); //thought this might help with the disconnect issue but no luck
-            
-           // if (WebEnabledPixel.aluInitMode_) {   //the first connect try on ALU so don't send anything until we do the second try
-            
-                Thread.sleep(1000);
-                
-                if ( WebEnabledPixel.pixelConnected == true && month == 7 && (day == 2 || day == 3) || (day == 4)) {
-                    System.out.println("Fourth of July Easter Egg Match");
-                    
-
-                     pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
-
-                    try {
-                         pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
-                     } catch (NoSuchAlgorithmException ex) {
-                         Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
-                     }
-                }
-                else if (WebEnabledPixel.pixelConnected == true) {
-                    System.out.println("No Holiday Match");
-                    pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
-
-                     try {
-                         pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
-                     } catch (NoSuchAlgorithmException ex) {
-                         Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
-                     }
-                }
-           // }
-            
-            
           }
         };
     }
@@ -1601,40 +1537,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
           LogMe.aLogger.info("Looks like we have a PIXEL connection!");
         } 
       } 
-    }
-  }
-  
-  private static class MessageListener implements SerialPortMessageListener {
-    private MessageListener() {}
-    
-    public int getListeningEvents() {
-      return 16;
-    }
-    
-    public byte[] getMessageDelimiter() {
-      return new byte[] { 45, 45 };
-    }
-    
-    public boolean delimiterIndicatesEndOfMessage() {
-      return true;
-    }
-    
-    public void serialEvent(SerialPortEvent event) {
-      byte[] delimitedMessage = event.getReceivedData();
-      String firmwareString = new String(delimitedMessage);
-      firmwareString = firmwareString.trim();
-      firmwareString = WebEnabledPixel.right(firmwareString, 21);
-      String FW_Hardware = "";
-      String HW_Version = "";
-      if (firmwareString.length() > 8) {
-        FW_Hardware = firmwareString.substring(0, 4);
-        HW_Version = firmwareString.substring(4, 8);
-      } else {
-        System.out.println("Invalid firmware: " + firmwareString);
-      } 
-      System.out.println("Sub Display Accessory Found with Plaform Firmware: " + FW_Hardware);
-      System.out.println("Sub Display Accessory Found with Version: " + HW_Version);
-      WebEnabledPixel.arduino1MatrixConnected = true;
     }
   }
   
