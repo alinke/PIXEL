@@ -72,7 +72,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "2.9.2";
+  public static String pixelwebVersion = "2.9.3";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -171,7 +171,9 @@ public class WebEnabledPixel {
   
   //public static String pixelHome = "/home/pi/pixelcade/";
   
-  public static String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
+  //public static String pixelHome = System.getProperty("user.dir") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
+  
+  public static String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
   
   public static LCDPixelcade lcdDisplay = null;
   
@@ -193,8 +195,8 @@ public class WebEnabledPixel {
       System.out.println("Pixelcade Listener (pixelweb) Version " + pixelwebVersion);
     } 
     
-    Map<String, String> map = System.getenv();
-    map.entrySet().forEach(System.out::println);
+//    Map<String, String> map = System.getenv();  //shows the env variables available to us
+//    map.entrySet().forEach(System.out::println);
     
     defaultyTextOffset = this.cli.getyTextOffset();
     LED_MATRIX_ID = this.cli.getLEDMatrixType();
@@ -1517,21 +1519,20 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               LogMe.aLogger.info(message.toString());
             } 
             
-            Date date = new Date();
-            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            int year  = localDate.getYear();
-            int month = localDate.getMonthValue();
-            int day   = localDate.getDayOfMonth();
+            //to do later possibly, easter egg holiday animations could go here 
             
-            if (month == 7 && day == 4) {
-                
-            }
-            
-            System.out.println("year:" + year + "month: " + month + "day " + day);
-            
-            
-            
-            
+//            Date date = new Date();
+//            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//            int year  = localDate.getYear();
+//            int month = localDate.getMonthValue();
+//            int day   = localDate.getDayOfMonth();
+//            System.out.println("year:" + year + "month: " + month + "day " + day);
+//            
+//            if (month == 7 && day == 4) {
+//                
+//            }
+//            
+//            
           }
         };
     }
