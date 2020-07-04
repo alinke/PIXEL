@@ -68,7 +68,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 
 public class WebEnabledPixel {
-  public static String pixelwebVersion = "2.9.1";
+  public static String pixelwebVersion = "2.9.2";
   
   public static LogMe logMe = null;
   
@@ -163,6 +163,8 @@ public class WebEnabledPixel {
   public static LCDPixelcade lcdDisplay = null;
   
   private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
+  
+  private static final String KILL_COMMAND = "ps -ef | grep pixelweb | grep -v grep | awk '{print $1}' | xargs kill";
   
  
   
@@ -667,20 +669,16 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         {
             //if we got here, most likely the pixel listener was already running so let's give a message and then exit gracefully
             
-             System.out.println(alreadyRunningErrorMsg);
-             //System.out.println("Exiting...");
-             
-             // took this out as the pop up is no good when pinball dmdext also running as this interrupts
-             /* if (isWindows() || isMac()) {  //we won't have xwindows on the Pi so skip this for the Pi
-            
-                JFrame frame = new JFrame("JOptionPane showMessageDialog example");  //let's show a pop up too so the user doesn't miss it
-                JOptionPane.showMessageDialog(frame,
-                   alreadyRunningErrorMsg,
-                   "Pixelcade Listener Already Running",
-                   JOptionPane.ERROR_MESSAGE);
-             } */
-        
-             System.exit(1);    //we can't continue because the pixel listener is already running
+            System.out.println(alreadyRunningErrorMsg);
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.command("sh", "-c", KILL_COMMAND);
+            System.out.println("[INTERNAL] Running cmd: " + "sh -c " + KILL_COMMAND);
+            try {
+                Process process = builder.start();
+            } catch (IOException ex1) {
+                Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            System.exit(1);    //we can't continue because the pixel listener is already running
         }
     }
   
