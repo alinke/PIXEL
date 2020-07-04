@@ -301,10 +301,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       
       if (streamOrWrite.equals("write")) {
                 saveAnimation = true;
-                if (WebEnabledPixel.arduino1MatrixConnected) {
-                  WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-                  LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-                } 
+               
                 if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
                   handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
 
@@ -360,11 +357,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                 } 
       } else {
         saveAnimation = false;
-        
-        if (WebEnabledPixel.arduino1MatrixConnected) {
-          WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-          LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-        } 
         
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory() && arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");

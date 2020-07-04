@@ -68,7 +68,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 
 public class WebEnabledPixel {
-  public static String pixelwebVersion = "2.9.2";
+  public static String pixelwebVersion = "2.9.1";
   
   public static LogMe logMe = null;
   
@@ -114,6 +114,8 @@ public class WebEnabledPixel {
   
   private static boolean aluInitMode_ = false;
   
+  private static boolean easterEggMode_ = false;
+  
   private static boolean stayConnected = true;
   
   public static boolean pixelConnected = false;
@@ -142,7 +144,7 @@ public class WebEnabledPixel {
   
   private static Color  color = Color.RED;
   
-  private static String textSpeed_ = "normal";
+  private static String textSpeed_ = "slow";
   
   private static String lcdMarquee_ = "no";
   
@@ -171,6 +173,7 @@ public class WebEnabledPixel {
     this.httpPort = this.cli.getWebPort();
     silentMode_ = CliPixel.getSilentMode();
     backgroundMode_ = CliPixel.getBackgroundMode();
+    easterEggMode_ = CliPixel.getEasterEggCheck();
     aluInitMode_ = CliPixel.getALUInitMode();
     logMe = LogMe.getInstance();
     
@@ -1450,18 +1453,40 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             int month = localDate.getMonthValue();
             int day   = localDate.getDayOfMonth();
             
-            if (!aluInitMode_)  {
-                if (month == 7 && (day == 2 || day == 3) || (day == 4)) {
+            if (!aluInitMode_ && easterEggMode_)  {  //if this is the second ALU run and we are in easter egg mode
+                if (month == 7 && (day == 3 || day == 4)) {
                         System.out.println("Fourth of July Easter Egg Match");
-                        pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+                        pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
 
                         try {
                              pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
                          } catch (NoSuchAlgorithmException ex) {
                              Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
                          }
+                        
                 } else {
-                         pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,5);
+                    
+                    try {
+                        pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+                        
+                        String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
+                        File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
+                        pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
+                    } catch (IOException ex) {
+                        Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                }
+            } else {
+                if (!aluInitMode_) {  //this is the second run and we're not in easter egg mode
+                    try {
+                        System.out.println("Welcome to Pixelcade");
+                        String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
+                        File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
+                        pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
+                    } catch (IOException ex) {
+                        Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
             

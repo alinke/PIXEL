@@ -234,11 +234,6 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
         consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
-            
-          if (WebEnabledPixel.arduino1MatrixConnected) {
-            WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getConsoleMetaData(consoleName));
-            LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
-          } 
           
           if (!CliPixel.getSilentMode()) {
             System.out.println("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
@@ -248,10 +243,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
           
           
         } else if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
-          if (WebEnabledPixel.arduino1MatrixConnected) {
-            WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getConsoleMetaData(consoleName));
-            LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
-          } 
+          
           handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG),consoleNameMapped);
           
           
@@ -294,10 +286,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
         consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
-          if (WebEnabledPixel.arduino1MatrixConnected) {
-            WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getConsoleMetaData(consoleName));
-            LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
-          } 
+         
           if (!CliPixel.getSilentMode()) {
             System.out.println("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
             LogMe.aLogger.info("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
@@ -305,10 +294,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
           handleGIF("console", "default-" + consoleNameMapped + ".gif", Boolean.valueOf(saveAnimation), loop_, consoleNameMapped);
           
         } else if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
-          if (WebEnabledPixel.arduino1MatrixConnected) {
-            WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getConsoleMetaData(consoleName));
-            LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
-          } 
+         
           handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG),consoleNameMapped);
          
         } else if (text_ != "") {
