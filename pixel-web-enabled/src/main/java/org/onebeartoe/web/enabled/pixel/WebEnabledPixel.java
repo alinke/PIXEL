@@ -1452,8 +1452,29 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             int month = localDate.getMonthValue();
             int day   = localDate.getDayOfMonth();
             
-            if (!aluInitMode_ && easterEggMode_)  {  //if this is the second ALU run and we are in easter egg mode
-                if (month == 7 && (day == 3 || day == 4)) {
+            boolean firstConnect_ = true;
+            
+            File tempFile = new File("firstconnect");
+            if (tempFile.exists()) {
+                firstConnect_ = true;
+                System.out.println("firstconnect file is there");
+            }
+            else {
+                firstConnect_ = false;
+                System.out.println("firstconnect file is not there");
+            }
+            
+            if (firstConnect_) {
+                //it's first run so let's not show anything but delete the first run file so we'll connect second time
+                      
+                    File f= new File("firstconnect");      
+                    
+                    if(f.delete())                      //returns Boolean value  
+                    {  
+                    System.out.println(f.getName() + " deleted");   //getting and printing the file name  
+                    }  
+            } else {  //first connect file is not there so it means we're on the second connect so lets do the easter egg
+                 if (month == 7 && (day == 3 || day == 4)) {
                         System.out.println("Fourth of July Easter Egg Match");
                         pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
 
@@ -1463,7 +1484,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                              Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
                          }
                         
-                } else {
+                } else {  //normal text to show on non holiday
                     
                     try {
                         pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
@@ -1474,20 +1495,55 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                     } catch (IOException ex) {
                         Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
                 }
-            } else {
-                if (!aluInitMode_) {  //this is the second run and we're not in easter egg mode
-                    try {
-                        System.out.println("Welcome to Pixelcade");
-                        String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
-                        File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
-                        pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
-                    } catch (IOException ex) {
-                        Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                
+                //ok we're done so let's now re-create that firstconnect flag file
+                try {
+                    File file = new File("firstconnect");
+                    file.createNewFile();
+                    System.out.println("File: " + file);
+                 } catch(Exception e) {
+                    e.printStackTrace();
+                 }
             }
+          
+            
+         //   if (!aluInitMode_ && easterEggMode_)  {  //if this is the second ALU run and we are in easter egg mode
+//                if (month == 7 && (day == 3 || day == 4)) {
+//                        System.out.println("Fourth of July Easter Egg Match");
+//                        pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+//
+//                        try {
+//                             pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+//                         } catch (NoSuchAlgorithmException ex) {
+//                             Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                         }
+//                        
+//                } else {
+//                    
+//                    try {
+//                        pixel.scrollText("Welcome to Pixelcade X", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+//                        
+//                        String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
+//                        File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
+//                        pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
+//                    } catch (IOException ex) {
+//                        Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    
+//                }
+//            } else {
+//                if (!aluInitMode_) {  //this is the second run and we're not in easter egg mode
+//                    try {
+//                        System.out.println("Welcome to Pixelcade");
+//                        String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
+//                        File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
+//                        pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
+//                    } catch (IOException ex) {
+//                        Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }
             
             message.append("You may now interact with PIXEL!\n");
             message.append("LED matrix type is: " + WebEnabledPixel.LED_MATRIX_ID + "\n");
