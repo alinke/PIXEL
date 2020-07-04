@@ -17,18 +17,14 @@ public class IndexHttpHandler extends TextHttpHandler
     @Override
     protected String getHttpText(HttpExchange t)
     {
-        InetAddress localhost = null; 
-        try {
-            localhost = InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(IndexHttpHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        InetAddress localhost = null; //caushing a java exception on ALU
+//        try {
+//            localhost = InetAddress.getLocalHost();
+//        } catch (UnknownHostException ex) {
+//            Logger.getLogger(IndexHttpHandler.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         
-       // InetAddress inetAddress = InetAddress.getLocalHost();
-       // System.out.println("IP Address:- " + localhost.getHostAddress());
-       // System.out.println("Host Name:- " + localhost.getHostName());
-       // System.out.println("Address:- " + localhost.getAddress());
-       // System.out.println("C Host Name:- " + localhost.getCanonicalHostName());
+     
        
        
         //String response = "Pixelcade Arcade Marquee and Pinball Display\n\nBrowse artwork from any computer on the same Wi-Fi network from this URL:\n\nhttp://" + localhost.getHostAddress().trim() + ":8080/files/index.html";
