@@ -1476,7 +1476,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             } else {  //first connect file is not there so it means we're on the second connect so lets do the easter egg
                  if (month == 7 && (day == 3 || day == 4)) {
                         System.out.println("Fourth of July Easter Egg Match");
-                        pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+                        pixel.scrollText("Happy 4th of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
 
                         try {
                              pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
@@ -1497,7 +1497,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                     }
                 }
                 
-                //ok we're done so let's now re-create that firstconnect flag file
+                //ok we're done so let's now re-create that firstconnect flag file for the next time
                 try {
                     File file = new File("firstconnect");
                     file.createNewFile();
