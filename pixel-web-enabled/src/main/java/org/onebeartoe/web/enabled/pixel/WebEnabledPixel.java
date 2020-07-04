@@ -669,15 +669,16 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         {
             //if we got here, most likely the pixel listener was already running so let's give a message and then exit gracefully
             
-            System.out.println(alreadyRunningErrorMsg);
-            ProcessBuilder builder = new ProcessBuilder();
-            builder.command("sh", "-c", KILL_COMMAND);
-            System.out.println("[INTERNAL] Running cmd: " + "sh -c " + KILL_COMMAND);
-            try {
-                Process process = builder.start();
-            } catch (IOException ex1) {
-                Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex1);
-            }
+//            System.out.println(alreadyRunningErrorMsg);  //may not be a good idea to add this here  to do
+//            ProcessBuilder builder = new ProcessBuilder();
+//            builder.command("sh", "-c", KILL_COMMAND);
+//            System.out.println("[INTERNAL] Running cmd: " + "sh -c " + KILL_COMMAND);
+//            try {
+//                Process process = builder.start();
+//            } catch (IOException ex1) {
+//                Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex1);
+//            }
+            
             System.exit(1);    //we can't continue because the pixel listener is already running
         }
     }
