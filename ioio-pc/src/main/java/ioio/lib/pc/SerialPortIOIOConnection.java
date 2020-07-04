@@ -56,13 +56,17 @@ class SerialPortIOIOConnection implements IOIOConnection {
 	public void waitForConnect() throws ConnectionLostException {
 		while (!abort_) {
 			try {
-				CommPortIdentifier identifier = CommPortIdentifier
+//				System.out.println("[DELAY SERIRIAL");
+//                                Thread.sleep(2000); //100
+                            
+                                CommPortIdentifier identifier = CommPortIdentifier
 						.getPortIdentifier(name_);
 				CommPort commPort = identifier.open(this.getClass().getName(),
 						1000);
 				synchronized (this) {
 					if (!abort_) {
-						serialPort_ = (SerialPort) commPort;
+						
+                                                serialPort_ = (SerialPort) commPort;
 						serialPort_.enableReceiveThreshold(1); //1
 						serialPort_.enableReceiveTimeout(500); //500
 						serialPort_.setDTR(true);  //true
