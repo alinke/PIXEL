@@ -221,21 +221,21 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
       } 
       
-      arcadeFilePathPNG = application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnly + ".png";
+      arcadeFilePathPNG = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNameOnly + ".png";
       File arcadeFilePNG = new File(arcadeFilePathPNG);
-      arcadeFilePathGIF = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
+      arcadeFilePathGIF = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
       File arcadeFileGIF = new File(arcadeFilePathGIF);
       if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
         arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
       } else {
         String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
-        String arcadeFilePathPNGUnderscore = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".png";
+        String arcadeFilePathPNGUnderscore = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".png";
         arcadeFilePNG = new File(arcadeFilePathPNGUnderscore);
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
           arcadeNameOnly = arcadeNameOnlyUnderscore;
         } else {
           String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
-          String arcadeFilePathPNGlowerCase = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".png";
+          String arcadeFilePathPNGlowerCase = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".png";
           arcadeFilePNG = new File(arcadeFilePathPNGlowerCase);
           if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory())
             arcadeNameOnly = arcadeNamelowerCase; 
@@ -246,19 +246,19 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       } 
       else {
         String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
-        String arcadeFilePathGIFUnderscore = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
+        String arcadeFilePathGIFUnderscore = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
         arcadeFileGIF = new File(arcadeFilePathGIFUnderscore);
         if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           arcadeNameOnly = arcadeNameOnlyUnderscore;
         } else {
           String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
-          String arcadeFilePathGIFlowerCase = this.application.getPixel().getPixelHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".gif";
+          String arcadeFilePathGIFlowerCase = WebEnabledPixel.getHome() + consoleNameMapped + "/" + arcadeNamelowerCase + ".gif";
           arcadeFileGIF = new File(arcadeFilePathGIFlowerCase);
           if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory())
             arcadeNameOnly = arcadeNamelowerCase; 
         } 
       } 
-      String requestedPath = this.application.getPixel().getPixelHome() + consoleNameMapped + "\\" + arcadeNameOnly;
+      String requestedPath = WebEnabledPixel.getHome() + consoleNameMapped + "\\" + arcadeNameOnly;
       if (!CliPixel.getSilentMode()) {
             System.out.println("Looking for: " + requestedPath + ".png or .gif");
             LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
@@ -276,7 +276,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       
       
       if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
-            String arcadeLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
+            String arcadeLCDFilePathPNG = WebEnabledPixel.getHome() + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
             System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
             LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
             File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);  
@@ -322,9 +322,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                 pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
 
                 } else {
-                  consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+                  consoleFilePathGIF = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".gif";
                   File consoleFileGIF = new File(consoleFilePathGIF);
-                  consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+                  consoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".png";
 
                   File consoleFilePNG = new File(consoleFilePathPNG);
                   if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
@@ -343,7 +343,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                       System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
                       LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
                     } 
-                    defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+                    defaultConsoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-marquee.png";
                     File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
                     if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
                       handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG));
@@ -408,9 +408,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
           
          
         } else {
-                consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+                consoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".png";
                 File consoleFilePNG = new File(consoleFilePathPNG);
-                consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+                consoleFilePathGIF = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".gif";
                 File consoleFileGIF = new File(consoleFilePathGIF);
                 if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
                   handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG));
@@ -425,7 +425,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                     System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
                     LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
                   } 
-                  defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+                  defaultConsoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-marquee.png";
                   File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
                   if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
                     handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG));

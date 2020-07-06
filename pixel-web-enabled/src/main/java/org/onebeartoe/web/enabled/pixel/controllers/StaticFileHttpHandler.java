@@ -39,7 +39,7 @@ public class StaticFileHttpHandler implements HttpHandler//extends PixelHttpHand
         //logger.log(Level.INFO, "static file handler request: " + t.getRequestURI());  //commented to reduce clutter by Al April 2020 
         
         Pixel pixel = application.getPixel();
-        String root = pixel.getPixelHome();
+        String root = WebEnabledPixel.getHome();
         File rootDir = new File(root);
         root = rootDir.getCanonicalPath() + File.separatorChar;
         

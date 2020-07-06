@@ -187,7 +187,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
       } 
       
-      String requestedPath = this.application.getPixel().getPixelHome() + "console\\" + consoleNameMapped;
+      String requestedPath = WebEnabledPixel.getHome() + "console\\" + consoleNameMapped;
       if (!CliPixel.getSilentMode()) {
         System.out.println("Looking for: " + requestedPath + ".png or .gif");
         LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
@@ -204,7 +204,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
         } 
        
       if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
-            String consoleLCDFilePathPNG = this.application.getPixel().getPixelHome() + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
+            String consoleLCDFilePathPNG = WebEnabledPixel.getHome() + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
             System.out.println("Looking for console lcd marquee @: " + consoleLCDFilePathPNG);
             LogMe.aLogger.info("Looking for console lcd marquee @: " + consoleLCDFilePathPNG);
             File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
@@ -229,9 +229,9 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
       
       if (streamOrWrite.equals("write")) {
         saveAnimation = true;
-        consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+        consoleFilePathGIF = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".gif";
         File consoleFileGIF = new File(consoleFilePathGIF);
-        consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+        consoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
           
@@ -266,7 +266,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
             LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
           } 
-          defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+          defaultConsoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-marquee.png";
           File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
           if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) 
           {
@@ -281,9 +281,9 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
         } 
       } else {
         saveAnimation = false;
-        consoleFilePathGIF = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".gif";
+        consoleFilePathGIF = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".gif";
         File consoleFileGIF = new File(consoleFilePathGIF);
-        consoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-" + consoleNameMapped + ".png";
+        consoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-" + consoleNameMapped + ".png";
         File consoleFilePNG = new File(consoleFilePathPNG);
         if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
          
@@ -346,7 +346,7 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
             LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
           } 
-          defaultConsoleFilePathPNG = this.application.getPixel().getPixelHome() + "console/default-marquee.png";
+          defaultConsoleFilePathPNG = WebEnabledPixel.getHome() + "console/default-marquee.png";
           File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
           if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
             handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG),consoleNameMapped);

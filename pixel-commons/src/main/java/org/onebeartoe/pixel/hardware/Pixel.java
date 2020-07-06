@@ -288,53 +288,12 @@ public class Pixel
         
         scrollingText = "Scolling Text";
         
-        try
-        {
-            //userHome = System.getProperty("user.home");
-            //userHome = System.getProperty("user.dir"); //this isn't working if user not launched from current dir
-            
-            //String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            //String decodedPath = URLDecoder.decode(path, "UTF-8"); //path/pixelweb.jar , so we need just the path
-            
-            //String pixelwebHomePath = FilenameUtils.getFullPath(decodedPath);
-            
-            //userHome = pixelwebHomePath;
+        pixelHome = "/opt/pixelcade/" ;  
 
-            //pixelHome = userHome + "/pixelcade/";
-            
-            if (isWindows()) {
-                //pixelHome = userHome + "\\";
-                pixelHome = System.getProperty("user.dir") + "\\";  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
-                animationsPath = pixelHome + "animations\\";            
-                decodedAnimationsPath = animationsPath + "decoded\\";
-                imagesPath = pixelHome + "images\\";
-                scrollingTextMultiplier = 3; //to do this may no longer be needed
-            } 
-            else {
-               // pixelHome = userHome + "/";                 
-               // pixelHome = System.getProperty("user.home") + "/pixelcade/";  //let's force user.home since we don't have an installer for Pi or Mac
-                
-                String path = Pixel.class.getProtectionDomain().getCodeSource().getLocation().getPath(); //get the path that pixelweb.jar is launched from 
-                String decodedPath = URLDecoder.decode(path, "UTF-8");
-                pixelHome = "/" + FilenameUtils.getPath(decodedPath) ;  //important won't work without the "/" in front
-                
-                animationsPath = pixelHome + "animations/";            
-                decodedAnimationsPath = animationsPath + "decoded/";
-                imagesPath = pixelHome + "images/";
-            }
-            
-            //logger.info("Home Directory: " + pixelHome);  
-            
-            //pixelHome = userHome + "/";
-            //animationsPath = pixelHome + "animations/";            
-            //decodedAnimationsPath = animationsPath + "decoded/";
-            //imagesPath = pixelHome + "images/";
-            
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+        animationsPath = pixelHome + "animations/";            
+        decodedAnimationsPath = animationsPath + "decoded/";
+        imagesPath = pixelHome + "images/";
+       
     }
 
     /**
@@ -499,10 +458,10 @@ public class Pixel
         return mode;
     }
 
-    public String getPixelHome()
-    {
-        return pixelHome;
-    }
+//    public String getPixelHome()
+//    {
+//        return pixelHome;
+//    }
     
     public boolean getLoopStatus()
     {
@@ -575,9 +534,9 @@ public class Pixel
         return animationsPath;
     }
     
-    public static String getHomePath() {
-        return pixelHome;
-    }
+//    public static String getHomePath() {
+//        return pixelHome;
+//    }
     
     public String getDecodedAnimationsPath()
     {
@@ -2247,7 +2206,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 //since this decoding may take awhile, let's add a pls wait message to pixelcade letting the user know what is happening
                 
                 
-                String plsWaitFilePathPNG = getPixelHome() + "system" + "/" + "wait.png";
+                String plsWaitFilePathPNG = pixelHome + "system" + "/" + "wait.png";
                 File plsWaitFilePathPNG_ = new File(plsWaitFilePathPNG);
                
                 //the please wait here screws up the Q so let's do a hack and not call if this is the q is not empty
@@ -3824,7 +3783,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                            //public void writeArcadeImage(File PNGFileFullPath, Boolean writeMode, int loop, String consoleNameMapped, String PNGNameWithExtension) 
                            //first we need to construct the full PNG path
                             System.out.println("Processing PNG Queue item...");
-                            String arcadeFilePathPNG = getPixelHome() + console_ + "/" + filenameWithExt_;
+                            String arcadeFilePathPNG = pixelHome + console_ + "/" + filenameWithExt_;
                             File arcadeFilePNG = new File(arcadeFilePathPNG);
                             PixelQueue.remove();
                             if (arcadeFilePNG.exists()) {
