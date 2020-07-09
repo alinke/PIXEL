@@ -1,17 +1,17 @@
 /*
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
- *  
- * 
+ *
+ *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
+ *
  *    1. Redistributions of source code must retain the above copyright notice, this list of
  *       conditions and the following disclaimer.
- * 
+ *
  *    2. Redistributions in binary form must reproduce the above copyright notice, this list
  *       of conditions and the following disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARSHAN POURSOHI OR
@@ -21,7 +21,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
@@ -92,13 +92,16 @@ class IOIOProtocol {
 	static final int SET_PIN_INCAP                       = 0x1C;
 	static final int INCAP_REPORT                        = 0x1C;
 	static final int SOFT_CLOSE                          = 0x1D;
-	static final int RGB_LED_MATRIX_ENABLE               = 0x1E;
-	static final int RGB_LED_MATRIX_FRAME                = 0x1F;
-	static final int RGB_LED_MATRIX_WRITE_FILE           = 0x20;
+	static final int SET_PIN_CAPSENSE                    = 0x1E;
+	static final int CAPSENSE_REPORT                     = 0x1E;
+	static final int SET_CAPSENSE_SAMPLING               = 0x1F;
+	static final int SEQUENCER_CONFIGURE                 = 0x20;
+	static final int SEQUENCER_EVENT                     = 0x20;
+	static final int SEQUENCER_PUSH                      = 0x21;
+	static final int SEQUENCER_CONTROL                   = 0x22;
+	static final int SYNC                                = 0x23;
 
 	static final int[] SCALE_DIV = new int[] {
-		0x21,
-		0x20,
 		0x1F,  // 31.25
 		0x1E,  // 35.714
 		0x1D,  // 41.667
@@ -140,36 +143,47 @@ class IOIOProtocol {
 		}
 	}
 
-	private byte[] outbuf_ = new byte[256];
-	private int pos_ = 0;
+	enum SequencerEvent {
+		PAUSED, STALLED, OPENED, NEXT_CUE, STOPPED, CLOSED
+	}
+
+	static class ProtocolError extends Exception {
+		private static final long serialVersionUID = -6973476719285599189L;
+
+		public ProtocolError() {
+			super();
+		}
+
+		public ProtocolError(String msg) {
+			super(msg);
+		}
+
+		public ProtocolError(Exception e) {
+			super(e);
+		}
+	}
+
 	private int batchCounter_ = 0;
 
 	private void writeByte(int b) throws IOException {
 		assert (b >= 0 && b < 256);
-		if (pos_ == outbuf_.length) {
-			// buffer is full
-			flush();
-		}
-		//Log.v(TAG, "sending: 0x" + Integer.toHexString(b));
-                //System.out.println(TAG +  " writeByte // sending: 0x" + Integer.toHexString(b)); //logging was here for the pinDMD work
-		outbuf_[pos_++] = (byte) b;
+		// Log.v(TAG, "sending: 0x" + Integer.toHexString(b));
+		out_.write(b);
 	}
-	
-	public synchronized void beginBatch() {
-		++batchCounter_;
-	}
-	
-	public synchronized void endBatch() throws IOException {
-		if (--batchCounter_ == 0) {
-			flush();
+
+	private void writeBytes(byte[] buf, int offset, int size) throws IOException {
+		while (size-- > 0) {
+			writeByte(((int) buf[offset++]) & 0xFF);
 		}
 	}
 
-	private void flush() throws IOException {
-		try {
-			out_.write(outbuf_, 0, pos_);
-		} finally {
-			pos_ = 0;
+	public synchronized void beginBatch() {
+		++batchCounter_;
+	}
+
+	public synchronized void endBatch() throws IOException {
+		if (--batchCounter_ == 0) {
+			out_.flush();
 		}
 	}
 
@@ -182,6 +196,12 @@ class IOIOProtocol {
 		writeByte(i & 0xFF);
 		writeByte((i >> 8) & 0xFF);
 		writeByte((i >> 16) & 0xFF);
+	}
+
+	public synchronized void sync() throws IOException {
+		beginBatch();
+		writeByte(SYNC);
+		endBatch();
 	}
 
 	synchronized public void hardReset() throws IOException {
@@ -206,11 +226,9 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void checkInterface(byte[] interfaceId)
-			throws IOException {
+	synchronized public void checkInterface(byte[] interfaceId) throws IOException {
 		if (interfaceId.length != 8) {
-			throw new IllegalArgumentException(
-					"interface ID must be exactly 8 bytes long");
+			throw new IllegalArgumentException("interface ID must be exactly 8 bytes long");
 		}
 		beginBatch();
 		writeByte(CHECK_INTERFACE);
@@ -220,16 +238,14 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setDigitalOutLevel(int pin, boolean level)
-			throws IOException {
+	synchronized public void setDigitalOutLevel(int pin, boolean level) throws IOException {
 		beginBatch();
 		writeByte(SET_DIGITAL_OUT_LEVEL);
 		writeByte(pin << 2 | (level ? 1 : 0));
 		endBatch();
 	}
 
-	synchronized public void setPinPwm(int pin, int pwmNum, boolean enable)
-			throws IOException {
+	synchronized public void setPinPwm(int pin, int pwmNum, boolean enable) throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_PWM);
 		writeByte(pin & 0x3F);
@@ -237,8 +253,8 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setPwmDutyCycle(int pwmNum, int dutyCycle,
-			int fraction) throws IOException {
+	synchronized public void setPwmDutyCycle(int pwmNum, int dutyCycle, int fraction)
+			throws IOException {
 		beginBatch();
 		writeByte(SET_PWM_DUTY_CYCLE);
 		writeByte(pwmNum << 2 | fraction);
@@ -250,14 +266,12 @@ class IOIOProtocol {
 			throws IOException {
 		beginBatch();
 		writeByte(SET_PWM_PERIOD);
-		writeByte(((scale.encoding & 0x02) << 6) | (pwmNum << 1)
-				| (scale.encoding & 0x01));
+		writeByte(((scale.encoding & 0x02) << 6) | (pwmNum << 1) | (scale.encoding & 0x01));
 		writeTwoBytes(period);
 		endBatch();
 	}
 
-	synchronized public void setPinIncap(int pin, int incapNum, boolean enable)
-			throws IOException {
+	synchronized public void setPinIncap(int pin, int incapNum, boolean enable) throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_INCAP);
 		writeByte(pin);
@@ -265,8 +279,7 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void incapClose(int incapNum, boolean double_prec)
-			throws IOException {
+	synchronized public void incapClose(int incapNum, boolean double_prec) throws IOException {
 		beginBatch();
 		writeByte(INCAP_CONFIGURE);
 		writeByte(incapNum);
@@ -274,8 +287,8 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void incapConfigure(int incapNum, boolean double_prec,
-			int mode, int clock) throws IOException {
+	synchronized public void incapConfigure(int incapNum, boolean double_prec, int mode, int clock)
+			throws IOException {
 		beginBatch();
 		writeByte(INCAP_CONFIGURE);
 		writeByte(incapNum);
@@ -283,9 +296,8 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void i2cWriteRead(int i2cNum, boolean tenBitAddr,
-			int address, int writeSize, int readSize, byte[] writeData)
-			throws IOException {
+	synchronized public void i2cWriteRead(int i2cNum, boolean tenBitAddr, int address,
+			int writeSize, int readSize, byte[] writeData) throws IOException {
 		beginBatch();
 		writeByte(I2C_WRITE_READ);
 		writeByte(((address >> 8) << 6) | (tenBitAddr ? 0x20 : 0x00) | i2cNum);
@@ -298,18 +310,17 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setPinDigitalOut(int pin, boolean value,
-			DigitalOutput.Spec.Mode mode) throws IOException {
+	synchronized public void setPinDigitalOut(int pin, boolean value, DigitalOutput.Spec.Mode mode)
+			throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_DIGITAL_OUT);
-		writeByte((pin << 2)
-				| (mode == DigitalOutput.Spec.Mode.OPEN_DRAIN ? 0x01 : 0x00)
+		writeByte((pin << 2) | (mode == DigitalOutput.Spec.Mode.OPEN_DRAIN ? 0x01 : 0x00)
 				| (value ? 0x02 : 0x00));
 		endBatch();
 	}
 
-	synchronized public void setPinDigitalIn(int pin,
-			DigitalInput.Spec.Mode mode) throws IOException {
+	synchronized public void setPinDigitalIn(int pin, DigitalInput.Spec.Mode mode)
+			throws IOException {
 		int pull = 0;
 		if (mode == DigitalInput.Spec.Mode.PULL_UP) {
 			pull = 1;
@@ -322,16 +333,15 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setChangeNotify(int pin, boolean changeNotify)
-			throws IOException {
+	synchronized public void setChangeNotify(int pin, boolean changeNotify) throws IOException {
 		beginBatch();
 		writeByte(SET_CHANGE_NOTIFY);
 		writeByte((pin << 2) | (changeNotify ? 0x01 : 0x00));
 		endBatch();
 	}
 
-	synchronized public void registerPeriodicDigitalSampling(int pin,
-			int freqScale) throws IOException {
+	synchronized public void registerPeriodicDigitalSampling(int pin, int freqScale)
+			throws IOException {
 		// TODO: implement
 	}
 
@@ -342,20 +352,17 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setAnalogInSampling(int pin, boolean enable)
-			throws IOException {
+	synchronized public void setAnalogInSampling(int pin, boolean enable) throws IOException {
 		beginBatch();
 		writeByte(SET_ANALOG_IN_SAMPLING);
 		writeByte((enable ? 0x80 : 0x00) | (pin & 0x3F));
 		endBatch();
 	}
 
-	synchronized public void uartData(int uartNum, int numBytes, byte data[])
-			throws IOException {
+	synchronized public void uartData(int uartNum, int numBytes, byte data[]) throws IOException {
 		if (numBytes > 64) {
 			throw new IllegalArgumentException(
-					"A maximum of 64 bytes can be sent in one uartData message. Got: "
-							+ numBytes);
+					"A maximum of 64 bytes can be sent in one uartData message. Got: " + numBytes);
 		}
 		beginBatch();
 		writeByte(UART_DATA);
@@ -366,25 +373,16 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void uartConfigure(int uartNum, int rate,
-			boolean speed4x, Uart.StopBits stopbits, Uart.Parity parity)
-			throws IOException {
-		int parbits = parity == Uart.Parity.EVEN ? 1
-				: (parity == Uart.Parity.ODD ? 2 : 0);
+	synchronized public void uartConfigure(int uartNum, int rate, boolean speed4x,
+			Uart.StopBits stopbits, Uart.Parity parity) throws IOException {
+		int parbits = parity == Uart.Parity.EVEN ? 1 : (parity == Uart.Parity.ODD ? 2 : 0);
 		beginBatch();
 		writeByte(UART_CONFIG);
 		writeByte((uartNum << 6) | (speed4x ? 0x08 : 0x00)
 				| (stopbits == Uart.StopBits.TWO ? 0x04 : 0x00) | parbits);
 		writeTwoBytes(rate);
 		endBatch();
-                
-               
-                
-                
-                
 	}
-        
-        
 
 	synchronized public void uartClose(int uartNum) throws IOException {
 		beginBatch();
@@ -394,8 +392,8 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setPinUart(int pin, int uartNum, boolean tx,
-			boolean enable) throws IOException {
+	synchronized public void setPinUart(int pin, int uartNum, boolean tx, boolean enable)
+			throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_UART);
 		writeByte(pin);
@@ -403,13 +401,12 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void spiConfigureMaster(int spiNum,
-			SpiMaster.Config config) throws IOException {
+	synchronized public void spiConfigureMaster(int spiNum, SpiMaster.Config config)
+			throws IOException {
 		beginBatch();
 		writeByte(SPI_CONFIGURE_MASTER);
 		writeByte((spiNum << 5) | SCALE_DIV[config.rate.ordinal()]);
-		writeByte((config.sampleOnTrailing ? 0x00 : 0x02)
-				| (config.invertClk ? 0x01 : 0x00));
+		writeByte((config.sampleOnTrailing ? 0x00 : 0x02) | (config.invertClk ? 0x01 : 0x00));
 		endBatch();
 	}
 
@@ -421,8 +418,8 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setPinSpi(int pin, int mode, boolean enable,
-			int spiNum) throws IOException {
+	synchronized public void setPinSpi(int pin, int mode, boolean enable, int spiNum)
+			throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_SPI);
 		writeByte(pin);
@@ -430,16 +427,14 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void spiMasterRequest(int spiNum, int ssPin,
-			byte data[], int dataBytes, int totalBytes, int responseBytes)
-			throws IOException {
+	synchronized public void spiMasterRequest(int spiNum, int ssPin, byte data[], int dataBytes,
+			int totalBytes, int responseBytes) throws IOException {
 		final boolean dataNeqTotal = (dataBytes != totalBytes);
 		final boolean resNeqTotal = (responseBytes != totalBytes);
 		beginBatch();
 		writeByte(SPI_MASTER_REQUEST);
 		writeByte((spiNum << 6) | ssPin);
-		writeByte((dataNeqTotal ? 0x80 : 0x00) | (resNeqTotal ? 0x40 : 0x00)
-				| totalBytes - 1);
+		writeByte((dataNeqTotal ? 0x80 : 0x00) | (resNeqTotal ? 0x40 : 0x00) | totalBytes - 1);
 		if (dataNeqTotal) {
 			writeByte(dataBytes);
 		}
@@ -452,10 +447,9 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void i2cConfigureMaster(int i2cNum, Rate rate,
-			boolean smbusLevels) throws IOException {
-		int rateBits = (rate == Rate.RATE_1MHz ? 3
-				: (rate == Rate.RATE_400KHz ? 2 : 1));
+	synchronized public void i2cConfigureMaster(int i2cNum, Rate rate, boolean smbusLevels)
+			throws IOException {
+		int rateBits = (rate == Rate.RATE_1MHz ? 3 : (rate == Rate.RATE_400KHz ? 2 : 1));
 		beginBatch();
 		writeByte(I2C_CONFIGURE_MASTER);
 		writeByte((smbusLevels ? 0x80 : 0) | (rateBits << 5) | i2cNum);
@@ -508,40 +502,89 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void rgbLedMatrixEnable(int shifterLen32, int rows) throws IOException {
+	synchronized public void setPinCapSense(int pinNum) throws IOException {
 		beginBatch();
-		writeByte(RGB_LED_MATRIX_ENABLE);
-		writeByte(shifterLen32 & 0x0F | ((rows == 8 ? 0 : 1) << 4));  
+		writeByte(SET_PIN_CAPSENSE);
+		writeByte(pinNum & 0x3F);
 		endBatch();
 	}
-	
-	
-	//ADDED BY MANJU
-	synchronized public void rgbLedMatrixWriteFile(float fps, int shifterLen32,  int rows) throws IOException {
-		int delay = Math.round(62500 / fps) - 1;
-		
+
+	synchronized public void setCapSenseSampling(int pinNum, boolean enable) throws IOException {
 		beginBatch();
-		writeByte(RGB_LED_MATRIX_WRITE_FILE);
-		writeByte(delay & 0xFF);
-		writeByte((delay >> 8) & 0xFF);
-		writeByte(shifterLen32 & 0x0F | ((rows == 8 ? 0 : 1) << 4));
+		writeByte(SET_CAPSENSE_SAMPLING);
+		writeByte((pinNum & 0x3F) | (enable ? 0x80 : 0x00));
 		endBatch();
 	}
-	
-	//Ends Here
-	
-	synchronized public void rgbLedMatrixFrame(byte[] data) throws IOException {
+
+	synchronized public void sequencerOpen(byte[] config, int size) throws IOException {
+		assert config != null;
+		assert size >= 0 && size <= 68;
+
 		beginBatch();
-		writeByte(RGB_LED_MATRIX_FRAME);
-		for (int i = 0; i < data.length; ++i) {
-			writeByte(((int) data[i]) & 0xFF);
-		}
+		writeByte(SEQUENCER_CONFIGURE);
+		writeByte(size);
+		writeBytes(config, 0, size);
+		endBatch();
+	}
+
+	synchronized public void sequencerClose() throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONFIGURE);
+		writeByte(0);
+		endBatch();
+	}
+
+	synchronized public void sequencerPush(int duration, byte[] cue, int size) throws IOException {
+		assert cue != null;
+		assert size >= 0 && size <= 68;
+		assert duration < (1 << 16);
+
+		beginBatch();
+		writeByte(SEQUENCER_PUSH);
+		writeTwoBytes(duration);
+		writeBytes(cue, 0, size);
+		endBatch();
+	}
+
+	synchronized public void sequencerStop() throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONTROL);
+		writeByte(0);
+		endBatch();
+	}
+
+	synchronized public void sequencerStart() throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONTROL);
+		writeByte(1);
+		endBatch();
+	}
+
+	synchronized public void sequencerPause() throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONTROL);
+		writeByte(2);
+		endBatch();
+	}
+
+	synchronized public void sequencerManualStart(byte[] cue, int size) throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONTROL);
+		writeByte(3);
+		writeBytes(cue, 0, size);
+		endBatch();
+	}
+
+	synchronized public void sequencerManualStop() throws IOException {
+		beginBatch();
+		writeByte(SEQUENCER_CONTROL);
+		writeByte(4);
 		endBatch();
 	}
 
 	public interface IncomingHandler {
-		public void handleEstablishConnection(byte[] hardwareId,
-				byte[] bootloaderId, byte[] firmwareId);
+		public void handleEstablishConnection(byte[] hardwareId, byte[] bootloaderId,
+				byte[] firmwareId);
 
 		public void handleConnectionLost();
 
@@ -555,13 +598,11 @@ class IOIOProtocol {
 
 		public void handleRegisterPeriodicDigitalSampling(int pin, int freqScale);
 
-		public void handleReportPeriodicDigitalInStatus(int frameNum,
-				boolean values[]);
+		public void handleReportPeriodicDigitalInStatus(int frameNum, boolean values[]);
 
 		public void handleAnalogPinStatus(int pin, boolean open);
 
-		public void handleReportAnalogInStatus(List<Integer> pins,
-				List<Integer> values);
+		public void handleReportAnalogInStatus(List<Integer> pins, List<Integer> values);
 
 		public void handleUartOpen(int uartNum);
 
@@ -575,8 +616,7 @@ class IOIOProtocol {
 
 		public void handleSpiClose(int spiNum);
 
-		public void handleSpiData(int spiNum, int ssPin, byte data[],
-				int dataBytes);
+		public void handleSpiData(int spiNum, int ssPin, byte data[], int dataBytes);
 
 		public void handleSpiReportTxStatus(int spiNum, int bytesRemaining);
 
@@ -601,13 +641,17 @@ class IOIOProtocol {
 		public void handleIncapClose(int incapNum);
 
 		public void handleIncapOpen(int incapNum);
+
+		public void handleCapSenseReport(int pinNum, int value);
+
+		public void handleSetCapSenseSampling(int pinNum, boolean enable);
+
+		public void handleSequencerEvent(SequencerEvent event, int arg);
+
+		public void handleSync();
 	}
 
 	class IncomingThread extends Thread {
-		private int readOffset_ = 0;
-		private int validBytes_ = 0;
-		private byte[] inbuf_ = new byte[64];
-
 		private List<Integer> analogPinValues_ = new ArrayList<Integer>();
 		private List<Integer> analogFramePins_ = new ArrayList<Integer>();
 		private List<Integer> newFramePins_ = new ArrayList<Integer>();
@@ -633,31 +677,19 @@ class IOIOProtocol {
 			newFramePins_ = temp;
 		}
 
-		private void fillBuf() throws IOException {
+		private int readByte() throws IOException {
 			try {
-				validBytes_ = in_.read(inbuf_, 0, inbuf_.length);
-				if (validBytes_ <= 0) {
+				int b = in_.read();
+				if (b < 0) {
 					throw new IOException("Unexpected stream closure");
 				}
-				//Log.v(TAG, "received " + validBytes_ + " bytes");
-                                //System.out.println(TAG + " fillBuf // received " + validBytes_ + " bytes"); //had this here for pinDMD integration
-				readOffset_ = 0;
+
+				// Log.v(TAG, "received: 0x" + Integer.toHexString(b));
+				return b;
 			} catch (IOException e) {
 				Log.i(TAG, "IOIO disconnected");
 				throw e;
 			}
-		}
-
-		private int readByte() throws IOException {
-			if (readOffset_ == validBytes_) {
-				fillBuf();
-			}
-			int b = inbuf_[readOffset_++];
-			b &= 0xFF;  // make unsigned
-			//Log.v(TAG, "received: 0x" + Integer.toHexString(b));
-                        //System.out.println(TAG + " readByte() // received: 0x" + Integer.toHexString(b)); //had this for pinDMD integration
-                        
-			return b;
 		}
 
 		private void readBytes(int size, byte[] buffer) throws IOException {
@@ -679,10 +711,9 @@ class IOIOProtocol {
 				while (true) {
 					switch (arg1 = readByte()) {
 					case ESTABLISH_CONNECTION:
-						if (readByte() != 'I' || readByte() != 'O'
-								|| readByte() != 'I' || readByte() != 'O') {
-							throw new IOException(
-									"Bad establish connection magic");
+						if (readByte() != 'I' || readByte() != 'O' || readByte() != 'I'
+								|| readByte() != 'O') {
+							throw new IOException("Bad establish connection magic");
 						}
 						byte[] hardwareId = new byte[8];
 						byte[] bootloaderId = new byte[8];
@@ -691,8 +722,7 @@ class IOIOProtocol {
 						readBytes(8, bootloaderId);
 						readBytes(8, firmwareId);
 
-						handler_.handleEstablishConnection(hardwareId,
-								bootloaderId, firmwareId);
+						handler_.handleEstablishConnection(hardwareId, bootloaderId, firmwareId);
 						break;
 
 					case SOFT_RESET:
@@ -702,14 +732,12 @@ class IOIOProtocol {
 
 					case REPORT_DIGITAL_IN_STATUS:
 						arg1 = readByte();
-						handler_.handleReportDigitalInStatus(arg1 >> 2,
-								(arg1 & 0x01) == 1);
+						handler_.handleReportDigitalInStatus(arg1 >> 2, (arg1 & 0x01) == 1);
 						break;
 
 					case SET_CHANGE_NOTIFY:
 						arg1 = readByte();
-						handler_.handleSetChangeNotify(arg1 >> 2,
-								(arg1 & 0x01) == 1);
+						handler_.handleSetChangeNotify(arg1 >> 2, (arg1 & 0x01) == 1);
 						break;
 
 					case REGISTER_PERIODIC_DIGITAL_SAMPLING:
@@ -746,24 +774,20 @@ class IOIOProtocol {
 							analogPinValues_.add((readByte() << 2) | (header & 0x03));
 							header >>= 2;
 						}
-						handler_.handleReportAnalogInStatus(analogFramePins_,
-								analogPinValues_);
+						handler_.handleReportAnalogInStatus(analogFramePins_, analogPinValues_);
 						break;
 
 					case UART_REPORT_TX_STATUS:
 						arg1 = readByte();
 						arg2 = readByte();
-						handler_.handleUartReportTxStatus(arg1 & 0x03,
-								(arg1 >> 2) | (arg2 << 6));
+						handler_.handleUartReportTxStatus(arg1 & 0x03, (arg1 >> 2) | (arg2 << 6));
 						break;
 
 					case UART_DATA:
 						arg1 = readByte();
-						for (int i = 0; i < (arg1 & 0x3F) + 1; ++i) {
-							data[i] = (byte) readByte();
-						}
-						handler_.handleUartData(arg1 >> 6, (arg1 & 0x3F) + 1,
-								data);
+						size = (arg1 & 0x3F) + 1;
+						readBytes(size, data);
+						handler_.handleUartData(arg1 >> 6, size, data);
 						break;
 
 					case UART_STATUS:
@@ -778,18 +802,15 @@ class IOIOProtocol {
 					case SPI_DATA:
 						arg1 = readByte();
 						arg2 = readByte();
-						for (int i = 0; i < (arg1 & 0x3F) + 1; ++i) {
-							data[i] = (byte) readByte();
-						}
-						handler_.handleSpiData(arg1 >> 6, arg2 & 0x3F, data,
-								(arg1 & 0x3F) + 1);
+						size = (arg1 & 0x3F) + 1;
+						readBytes(size, data);
+						handler_.handleSpiData(arg1 >> 6, arg2 & 0x3F, data, size);
 						break;
 
 					case SPI_REPORT_TX_STATUS:
 						arg1 = readByte();
 						arg2 = readByte();
-						handler_.handleSpiReportTxStatus(arg1 & 0x03,
-								(arg1 >> 2) | (arg2 << 6));
+						handler_.handleSpiReportTxStatus(arg1 & 0x03, (arg1 >> 2) | (arg2 << 6));
 						break;
 
 					case SPI_STATUS:
@@ -814,9 +835,7 @@ class IOIOProtocol {
 						arg1 = readByte();
 						arg2 = readByte();
 						if (arg2 != 0xFF) {
-							for (int i = 0; i < arg2; ++i) {
-								data[i] = (byte) readByte();
-							}
+							readBytes(arg2, data);
 						}
 						handler_.handleI2cResult(arg1 & 0x03, arg2, data);
 						break;
@@ -824,8 +843,7 @@ class IOIOProtocol {
 					case I2C_REPORT_TX_STATUS:
 						arg1 = readByte();
 						arg2 = readByte();
-						handler_.handleI2cReportTxStatus(arg1 & 0x03,
-								(arg1 >> 2) | (arg2 << 6));
+						handler_.handleI2cReportTxStatus(arg1 & 0x03, (arg1 >> 2) | (arg2 << 6));
 						break;
 
 					case CHECK_INTERFACE_RESPONSE:
@@ -840,8 +858,7 @@ class IOIOProtocol {
 						break;
 
 					case ICSP_RESULT:
-						data[0] = (byte) readByte();
-						data[1] = (byte) readByte();
+						readBytes(2, data);
 						handler_.handleIcspResult(2, data);
 						break;
 
@@ -853,7 +870,7 @@ class IOIOProtocol {
 							handler_.handleIcspClose();
 						}
 						break;
-						
+
 					case INCAP_STATUS:
 						arg1 = readByte();
 						if ((arg1 & 0x80) != 0) {
@@ -862,7 +879,7 @@ class IOIOProtocol {
 							handler_.handleIncapClose(arg1 & 0x0F);
 						}
 						break;
-						
+
 					case INCAP_REPORT:
 						arg1 = readByte();
 						size = arg1 >> 6;
@@ -877,17 +894,56 @@ class IOIOProtocol {
 						Log.d(TAG, "Received soft close.");
 						throw new IOException("Soft close");
 
+					case CAPSENSE_REPORT:
+						arg1 = readByte();
+						arg2 = readByte();
+						handler_.handleCapSenseReport(arg1 & 0x3F, (arg1 >> 6) | (arg2 << 2));
+						break;
+
+					case SET_CAPSENSE_SAMPLING:
+						arg1 = readByte();
+						handler_.handleSetCapSenseSampling(arg1 & 0x3F, (arg1 & 0x80) != 0);
+						break;
+
+					case SEQUENCER_EVENT:
+						arg1 = readByte();
+						// OPEN and STOPPED events has an additional argument.
+						if (arg1 == 2 || arg1 == 4) {
+							arg2 = readByte();
+						} else {
+							arg2 = 0;
+						}
+						try {
+							handler_.handleSequencerEvent(SequencerEvent.values()[arg1], arg2);
+						} catch (ArrayIndexOutOfBoundsException e) {
+							throw new IOException("Unexpected eveent: " + arg1);
+						}
+						break;
+
+					case SYNC:
+						handler_.handleSync();
+						break;
 
 					default:
-						in_.close();
-						IOException e = new IOException(
-								"Received unexpected command: 0x"
-										+ Integer.toHexString(arg1));
-						Log.e("IOIOProtocol", "Protocol error", e);
-						throw e;
+						throw new ProtocolError("Received unexpected command: 0x"
+								+ Integer.toHexString(arg1));
 					}
+
 				}
 			} catch (IOException e) {
+				// This is the proper way to close -- nothing's wrong.
+			} catch (ProtocolError e) {
+				// This indicates invalid data coming in -- report the error.
+				Log.e(TAG, "Protocol error: ", e);
+			} catch (Exception e) {
+				// This also probably indicates invalid data coming in, which has been detected by
+				// the command handler -- report the error.
+				Log.e(TAG, "Protocol error: ", new ProtocolError(e));
+			} finally {
+				try {
+					in_.close();
+				} catch (IOException e) {
+				}
 				handler_.handleConnectionLost();
 			}
 		}
@@ -898,8 +954,7 @@ class IOIOProtocol {
 	private final IncomingHandler handler_;
 	private final IncomingThread thread_ = new IncomingThread();
 
-	public IOIOProtocol(InputStream in, OutputStream out,
-			IncomingHandler handler) {
+	public IOIOProtocol(InputStream in, OutputStream out, IncomingHandler handler) {
 		in_ = in;
 		out_ = out;
 		handler_ = handler;

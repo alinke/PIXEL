@@ -49,7 +49,7 @@ import ioio.lib.api.exception.ConnectionLostException;
  * Typical usage:
  * 
  * <pre>
- * DigitalOutput led = ioio.openDigitalInput(2);  // LED anode on pin 2.
+ * DigitalOutput led = ioio.openDigitalOutput(2);  // LED anode on pin 2.
  * led.write(true);  // turn LED on.
  * ...
  * led.close();  // pin 2 can now be used for something else.
@@ -101,7 +101,7 @@ public interface DigitalOutput extends Closeable {
 		/**
 		 * Shorthand for Spec(pin, Mode.NORMAL).
 		 * 
-		 * @see DigitalOutput.Spec#Spec(int, DigitalOutput.Spec.Mode)
+		 * @see #Spec(int, Mode)
 		 */
 		public Spec(int pin) {
 			this(pin, Mode.NORMAL);

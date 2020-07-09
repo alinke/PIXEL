@@ -1,6 +1,7 @@
 
 package org.onebeartoe.pixel;
 
+import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
@@ -26,6 +27,7 @@ public class PixelIntegration extends IOIOConsoleApp
     List<LedMatrixListener> matrixListeners;
     
     List<IoioListener> ioioListeners;
+    private int retries = 0;
     
     /**
      * @param envronment 
@@ -158,13 +160,20 @@ public class PixelIntegration extends IOIOConsoleApp
         try
         {
             System.out.println("PixelIntegration is calling go()");
-            
-            go(null);
+
+            if (retries < 3){
+                go(null);
+            } else {
+                System.out.println("NOJOY");
+            }
+
         } 
         catch (Exception ex)
         {
-            String message = "Could not initialize Pixel: " + ex.getMessage();
+            String message = "Could not initialize Pixel: " + ex.getMessage() + "Attempt: " + retries;
             logger.log(Level.INFO, message);
+            retries++;
+            initialize();
         }        
     }
 }

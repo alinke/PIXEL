@@ -28,31 +28,11 @@
  */
 package ioio.lib.impl;
 
-import ioio.lib.impl.Board.Hardware;
-
-/*PIXEL V2 supported panels
-I: 32x16 adafruit
-P: 32x32 seeed, the panel for PIXEL V2
-S: 64x64 seeed, super pixel original
-K: 32x32 seeed kiosk no writing
-V: 64x64 seeed kiosk no writing
-
-PIXEL V2.5 additional supported panels
-Q: 32x32 adafruit d pin
-C: 32x32 adafruit color swap
-R: 64x32 adafruit d pin
-T: 64x64 adafruit
-X: 64x64 adafruit kiosk no writing
-Y: 32x32 adafruit d pin kiosk no writing
-Z: 32x32 adafruit d pin iOS Build only supports 32x32 adafruit*/
-
 enum Board {
-	SPRK0015(Hardware.IOIO0002), SPRK0016(Hardware.IOIO0003), MINT0010(Hardware.IOIO0003), SPRK0020
-			(Hardware.IOIO0004), PIXL0020(Hardware.IOIO0004), PIXL0025(Hardware.PIXL0025), PIXLI025
-			(Hardware.PIXL0025), PIXLQ025(Hardware.PIXL0025), PIXLR025(Hardware.PIXL0025), PIXLT025
-			(Hardware.PIXL0025), PIXLX025(Hardware.PIXL0025), PIXLZ025(Hardware.PIXL0025), PIXLY025
-                        (Hardware.PIXL0025),PIXLC025(Hardware.PIXL0025),PIXLA025(Hardware.PIXL0025),PIXLP025
-                        (Hardware.PIXL0025);
+	SPRK0015(Hardware.IOIO0002),
+	SPRK0016(Hardware.IOIO0003),
+	MINT0010(Hardware.IOIO0003),
+	SPRK0020(Hardware.IOIO0004);
 
 	public final Hardware hardware;
 
@@ -62,129 +42,121 @@ enum Board {
 
 	static class Hardware {
 		private static final boolean[][] MAP_IOIO0002_IOIO0003 = {
-				// p. out p. in analog
-				{ true, true, false }, // 0
-				{ false, false, false }, // 1
-				{ false, false, false }, // 2
-				{ true, true, false }, // 3
-				{ true, true, false }, // 4
-				{ true, true, false }, // 5
-				{ true, true, false }, // 6
-				{ true, true, false }, // 7
-				{ false, false, false }, // 8
-				{ false, true, false }, // 9
-				{ true, true, false }, // 10
-				{ true, true, false }, // 11
-				{ true, true, false }, // 12
-				{ true, true, false }, // 13
-				{ true, true, false }, // 14
-				{ false, false, false }, // 15
-				{ false, false, false }, // 16
-				{ false, false, false }, // 17
-				{ false, false, false }, // 18
-				{ false, false, false }, // 19
-				{ false, false, false }, // 20
-				{ false, false, false }, // 21
-				{ false, false, false }, // 22
-				{ false, false, false }, // 23
-				{ false, false, false }, // 24
-				{ false, false, false }, // 25
-				{ false, false, false }, // 26
-				{ true, true, false }, // 27
-				{ true, true, false }, // 28
-				{ true, true, false }, // 29
-				{ true, true, false }, // 30
-				{ true, true, true }, // 31
-				{ true, true, true }, // 32
-				{ false, false, true }, // 33
-				{ true, true, true }, // 34
-				{ true, true, true }, // 35
-				{ true, true, true }, // 36
-				{ true, true, true }, // 37
-				{ true, true, true }, // 38
-				{ true, true, true }, // 39
-				{ true, true, true }, // 40
-				{ false, false, true }, // 41
-				{ false, false, true }, // 42
-				{ false, false, true }, // 43
-				{ false, false, true }, // 44
-				{ true, true, true }, // 45
-				{ true, true, true }, // 46
-				{ true, true, false }, // 47
-				{ true, true, false } // 48
+			// p. out	p. in	analog
+			{ true,		true,	false },  // 0
+			{ false,	false,	false },  // 1
+			{ false,	false,	false },  // 2
+			{ true,		true,	false },  // 3
+			{ true,		true,	false },  // 4
+			{ true,		true,	false },  // 5
+			{ true,		true,	false },  // 6
+			{ true,		true,	false },  // 7
+			{ false,	false,	false },  // 8
+			{ false,	true,	false },  // 9
+			{ true,		true,	false },  // 10
+			{ true,		true,	false },  // 11
+			{ true,		true,	false },  // 12
+			{ true,		true,	false },  // 13
+			{ true,		true,	false },  // 14
+			{ false,	false,	false },  // 15
+			{ false,	false,	false },  // 16
+			{ false,	false,	false },  // 17
+			{ false,	false,	false },  // 18
+			{ false,	false,	false },  // 19
+			{ false,	false,	false },  // 20
+			{ false,	false,	false },  // 21
+			{ false,	false,	false },  // 22
+			{ false,	false,	false },  // 23
+			{ false,	false,	false },  // 24
+			{ false,	false,	false },  // 25
+			{ false,	false,	false },  // 26
+			{ true,		true,	false },  // 27
+			{ true,		true,	false },  // 28
+			{ true,		true,	false },  // 29
+			{ true,		true,	false },  // 30
+			{ true,		true,	true  },  // 31
+			{ true,		true,	true  },  // 32
+			{ false,	false,	true  },  // 33
+			{ true,		true,	true  },  // 34
+			{ true,		true,	true  },  // 35
+			{ true,		true,	true  },  // 36
+			{ true,		true,	true  },  // 37
+			{ true,		true,	true  },  // 38
+			{ true,		true,	true  },  // 39
+			{ true,		true,	true  },  // 40
+			{ false,	false,	true  },  // 41
+			{ false,	false,	true  },  // 42
+			{ false,	false,	true  },  // 43
+			{ false,	false,	true  },  // 44
+			{ true,		true,	true  },  // 45
+			{ true,		true,	true  },  // 46
+			{ true,		true,	false },  // 47
+			{ true,		true,	false }   // 48
 		};
 		private static final boolean[][] MAP_IOIO0004 = {
-				// p. out p. in analog
-				{ false, false, false }, // 0
-				{ true, true, false }, // 1
-				{ true, true, false }, // 2
-				{ true, true, false }, // 3
-				{ true, true, false }, // 4
-				{ true, true, false }, // 5
-				{ true, true, false }, // 6
-				{ true, true, false }, // 7
-				{ false, false, false }, // 8
-				{ false, true, false }, // 9
-				{ true, true, false }, // 10
-				{ true, true, false }, // 11
-				{ true, true, false }, // 12
-				{ true, true, false }, // 13
-				{ true, true, false }, // 14
-				{ false, false, false }, // 15
-				{ false, false, false }, // 16
-				{ false, false, false }, // 17
-				{ false, false, false }, // 18
-				{ false, false, false }, // 19
-				{ false, false, false }, // 20
-				{ false, false, false }, // 21
-				{ false, false, false }, // 22
-				{ false, false, false }, // 23
-				{ false, false, false }, // 24
-				{ false, false, false }, // 25
-				{ false, false, false }, // 26
-				{ true, true, false }, // 27
-				{ true, true, false }, // 28
-				{ true, true, false }, // 29
-				{ true, true, false }, // 30
-				{ true, true, true }, // 31
-				{ true, true, true }, // 32
-				{ false, false, true }, // 33
-				{ true, true, true }, // 34
-				{ true, true, true }, // 35
-				{ true, true, true }, // 36
-				{ true, true, true }, // 37
-				{ true, true, true }, // 38
-				{ true, true, true }, // 39
-				{ true, true, true }, // 40
-				{ false, false, true }, // 41
-				{ false, false, true }, // 42
-				{ false, false, true }, // 43
-				{ false, false, true }, // 44
-				{ true, true, true }, // 45
-				{ true, true, true } // 46
+			// p. out	p. in	analog
+			{ false,	false,	false },  // 0
+			{ true,		true,	false },  // 1
+			{ true,		true,	false },  // 2
+			{ true,		true,	false },  // 3
+			{ true,		true,	false },  // 4
+			{ true,		true,	false },  // 5
+			{ true,		true,	false },  // 6
+			{ true,		true,	false },  // 7
+			{ false,	false,	false },  // 8
+			{ false,	true,	false },  // 9
+			{ true,		true,	false },  // 10
+			{ true,		true,	false },  // 11
+			{ true,		true,	false },  // 12
+			{ true,		true,	false },  // 13
+			{ true,		true,	false },  // 14
+			{ false,	false,	false },  // 15
+			{ false,	false,	false },  // 16
+			{ false,	false,	false },  // 17
+			{ false,	false,	false },  // 18
+			{ false,	false,	false },  // 19
+			{ false,	false,	false },  // 20
+			{ false,	false,	false },  // 21
+			{ false,	false,	false },  // 22
+			{ false,	false,	false },  // 23
+			{ false,	false,	false },  // 24
+			{ false,	false,	false },  // 25
+			{ false,	false,	false },  // 26
+			{ true,		true,	false },  // 27
+			{ true,		true,	false },  // 28
+			{ true,		true,	false },  // 29
+			{ true,		true,	false },  // 30
+			{ true,		true,	true  },  // 31
+			{ true,		true,	true  },  // 32
+			{ false,	false,	true  },  // 33
+			{ true,		true,	true  },  // 34
+			{ true,		true,	true  },  // 35
+			{ true,		true,	true  },  // 36
+			{ true,		true,	true  },  // 37
+			{ true,		true,	true  },  // 38
+			{ true,		true,	true  },  // 39
+			{ true,		true,	true  },  // 40
+			{ false,	false,	true  },  // 41
+			{ false,	false,	true  },  // 42
+			{ false,	false,	true  },  // 43
+			{ false,	false,	true  },  // 44
+			{ true,		true,	true  },  // 45
+			{ true,		true,	true  }   // 46
 		};
-		static final Hardware IOIO0002 = new Hardware(MAP_IOIO0002_IOIO0003, 9, 4, 3, new int[] {
-				0, 2, 4 }, new int[] { 6, 7, 8 }, new int[][] { { 4, 5 }, { 47, 48 }, { 26, 25 } },
-				new int[] { 36, 37, 38 }, new int[] { 7, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21,
-						22, 23, 24, 25, 26, 27, 28 });
+		static final Hardware IOIO0002 = new Hardware(MAP_IOIO0002_IOIO0003,
+				9, 4, 3, new int[] {0, 2, 4}, new int[] { 6, 7, 8 },
+				new int[][] {{ 4, 5 }, { 47, 48 }, { 26, 25 }},
+				new int[] { 36, 37, 38 });
 		static final Hardware IOIO0003 = IOIO0002;
-		static final Hardware IOIO0004 = new Hardware(MAP_IOIO0004, 9, 4, 3, new int[] { 0, 2, 4 },
-				new int[] { 6, 7, 8 }, new int[][] { { 4, 5 }, { 1, 2 }, { 26, 25 } }, new int[] {
-						36, 37, 38 }, new int[] { 7, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22,
-						23, 24, 25, 26, 27, 28 });
-		static final Hardware PIXL0025 = IOIO0004;
-		static final Hardware PIXLI025 = IOIO0004;
-		static final Hardware PIXLQ025 = IOIO0004;
-		static final Hardware PIXLZ025 = IOIO0004;
-		static final Hardware PIXLR025 = IOIO0004;
-                static final Hardware PIXLA025 = IOIO0004;
-                static final Hardware PIXLP025 = IOIO0004;
-		static final Hardware PIXLT025 = IOIO0004;
-		static final Hardware PIXLX025 = IOIO0004;
-		static final Hardware PIXLY025 = IOIO0004;
-		
+		static final Hardware IOIO0004 = new Hardware(MAP_IOIO0004,
+				9, 4, 3, new int[] {0, 2, 4}, new int[] { 6, 7, 8 },
+				new int[][] {{ 4, 5 }, { 1, 2 }, { 26, 25 }},
+				new int[] { 36, 37, 38 });
+
 		private enum Function {
-			PERIPHERAL_OUT, PERIPHERAL_IN, ANALOG_IN
+			PERIPHERAL_OUT,
+			PERIPHERAL_IN,
+			ANALOG_IN
 		}
 
 		private final boolean[][] map_;
@@ -195,11 +167,11 @@ enum Board {
 		private final int[] incapDoubleModules_;
 		private final int[][] twiPins_;
 		private final int[] icspPins_;
-		private final int[] rgbLedMatrixPins_;
 
-		private Hardware(boolean[][] map, int numPwmModules, int numUartModules, int numSpiModules,
-				int[] incapDoubleModules, int[] incapSingleModules, int[][] twiPins,
-				int[] icspPins, int[] rgbLedMatrixPins) {
+		private Hardware(boolean[][] map, int numPwmModules,
+				int numUartModules, int numSpiModules,
+				int[] incapDoubleModules, int[] incapSingleModules,
+				int[][] twiPins, int[] icspPins) {
 			if (map == null)
 				throw new IllegalArgumentException("WTF");
 			map_ = map;
@@ -210,7 +182,6 @@ enum Board {
 			incapDoubleModules_ = incapDoubleModules;
 			twiPins_ = twiPins;
 			icspPins_ = icspPins;
-			rgbLedMatrixPins_ = rgbLedMatrixPins;
 		}
 
 		int numPins() {
@@ -259,14 +230,11 @@ enum Board {
 			return icspPins_;
 		}
 
-		int[] rgbLedMatrixPins() {
-			return rgbLedMatrixPins_;
-		}
-
 		void checkSupportsAnalogInput(int pin) {
 			checkValidPin(pin);
 			if (!map_[pin][Function.ANALOG_IN.ordinal()]) {
-				throw new IllegalArgumentException("Pin " + pin + " does not support analog input");
+				throw new IllegalArgumentException("Pin " + pin
+						+ " does not support analog input");
 			}
 		}
 

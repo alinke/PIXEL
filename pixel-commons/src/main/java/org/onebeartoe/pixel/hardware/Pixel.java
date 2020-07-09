@@ -491,43 +491,43 @@ public class Pixel
 		}
     }
     
-    private static AnalogInput getAnalogInput(int pinNumber) 
-    {
-	if(ioiO != null)
-	{
-	    try 
-	    {
-		analogInput1 = ioiO.openAnalogInput(pinNumber);
-	    } 
-	    catch (ConnectionLostException ex) 
-	    {
-		String message = "The PIXEL connection was lost.";
-		Logger.getLogger("Pixel").log(Level.SEVERE, message, ex);
-	    }		
-	}
-        
-        return analogInput1;
-    }
-    
-    public static AnalogInput getAnalogInput1() 
-    {
-        if (analogInput1 == null) 
-	{
-	    analogInput1 = getAnalogInput(31);			    
-        }
-        
-        return analogInput1;
-    }
-    
-    public static AnalogInput getAnalogInput2() 
-    {
-        if (analogInput2 == null) 
-	{
-	    analogInput2 = getAnalogInput(32);
-        }
-        
-        return analogInput2;
-    }
+//    private static AnalogInput getAnalogInput(int pinNumber) 
+//    {
+//	if(ioiO != null)
+//	{
+//	    try 
+//	    {
+//		analogInput1 = ioiO.openAnalogInput(pinNumber);
+//	    } 
+//	    catch (ConnectionLostException ex) 
+//	    {
+//		String message = "The PIXEL connection was lost.";
+//		Logger.getLogger("Pixel").log(Level.SEVERE, message, ex);
+//	    }		
+//	}
+//        
+//        return analogInput1;
+//    }
+//    
+//    public static AnalogInput getAnalogInput1() 
+//    {
+//        if (analogInput1 == null) 
+//	{
+//	    analogInput1 = getAnalogInput(31);			    
+//        }
+//        
+//        return analogInput1;
+//    }
+//    
+//    public static AnalogInput getAnalogInput2() 
+//    {
+//        if (analogInput2 == null) 
+//	{
+//	    analogInput2 = getAnalogInput(32);
+//        }
+//        
+//        return analogInput2;
+//    }
 
     public String getAnimationsPath()
     {

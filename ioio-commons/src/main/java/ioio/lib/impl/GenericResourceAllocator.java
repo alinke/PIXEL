@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * Copyright 2013 Ytai Ben-Tsvi. All rights reserved.
  *  
  * 
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -26,27 +26,53 @@
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
  */
-package ioio.lib.api;
+package ioio.lib.impl;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import ioio.lib.api.exception.OutOfResourceException;
+import ioio.lib.impl.ResourceManager.Resource;
 
-import ioio.lib.api.exception.ConnectionLostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public interface IOIOConnection {
-	void waitForConnect() throws ConnectionLostException;
+class GenericResourceAllocator implements ResourceManager.ResourceAllocator {
+	private final List<Integer> available_;
+	private final Set<Integer> allocated_;
 
-	void disconnect();
+	public GenericResourceAllocator(int offset, int count) {
+		available_ = new ArrayList<Integer>(count);
+		allocated_ = new HashSet<Integer>(count);
+		for (int i = 0; i < count; i++) {
+			available_.add(i + offset);
+		}
+	}
 
-	InputStream getInputStream() throws ConnectionLostException;
+	public GenericResourceAllocator(int ids[]) {
+		available_ = new ArrayList<Integer>(ids.length);
+		allocated_ = new HashSet<Integer>(ids.length);
+		for (int i = 0; i < ids.length; i++) {
+			available_.add(ids[i]);
+		}
+	}
 
-	OutputStream getOutputStream() throws ConnectionLostException;
+	@Override
+	public synchronized void alloc(Resource r) {
+		if (available_.isEmpty()) {
+			throw new OutOfResourceException(
+					"No more resources of the requested type: " + r.type);
+		}
+		r.id = available_.remove(available_.size() - 1);
+		allocated_.add(r.id);
+	}
 
-	/**
-	 * Can this connection be closed. Normally the answer would be "true", but
-	 * some weird connections cannot be closed and need the higher layer to do
-	 * a "soft close" instead.
-	 * @return true This connection can be closed.
-	 */
-	boolean canClose();
+	@Override
+	public synchronized void free(Resource r) {
+		if (!allocated_.contains(r.id)) {
+			throw new IllegalArgumentException("Resource " + r
+					+ " not yet allocated");
+		}
+		available_.add(r.id);
+		allocated_.remove(r.id);
+	}
 }
