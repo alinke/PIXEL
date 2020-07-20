@@ -288,7 +288,7 @@ public class Pixel
         
         scrollingText = "Scolling Text";
         
-        pixelHome = "/opt/pixelcade/" ;  
+        pixelHome = "/home/pi/pixelcade/" ;  
 
         animationsPath = pixelHome + "animations/";            
         decodedAnimationsPath = animationsPath + "decoded/";

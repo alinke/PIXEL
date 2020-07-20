@@ -118,7 +118,7 @@ if cat /proc/device-tree/model | grep -q 'Pi 4'; then
    pi4=true
 
    while true; do
-       read -p "${magenta}Do you have a second monitor (LCD Marquee) connected to your Pi 4? (y/n)? ${white}" yn
+       read -p "${magenta}Do you have a Pixelcade LCD Marquee (y/n)? ${white}" yn
        case $yn in
            [Yy]* ) lcd_marquee=true; break;;
            [Nn]* ) lcd_marquee=false; break;;
@@ -197,14 +197,13 @@ sudo apt -y install git
 
 echo "${yellow}Installing Pixelcade from GitHub Repo...${white}"
 cd $HOME
-git clone -b dev https://github.com/alinke/pixelcade.git #using the dev branch for now
+git clone --depth 1 https://github.com/alinke/pixelcade.git 
 cd $HOME/pixelcade
 sudo chmod +x pixelweb
 git config user.email "sample@sample.com"
 git config user.name "sample"
 
 if [ "$lcd_marquee" = true ] ; then
-  echo "${yellow}Installing Pixelcade LCD Marquee Components...${white}"
   sudo apt -y install qt5-default
   sudo apt -y install libqt5qml5
   sudo apt -y install libqt5quickcontrols2-5
@@ -218,18 +217,6 @@ if [ "$lcd_marquee" = true ] ; then
   sudo sed -i 's/^LCDMarquee=no/LCDMarquee=yes/g' $HOME/pixelcade/settings.ini
   sudo sed -i 's/^font=Arial Narrow 7/font=Vectroid/g' $HOME/pixelcade/settings.ini
   echo "${yellow}Modifying /boot/config.txt for dual monitor support...${white}"
-  if cat /boot/config.txt | grep -q 'hdmi_cvt:1 1280 390 75 3 0 0 0'; then
-     echo "${yellow}/boot/config.txt already modified for dual monitor support, skipping...${white}"
-  else
-     # inset these three lines after [pi4], note we have to escape as brackets are valid characters in sed
-       sudo sed -i '/^\[pi4\]/a hdmi_group:1=2\nhdmi_mode:1=87\nhdmi_cvt:1 1280 390 75 3 0 0 0' /boot/config.txt
-  fi
-  echo "${yellow}Downloading LCD Marquee artwork, this will take awhile...${white}"
-  cd $HOME/pixelcade
-  git clone https://github.com/alinke/lcdmarquees.git
-  cd $HOME/pixelcade/lcdmarquees
-  git config user.email "sample@sample.com"
-  git config user.name "sample"
 fi
 
 #if [ "$retropie" = true ] ; then  #skip if no retropie as we'll start this later using systemd
@@ -339,10 +326,15 @@ else #there is no retropie so we need to add pixelcade /etc/rc.local instead
   sudo systemctl enable pixelcade.service
 fi
 
-# let's send a test image and see if it displays
-sleep 5
+#setting up udev rules to change /dev/pixelcade0
 cd $HOME/pixelcade
-curl http://localhost/arcade/stream/mame/1941
+sudo cp 50-pixelcade.rules /etc/udev/rules.d
+sudo /etc/init.d/udev restart
+
+# let's send a test image and see if it displays
+#sleep 5
+#cd $HOME/pixelcade
+#curl http://localhost/arcade/stream/mame/1941
 
 #let's write the version so the next time the user can try and know if he/she needs to upgrade
 echo $version > $HOME/pixelcade/pixelcade-version

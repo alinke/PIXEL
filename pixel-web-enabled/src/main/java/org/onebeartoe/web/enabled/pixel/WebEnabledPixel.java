@@ -158,7 +158,7 @@ public class WebEnabledPixel {
   
   private static int  scrollsmooth_ = 1;
 
-  public static String pixelHome = "/opt/pixelcade/";
+  public static String pixelHome = "/home/pi/pixelcade/";
   
   public static LCDPixelcade lcdDisplay = null;
   
@@ -205,7 +205,7 @@ public class WebEnabledPixel {
 //          pixelHome = "/" + FilenameUtils.getPath(decodedPath) ;  //important won't work without the "/" in front
 //    }
     
-    pixelHome = "/opt/pixelcade/";
+    pixelHome = "/home/pi/pixelcade/";
     
     File file = new File("settings.ini");
     if (file.exists() && !file.isDirectory()) {

@@ -5,9 +5,12 @@ ubuntu_os=false
 retropie=false
 pizero=false
 pi4=false
+aarch64=false
 java_installed=false
 install_succesful=false
 auto_update=false
+lcd_marquee=false
+led_marquee=false
 attractmode=false
 black=`tput setaf 0`
 red=`tput setaf 1`
@@ -35,32 +38,17 @@ echo "${red}IMPORTANT:${white} This script will work on a Pi 2, Pi Zero W, Pi 3B
 echo "Now connect Pixelcade to a free USB port on your Pi (directly connected to your Pi or use a powered USB hub)"
 echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB and not BT"
 
-#change this
 
-#read -p "${magenta}Continue (y/n)? ${white}" -n 1 -r
-#echo    # (optional) move to a new line
-#if [[ ! $REPLY =~ ^[Yy]$ ]]
-#then
-#    exit 1
-#fi
+#while true; do
+#    read -p "${magenta}Would you like to enable auto updates (y/n)? ${white}" yn
+#    case $yn in
+#        [Yy]* ) auto_update=true; break;;
+#        [Nn]* ) auto_update=false; break;;
+#        * ) echo "Please answer y or n";;
+#    esac
+#done
 
-#read -p "${magenta}Would you like to enalbe auto updates (y/n)? ${white}" -n 1 -r
-#echo    # (optional) move to a new line
-#if [[ ! $REPLY =~ ^[Yy]$ ]]
-#  then
-#    auto_update=true
-#  else
-#    auto_update=false
-#fi
-
-while true; do
-    read -p "${magenta}Would you like to enable auto updates (y/n)? ${white}" yn
-    case $yn in
-        [Yy]* ) auto_update=true; break;;
-        [Nn]* ) auto_update=false; break;;
-        * ) echo "Please answer y or n";;
-    esac
-done
+auto_update=false
 
 #add a prompt here if user really wants to install again
 
@@ -133,10 +121,26 @@ if cat /proc/device-tree/model | grep -q 'Pi 4'; then
    pi4=true
 fi
 
+if uname -m | grep -q 'aarch64'; then
+   echo "${yellow}aarch64 detected or ARM 64-bit..."
+   aarch64=true
+fi
+
 if cat /proc/device-tree/model | grep -q 'Pi Zero W'; then
    echo "${yellow}Raspberry Pi Zero detected..."
    pizero=true
 fi
+
+#while true; do
+#    read -p "${magenta}Do you have a PixelcadeLCD Marquee (y/n)? ${white}" yn
+#    case $yn in
+#        [Yy]* ) lcd_marquee=true; break;;
+#        [Nn]* ) lcd_marquee=false; break;;
+#        * ) echo "Please answer y or n";;
+#    esac
+#done
+
+lcd_marquee=true
 
 if type -p java ; then
   echo "${yellow}Java already installed, skipping..."
@@ -165,11 +169,26 @@ if [ "$java_installed" = false ] ; then #only install java if it doesn't exist
        echo "${yellow}Installing Java 8...${white}"
        sudo apt-get -y install oracle-java8-jdk
     elif [ "$buster_os" = true ]; then #pi zero is arm6 and cannot run the normal java :-( so have to get this special one
-       echo "${yellow}Installing OpenJDK 11 JRE...${white}"
-       sudo apt-get -y install openjdk-11-jre
+       echo "${yellow}Installing Small JRE 11 for aarch32...${white}"
+       #sudo apt-get -y install openjdk-11-jre //older larger jre but we want smaller instead
+       sudo mkdir /usr/lib/jvm && sudo mkdir /usr/lib/jvm/jre11-aarch32 && cd /usr/lib/jvm/jre11-aarch32
+       sudo curl -LO https://github.com/alinke/small-jre/raw/master/jre11-aarch32.tar.gz
+       sudo tar -xzvf jre11-aarch32.tar.gz
+       sudo rm jre11-aarch32.tar.gz
+       sudo chmod +x /usr/lib/jvm/jre11-aarch32/bin/java #actually this should already be +x but just in case
+       sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/jre11-aarch32/bin/java 11
     elif [ "$ubuntu_os" = true ]; then
         echo "${yellow}Installing Java OpenJDK 11...${white}"
         sudo apt-get -y install openjdk-11-jre
+    elif [ "$aarch64" = true ]; then
+        echo "${yellow}Installing Small JRE 11 for aarch64...${white}"
+        #sudo apt-get -y install openjdk-11-jre
+        sudo mkdir /usr/lib/jvm/jre11-aarch64 && cd /usr/lib/jvm/jre11-aarch64
+        sudo curl -LO https://github.com/alinke/small-jre/raw/master/jre11-aarch64.tar.gz
+        sudo tar -xzvf jre11-aarch64.tar.gz
+        sudo rm jre11-aarch64.tar.gz
+        sudo chmod +x /usr/lib/jvm/jre11-aarch64/bin/java #actually this should already be +x but just in case
+        sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/jre11-aarch64/bin/java 11
     else
         echo "${red}Sorry, neither Linux Stretch or Linux Buster was detected, exiting..."
         exit 1
@@ -185,14 +204,31 @@ echo "${yellow}Installing Pixelcade from GitHub Repo...${white}"
 cd $HOME
 git clone --depth 1 https://github.com/alinke/pixelcade.git
 cd $HOME/pixelcade
+sudo chmod +x pixelweb
 git config user.email "sample@sample.com"
 git config user.name "sample"
 
-
-if [ "$retropie" = true ] ; then #skip if no retropie as we'll start this later using systemd
-    cd $HOME/pixelcade
-    java -jar pixelweb.jar -b & #run pixelweb in the background\
+if [ "$lcd_marquee" = true ] ; then
+  sudo apt -y install qt5-default
+  sudo apt -y install libqt5qml5
+  sudo apt -y install libqt5quickcontrols2-5
+  sudo apt -y install qml-module-qtquick2
+  sudo apt -y install qml-module-qtquick-controls
+  sudo apt -y install qml-module-qt-labs-platform
+  sudo apt -y install qml-module-qtquick-extras
+  sudo chmod +x $HOME/pixelcade/skrola
+  sudo chmod +x $HOME/pixelcade/gsho
+  echo "${yellow}Changing the default font for the LCD Marquee...${white}"
+  sudo sed -i 's/^LCDMarquee=no/LCDMarquee=yes/g' $HOME/pixelcade/settings.ini
+  sudo sed -i 's/^font=Arial Narrow 7/font=Vectroid/g' $HOME/pixelcade/settings.ini
+  #echo "${yellow}Modifying /boot/config.txt for dual monitor support...${white}"
 fi
+
+#if [ "$retropie" = true ] ; then  #skip if no retropie as we'll start this later using systemd
+#    cd $HOME/pixelcade
+#    #./pixelweb -b & #run pixelweb in the background\
+#    ./pixelweb -b &
+#fi
 
 cd $HOME
 #if retropie is present, add our mods
@@ -248,6 +284,13 @@ if [ "$auto_update" = true ] ; then #add git pull to startup
     fi
 fi
 
+#if cat /boot/cmdline.txt | grep -q 'vt.global_cursor_default=0'; then
+#   echo "${yellow}Blinking cursor already disabled, skipping...${white}"
+#else
+#  echo "${yellow}Disabling blinking cursor...${white}"
+#  sudo sed -i "1 s|$| vt.global_cursor_default=0|" "/boot/cmdline.txt" #add this text at the end of the first line
+#fi
+
 if [ "$retropie" = true ] ; then
     # let's check if autostart.sh already has pixelcade added and if so, we don't want to add it twice
     #cd /opt/retropie/configs/all/
@@ -255,11 +298,14 @@ if [ "$retropie" = true ] ; then
       echo "${yellow}Pixelcade already added to autostart.sh, skipping...${white}"
     else
       echo "${yellow}Adding Pixelcade /opt/retropie/configs/all/autostart.sh...${white}"
-      sudo sed -i '/^emulationstation.*/i cd $HOME/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
-      sudo sed -i '/^emulationstation.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
+      #sudo sed -i '/^emulationstation.*/i echo "Waiting for PixelcadeLCD to be ready..."' /opt/retropie/configs/all/autostart.sh
+      sudo sed -i '/^emulationstation.*/i until $(curl --output /dev/null --silent --head --fail http://pixelcadedx.local:8080); do printf '\''|'\''; sleep 1; done' /opt/retropie/configs/all/autostart.sh
+      sudo sed -i '/^emulationstation.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
+      #sudo sed -i '/^emulationstation.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
       if [ "$attractmode" = true ] ; then
           echo "${yellow}Adding Pixelcade for Attract Mode to /opt/retropie/configs/all/autostart.sh...${white}"
-          sudo sed -i '/^attract.*/i cd $HOME/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
+          sudo sed -i '/^attract.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
+          #sudo sed -i '/^attract.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
           sudo sed -i '/^attract.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
       fi
     fi
@@ -269,6 +315,7 @@ if [ "$retropie" = true ] ; then
     sudo cp $HOME/pixelcade/fonts/*.ttf /$HOME/.fonts
     sudo apt -y install font-manager
     sudo fc-cache -v -f
+    sudo chmod +x /opt/retropie/configs/all/autostart.sh
 else #there is no retropie so we need to add pixelcade /etc/rc.local instead
   echo "${yellow}Installing Fonts...${white}"
   cd $HOME/pixelcade
@@ -284,6 +331,19 @@ else #there is no retropie so we need to add pixelcade /etc/rc.local instead
   sudo systemctl start pixelcade.service
   sudo systemctl enable pixelcade.service
 fi
+
+#setting up udev rules to change /dev/pixelcade0
+#cd $HOME/pixelcade
+#sudo cp 50-pixelcade.rules /etc/udev/rules.d
+#sudo /etc/init.d/udev restart
+
+# let's send a test image and see if it displays
+#sleep 5
+#cd $HOME/pixelcade
+#curl http://localhost/arcade/stream/mame/1941
+
+#let's write the version so the next time the user can try and know if he/she needs to upgrade
+echo $version > $HOME/pixelcade/pixelcade-version
 
 # let's change the hostname from retropie to pixelcade and note that the dns name will be pixelcade.local
 cd /etc
@@ -301,27 +361,11 @@ else
   sudo sed -i 's/raspberrypi/pixelcade/g' hosts
 fi
 
-# let's send a test image and see if it displays
-sleep 5
-cd $HOME/pixelcade
-java -jar pixelcade.jar -m stream -c mame -g 1941
-
-#let's write the version so the next time the user can try and know if he/she needs to upgrade
-echo $version > $HOME/pixelcade/pixelcade-version
-
-echo " "
-while true; do
-    read -p "${magenta}Is the 1941 Game Logo Displaying on Pixelcade Now? (y/n)${white}" yn
-    case $yn in
-        [Yy]* ) echo "${green}INSTALLATION COMPLETE , please now reboot and then Pixelcade will be controlled by RetroPie${white}" && install_succesful=true; break;;
-        [Nn]* ) echo "${red}It may still be ok and try rebooting, you can also refer to https://pixelcade.org/download-pi/ for troubleshooting steps" && exit;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+install_succesful=true
 
 if [ "$install_succesful" = true ] ; then
   while true; do
-      read -p "${magenta}Reboot Now? (y/n)${white}" yn
+      read -p "${magenta}You'll need to Reboot, ok to Reboot Now? (y/n)${white}" yn
       case $yn in
           [Yy]* ) sudo reboot; break;;
           [Nn]* ) echo "${yellow}Please reboot when you get a chance" && exit;;
