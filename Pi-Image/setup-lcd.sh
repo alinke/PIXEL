@@ -32,11 +32,11 @@ cat << "EOF"
 |_|
 EOF
 
-echo "${magenta}       Pixelcade for RetroPie : Installer Version $version    ${white}"
-echo ""
-echo "${red}IMPORTANT:${white} This script will work on a Pi 2, Pi Zero W, Pi 3B, Pi 3B+, and Pi 4"
-echo "Now connect Pixelcade to a free USB port on your Pi (directly connected to your Pi or use a powered USB hub)"
-echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB and not BT"
+#echo "${magenta}       Pixelcade for RetroPie : Installer Version $version    ${white}"
+#echo ""
+#echo "${red}IMPORTANT:${white} This script will work on a Pi 2, Pi Zero W, Pi 3B, Pi 3B+, and Pi 4"
+#echo "Now connect Pixelcade to a free USB port on your Pi (directly connected to your Pi or use a powered USB hub)"
+#echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB and not BT"
 
 
 #while true; do
@@ -48,9 +48,13 @@ echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB an
 #    esac
 #done
 
-auto_update=false
+curl -LO pixelcade.org/pi/install-welcome.png
+sudo fbi install-welcome.png --noverbose -T 1 -d /dev/fb0 &
+jstest --event /dev/input/js0 | grep -m 1 "type 1, time .*, number .*, value 1" | cut -d' ' -f 7|cut -d"," -f 1
+#just waiting for the user to press a key or button on arcade controls
+sudo killall fbi
 
-#add a prompt here if user really wants to install again
+auto_update=false
 
 # let's check the version and only proceed if the user has an older version
 if [[ -d "$HOME/pixelcade" ]]; then
