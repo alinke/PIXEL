@@ -131,15 +131,6 @@ if cat /proc/device-tree/model | grep -q 'Pi Zero W'; then
    pizero=true
 fi
 
-#while true; do
-#    read -p "${magenta}Do you have a PixelcadeLCD Marquee (y/n)? ${white}" yn
-#    case $yn in
-#        [Yy]* ) lcd_marquee=true; break;;
-#        [Nn]* ) lcd_marquee=false; break;;
-#        * ) echo "Please answer y or n";;
-#    esac
-#done
-
 lcd_marquee=true
 
 if type -p java ; then
@@ -221,14 +212,7 @@ if [ "$lcd_marquee" = true ] ; then
   echo "${yellow}Changing the default font for the LCD Marquee...${white}"
   sudo sed -i 's/^LCDMarquee=no/LCDMarquee=yes/g' $HOME/pixelcade/settings.ini
   sudo sed -i 's/^font=Arial Narrow 7/font=Vectroid/g' $HOME/pixelcade/settings.ini
-  #echo "${yellow}Modifying /boot/config.txt for dual monitor support...${white}"
 fi
-
-#if [ "$retropie" = true ] ; then  #skip if no retropie as we'll start this later using systemd
-#    cd $HOME/pixelcade
-#    #./pixelweb -b & #run pixelweb in the background\
-#    ./pixelweb -b &
-#fi
 
 cd $HOME
 #if retropie is present, add our mods
@@ -284,13 +268,6 @@ if [ "$auto_update" = true ] ; then #add git pull to startup
     fi
 fi
 
-#if cat /boot/cmdline.txt | grep -q 'vt.global_cursor_default=0'; then
-#   echo "${yellow}Blinking cursor already disabled, skipping...${white}"
-#else
-#  echo "${yellow}Disabling blinking cursor...${white}"
-#  sudo sed -i "1 s|$| vt.global_cursor_default=0|" "/boot/cmdline.txt" #add this text at the end of the first line
-#fi
-
 if [ "$retropie" = true ] ; then
     # let's check if autostart.sh already has pixelcade added and if so, we don't want to add it twice
     #cd /opt/retropie/configs/all/
@@ -298,15 +275,11 @@ if [ "$retropie" = true ] ; then
       echo "${yellow}Pixelcade already added to autostart.sh, skipping...${white}"
     else
       echo "${yellow}Adding Pixelcade /opt/retropie/configs/all/autostart.sh...${white}"
-      #sudo sed -i '/^emulationstation.*/i echo "Waiting for PixelcadeLCD to be ready..."' /opt/retropie/configs/all/autostart.sh
-      sudo sed -i '/^emulationstation.*/i until $(curl --output /dev/null --silent --head --fail http://pixelcadedx.local:8080); do printf '\''|'\''; sleep 1; done' /opt/retropie/configs/all/autostart.sh
-      sudo sed -i '/^emulationstation.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
+      sudo awk '/^emulationstation.*/{while((getline p<f)>0) print p}1' f=/home/pi/pixelcade/system/autostart-insert.txt /opt/retropie/configs/all/autostart.sh > /opt/retropie/configs/all/tmpfile && sudo cp /opt/retropie/configs/all/tmpfile /opt/retropie/configs/all/autostart.sh && sudo chmod +x /opt/retropie/configs/all/autostart.sh
       #sudo sed -i '/^emulationstation.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
       if [ "$attractmode" = true ] ; then
           echo "${yellow}Adding Pixelcade for Attract Mode to /opt/retropie/configs/all/autostart.sh...${white}"
-          sudo sed -i '/^attract.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
-          #sudo sed -i '/^attract.*/i cd $HOME/pixelcade && ./pixelweb -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
-          sudo sed -i '/^attract.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
+          sudo awk '/^attract.*/{while((getline p<f)>0) print p}1' f=/home/pi/pixelcade/system/autostart-insert.txt /opt/retropie/configs/all/autostart.sh > /opt/retropie/configs/all/tmpfile && sudo cp /opt/retropie/configs/all/tmpfile /opt/retropie/configs/all/autostart.sh && sudo chmod +x /opt/retropie/configs/all/autostart.sh
       fi
     fi
     echo "${yellow}Installing Fonts...${white}"
@@ -331,16 +304,6 @@ else #there is no retropie so we need to add pixelcade /etc/rc.local instead
   sudo systemctl start pixelcade.service
   sudo systemctl enable pixelcade.service
 fi
-
-#setting up udev rules to change /dev/pixelcade0
-#cd $HOME/pixelcade
-#sudo cp 50-pixelcade.rules /etc/udev/rules.d
-#sudo /etc/init.d/udev restart
-
-# let's send a test image and see if it displays
-#sleep 5
-#cd $HOME/pixelcade
-#curl http://localhost/arcade/stream/mame/1941
 
 #let's write the version so the next time the user can try and know if he/she needs to upgrade
 echo $version > $HOME/pixelcade/pixelcade-version
