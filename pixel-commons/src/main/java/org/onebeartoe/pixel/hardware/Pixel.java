@@ -1179,7 +1179,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 			if (file.exists()) 
                         {
 				
-				/*Because the decoded gif is one big .rgb565 file that contains all the frames, we need
+                        /*Because the decoded gif is one big .rgb565 file that contains all the frames, we need
 			to use the raf pointer and extract just a single frame at a time and then we'll move the 
 			pointer to get the next frame until we reach the end of the file*/
 				
@@ -1299,6 +1299,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                         //GetPixelDecodedFrameLast("/Users/al/pixelcade/" + lastGIFDecodedPath + "/decoded/", lastGIFName, 1, 136, 12832, 128, 32); 
                         
                         //since the pinball gifs are one shot, we should only play the remaining frames left from the last one
+                        
+                        
                         GetPixelDecodedFrameLast(pixelHome + lastGIFDecodedPath + "/decoded/", lastGIFName, lastGIFLatestFrame, lastGIFTotalFrames, 12832, 128, 32); 
                        
                         System.out.println("lasttotlframes: " + lastGIFTotalFrames);
@@ -3369,6 +3371,122 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 }
         }
       }
+    }
+    
+     public void writePinballAnimation(String selectedPlatformName, String selectedFileName, boolean writeMode, int loop, boolean pixelConnected) throws NoSuchAlgorithmException
+    {
+       
+        GIFPlayed.add(selectedFileName);
+        System.out.println("GIF Queue: " + GIFPlayed);
+        if (GIFPlayed.size() > 1) {
+            lastGIFName = GIFPlayed.get(GIFPlayed.size()-2);
+            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+        }
+        
+        GIFPlayedDecodedPath.add(selectedPlatformName);
+        if (GIFPlayedDecodedPath.size() > 1) {
+            lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
+            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+        }
+
+        //we first need to check that pixel is connected and if not, let's write it to the queue
+        //ledblinky needed this because ledblanky calls pixelweb.exe and then immediately sends some commands
+        if (!pixelConnected) {
+           
+            //loop = 0 so we are not looping or we have a write command so let's reset everything and clear the Q
+                isLooping = false;
+                loopGIFCounter = 0;
+                loopTimesGlobal = 0;
+                PixelQueue.clear();
+                
+
+                if (isWindows()) {
+                    decodedAnimationsPath =  pixelHome + selectedPlatformName + "\\decoded\\";  //don't have to do this technically, just for display purposes
+                    gifFilePath = pixelHome + selectedPlatformName + "\\" + selectedFileName; //user home/pixelcade/mame/digdug.gif
+                }
+
+                else {
+                    decodedAnimationsPath =  pixelHome + selectedPlatformName + "/decoded/";   //pixelcade/mame/decoded
+                    gifFilePath = pixelHome + selectedPlatformName + "/" + selectedFileName; //user home/pixelcade/mame/digdug.gif
+                }
+
+                stopExistingTimer();
+
+                //let's make sure the target gif exists before proceeding
+                File file = new File(gifFilePath);
+
+                if (file.exists() && !file.isDirectory()) { 
+
+                       try 
+                       {
+                           System.out.println("Found GIF: " + gifFilePath);
+                           logMe.aLogger.info("Found GIF: " + gifFilePath);
+                           animationFilename = selectedFileName;
+                           if(gifTxtExists(decodedAnimationsPath,selectedFileName) == true && GIFRGB565Exists(decodedAnimationsPath,selectedFileName) == true)
+                           {
+                               System.out.println("This GIF was already decoded");
+                               logMe.aLogger.info("This GIF was already decoded");
+                           }
+                           else
+                           {
+                               System.out.println("Decoding " + selectedFileName);
+                               System.out.println("Decoding " + gifFilePath);
+                               logMe.aLogger.info("Decoding " + gifFilePath);
+                               // the text file is not there so we cannot continue and we must decode, let's first copy the file to home dir
+                               decodeArcadeGIFConstantFrameRate(decodedAnimationsPath, gifFilePath,selectedFileName, currentResolution, KIND.width, KIND.height);
+                           }
+
+                           if (GIFArcadeNeedsDecoding(decodedAnimationsPath, selectedFileName, currentResolution,gifFilePath) == true)
+                           {
+                               System.out.println("Selected LED panel is different than the encoded GIF, need to re-encode...");
+                               logMe.aLogger.info("Selected LED panel is different than the encoded GIF, need to re-encode...");
+                               decodeArcadeGIFConstantFrameRate(decodedAnimationsPath, gifFilePath, selectedFileName, currentResolution, KIND.width, KIND.height);
+                           }
+
+                           //****** Now let's setup the animation ******
+
+                           // TODO: replace animation_name with selectedFileName
+                           String animation_name = selectedFileName;
+
+                           float GIFfps = getDecodedfps(decodedAnimationsPath, animation_name); //get the fps //to do fix this later becaause we are getting from internal path
+                           GIFnumFrames = getDecodednumFrames(decodedAnimationsPath, animation_name);
+                           int gifSelectedFileDelay = getDecodedframeDelay(decodedAnimationsPath, animation_name);
+
+                           currentResolution = getDecodedresolution(decodedAnimationsPath, animation_name);
+                           GIFresolution = currentResolution;
+
+                           System.out.println("GIF Width: " + KIND.width + ", GIF Height: " + KIND.height);
+                           logMe.aLogger.info("GIF Width: " + KIND.width + ", GIF Height: " + KIND.height);
+
+                           String pixelHardwareId = "not found";
+                           try
+                           {
+                               pixelHardwareId = ioiO.getImplVersion(v.HARDWARE_VER);
+                           }
+                           catch (ConnectionLostException ex)
+                           {
+                               Logger.getLogger(Pixel.class.getName()).log(Level.SEVERE, null, ex);
+                               logMe.aLogger.log(Level.SEVERE, Pixel.class.getName(), ex);
+                           }
+
+                            interactiveMode();  //we are streaming here so need to put in interactive mode first , otherwise we're just playing locally
+
+                            ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+                            future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+                            streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
+
+                           
+                            } 
+                            catch (IOException ex) 
+                            {
+                                Logger.getLogger(Pixel.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                } else {
+                     System.out.println("** ERROR ** GIF file not found: " + gifFilePath);
+                     logMe.aLogger.severe("GIF file not found: " + gifFilePath);
+                }
+        
+        }
     }
     
     public void writeAnimationFilePath(String selectedPlatformName, String selectedFileName, boolean writeMode, int loop, boolean pixelConnected) throws NoSuchAlgorithmException

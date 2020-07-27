@@ -46,6 +46,7 @@ import static org.onebeartoe.pixel.hardware.Pixel.isWindows;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsListHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ArcadeHttpHandler;
+import org.onebeartoe.web.enabled.pixel.controllers.PinballHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ArcadeListHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ClockHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ConsoleHttpHandler;
@@ -654,6 +655,8 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             
             HttpHandler arcadeHttpHandler = new ArcadeHttpHandler(this);
             
+            HttpHandler pinballHttpHandler = new PinballHttpHandler(this);
+            
             HttpHandler pindmdHttpHandler = new PinDMDHttpHandler(this);
             
             HttpHandler quitHttpHandler = new QuitHttpHandler(this);
@@ -675,6 +678,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                                             server.createContext("/animations/save", animationsListHttpHandler);
                                             
             HttpContext arcadeContext =     server.createContext("/arcade", arcadeHttpHandler);
+                                            server.createContext("/pinball", pinballHttpHandler);
                                             server.createContext("/quit", quitHttpHandler);
                                             server.createContext("/shutdown", shutdownHttpHandler);
                                             server.createContext("/reboot", rebootHttpHandler);
@@ -682,7 +686,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                                             server.createContext("/arcade/list", arcadeListHttpHandler);
                                             server.createContext("/console", consoleListHttpHandler);
                                             server.createContext("/localplayback",localModeHttpHandler);
-                                            
             
             HttpContext pindmdContext =     server.createContext("/dmd", pindmdHttpHandler);
 
