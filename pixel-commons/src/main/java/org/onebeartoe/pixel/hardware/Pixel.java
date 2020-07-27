@@ -7,6 +7,7 @@ import ioio.lib.api.RgbLedMatrix;
 
 import ioio.lib.api.IOIO.VersionType;
 import ioio.lib.api.exception.ConnectionLostException;
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -21,7 +22,10 @@ import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +38,7 @@ import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,6 +51,7 @@ import java.util.logging.Logger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.DigestInputStream;
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -58,6 +64,7 @@ import org.gifdecoder.GifDecoder;
 import org.onebeartoe.pixel.LogMe;
 import java.util.Queue; 
 import java.util.LinkedList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
@@ -87,6 +94,10 @@ public class Pixel
     public static  AnalogInput analogInput2;
     
     protected byte[] BitmapBytes;
+    
+    protected byte[] BitmapBytesLast;
+    
+    protected byte[] BitmapBytesOverlay;
     
     protected InputStream BitmapInputStream;
     
@@ -238,6 +249,19 @@ public class Pixel
     
     private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
     
+    
+    private String lastGIFName = "";
+    private ArrayList<String> GIFPlayed = new ArrayList<>();
+    
+    private String lastGIFDecodedPath = "";
+    private ArrayList<String> GIFPlayedDecodedPath = new ArrayList<>();
+    
+    private int lastGIFLatestFrame = 0;
+    private ArrayList<Integer> GIFLatestFrame = new ArrayList<>();
+    
+    private int lastGIFTotalFrames = 0;
+    private ArrayList<Integer> GIFTotalFrames = new ArrayList<>();
+    
     //private TimerTask animateTimer = new AnimateTimer();
     
     /**
@@ -279,6 +303,10 @@ public class Pixel
         this.currentResolution = resolution;
 	
 	BitmapBytes = new byte[KIND.width * KIND.height * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        
+        BitmapBytesLast = new byte[KIND.width * KIND.height * 2]; 
+        
+        BitmapBytesOverlay = new byte[KIND.width * KIND.height * 2]; 
 	
 	frame_ = new short[KIND.width * KIND.height];
         
@@ -997,16 +1025,155 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     }
     */
     
-    public void sendPixelDecodedFrame(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
+    public void GetPixelDecodedFrameLast(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
-		 
-    	BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
-		frame_ = new short[frameWidth * frameHeight];
+        BitmapBytesLast = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        frame_ = new short[frameWidth * frameHeight];
 		
-		gifName = FilenameUtils.removeExtension(gifName); //with no extension
+	gifName = FilenameUtils.removeExtension(gifName); //with no extension
     	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
     	String gifname2 = gifName;
+    	
+    	File file = new File(gifNamePath);
+			if (file.exists()) 
+                        {
+				
+                        /*Because the decoded gif is one big .rgb565 file that contains all the frames, we need
+			to use the raf pointer and extract just a single frame at a time and then we'll move the 
+			pointer to get the next frame until we reach the end of the file*/
+				
+                        RandomAccessFile raf = null;
+			
+			//let's setup the seeker object and set it at the beginning of the rgb565 file
+			try {
+				raf = new RandomAccessFile(file, "r");
+				try {
+					raf.seek(0);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			} catch (FileNotFoundException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}  // "r" means open the file for reading
+			
+			int frame_length;
+			
+			switch (selectedFileResolution) {
+                                case 16:
+                                    frame_length = 1024;
+                                    break;
+                                case 32:
+                                    frame_length = 2048;
+                                    break;
+                                case 6416:
+                                    frame_length = 2048;
+                                    break;
+                                case 12816:
+                                    frame_length = 4096;
+                                    break;
+                                case 25616:
+                                    frame_length = 8192;
+                                    break;
+                                case 64:
+                                    frame_length = 4096;
+                                    break;
+                                case 64999:
+                                    frame_length = 4096; //had to add unique ones (999) for mirror to force re-encoding when led panel is switched
+                                    break;
+                                case 128:
+                                    frame_length = 8192;
+                                    break;
+                                case 12832:
+                                    frame_length = 8192;
+                                    break;
+                                case 128999:
+                                    frame_length = 8192; //had to add unique ones (999) for mirror to force re-encoding when led panel is switched
+                                    break;
+                                default:
+                                    frame_length = 2048;
+                                    break;
+	          }
+			
+			//now let's see forward to a part of the file
+			try {
+				raf.seek(x*frame_length);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} 
+			
+   			 
+   			if (frame_length > Integer.MAX_VALUE) {
+   			    try {
+					throw new IOException("The file is too big");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+   			}
+   			 
+   			// Create the byte array to hold the data
+   			BitmapBytesLast = new byte[(int)frame_length];
+                        
+                        //if merge, then create a new frame that is a merge of previous gif
+
+   			// Read in the bytes
+   			int offset = 0;
+   			int numRead = 0;
+   			try {
+				while (offset < BitmapBytesLast.length && (numRead=raf.read(BitmapBytesLast, offset, BitmapBytesLast.length-offset)) >= 0) {
+				    offset += numRead;
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+   			 
+   			// Ensure all the bytes have been read in
+   			if (offset < BitmapBytesLast.length) {
+   			    try {
+					throw new IOException("The file was not completely read: "+file.getName());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+   			}
+   			 
+   			// Close the input stream, all file contents are in the bytes variable
+   			try {
+   				raf.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        }
+        
+    }
     
+    public void sendPixelDecodedFrame(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
+    {
+      
+        GIFLatestFrame.add(x);
+        if (GIFLatestFrame.size()>1) {
+            lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2);
+            System.out.println("Last Frame index: " + lastGIFLatestFrame);
+        }
+        
+        GIFTotalFrames.add(selectedFileTotalFrames);
+        if (GIFTotalFrames.size()>1) {
+            lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2);
+            System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
+        }
+        
+        BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        frame_ = new short[frameWidth * frameHeight];
+		
+	gifName = FilenameUtils.removeExtension(gifName); //with no extension
+    	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
+    	String gifname2 = gifName;
     	
     	File file = new File(gifNamePath);
 			if (file.exists()) 
@@ -1016,7 +1183,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 			to use the raf pointer and extract just a single frame at a time and then we'll move the 
 			pointer to get the next frame until we reach the end of the file*/
 				
-     		RandomAccessFile raf = null;
+                        RandomAccessFile raf = null;
 			
 			//let's setup the seeker object and set it at the beginning of the rgb565 file
 			try {
@@ -1091,7 +1258,211 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
    			 
    			// Create the byte array to hold the data
    			BitmapBytes = new byte[(int)frame_length];
-   			
+                        
+                        //if merge, then create a new frame that is a merge of previous gif
+
+   			// Read in the bytes
+   			int offset = 0;
+   			int numRead = 0;
+   			try {
+				while (offset < BitmapBytes.length && (numRead=raf.read(BitmapBytes, offset, BitmapBytes.length-offset)) >= 0) {
+				    offset += numRead;
+				}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+   			 
+   			// Ensure all the bytes have been read in
+   			if (offset < BitmapBytes.length) {
+   			    try {
+					throw new IOException("The file was not completely read: "+file.getName());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+   			}
+   			 
+   			// Close the input stream, all file contents are in the bytes variable
+   			try {
+   				raf.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+                        
+                    boolean merge = true;
+                        
+                    if (merge) {
+                        //get the previous gif frame byte
+                        //GetPixelDecodedFrameLast("/Users/al/pixelcade/pinball/decoded/", "Chekkah", 1, 30, 12832, 128, 32); 
+                        //GetPixelDecodedFrameLast("/Users/al/pixelcade/" + lastGIFDecodedPath + "/decoded/", lastGIFName, 1, 136, 12832, 128, 32); 
+                        
+                        //since the pinball gifs are one shot, we should only play the remaining frames left from the last one
+                        GetPixelDecodedFrameLast(pixelHome + lastGIFDecodedPath + "/decoded/", lastGIFName, lastGIFLatestFrame, lastGIFTotalFrames, 12832, 128, 32); 
+                       
+                        System.out.println("lasttotlframes: " + lastGIFTotalFrames);
+                               
+                        for (int i = 0; i < BitmapBytes.length; i++) {
+                            //System.out.println("byte: " + i);
+                            byte transparent = 0x00000000;
+                            int output = Byte.compare(BitmapBytes[i], transparent);
+                                
+                            if (output == 0) {                                 //if the new byte is transparent, then take the last byte
+                                BitmapBytesOverlay[i] =BitmapBytesLast[i];
+                                 //System.out.println("LENGTH: " + BitmapBytes.length);
+                                //System.out.println("byte is transparent: " + i);
+                                //System.out.println("byte: " + BitmapBytes[i]);
+                            }
+                            else {                                          //if the new byte is not transparent, then take the new byte
+                                BitmapBytesOverlay[i] = BitmapBytes[i];
+                                //System.out.println("byte not transparent: " + i);
+                                //System.out.println("byte: " + BitmapBytes[i]);
+                            }
+                        }
+                        
+                        int y = 0;
+                        
+                        for (int i = 0; i < frame_.length; i++) 
+                        {
+                                frame_[i] = (short) (((short) BitmapBytesOverlay[y] & 0xFF) | (((short) BitmapBytesOverlay[y + 1] & 0xFF) << 8));
+                                y = y + 2;
+                        }
+                        
+                    }
+                    else {
+                        int y = 0;
+                        for (int i = 0; i < frame_.length; i++) 
+                        {
+                            frame_[i] = (short) (((short) BitmapBytes[y] & 0xFF) | (((short) BitmapBytes[y + 1] & 0xFF) << 8));
+                            y = y + 2;
+                        }
+                    }
+     		
+                    try 
+                    {
+                            matrix.frame(frame_);  //send the frame to the LED matrix
+
+                    } 
+                    catch (ConnectionLostException e) 
+                    {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                    }
+			
+        }
+        else 
+        {
+            System.out.println("Decoded file does not exist");
+        }
+    }
+    
+    private BufferedImage createImageFromBytes(byte[] imageData) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+        try {
+            return ImageIO.read(bais);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void sendPixelDecodedFrame0(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
+    {
+        
+        BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        frame_ = new short[frameWidth * frameHeight];
+		
+	gifName = FilenameUtils.removeExtension(gifName); //with no extension
+    	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
+    	String gifname2 = gifName;
+    
+    	
+    	File file = new File(gifNamePath);
+			if (file.exists()) 
+                        {
+				
+			/*Because the decoded gif is one big .rgb565 file that contains all the frames, we need
+			to use the raf pointer and extract just a single frame at a time and then we'll move the 
+			pointer to get the next frame until we reach the end of the file*/
+				
+                        RandomAccessFile raf = null;
+			
+			//let's setup the seeker object and set it at the beginning of the rgb565 file
+			try {
+				raf = new RandomAccessFile(file, "r");
+				try {
+					raf.seek(0);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			} catch (FileNotFoundException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}  // "r" means open the file for reading
+			
+			int frame_length;
+			
+			switch (selectedFileResolution) {
+                                case 16:
+                                    frame_length = 1024;
+                                    break;
+                                case 32:
+                                    frame_length = 2048;
+                                    break;
+                                case 6416:
+                                    frame_length = 2048;
+                                    break;
+                                case 12816:
+                                    frame_length = 4096;
+                                    break;
+                                case 25616:
+                                    frame_length = 8192;
+                                    break;
+                                case 64:
+                                    frame_length = 4096;
+                                    break;
+                                case 64999:
+                                    frame_length = 4096; //had to add unique ones (999) for mirror to force re-encoding when led panel is switched
+                                    break;
+                                case 128:
+                                    frame_length = 8192;
+                                    break;
+                                case 12832:
+                                    frame_length = 8192;
+                                    break;
+                                case 128999:
+                                    frame_length = 8192; //had to add unique ones (999) for mirror to force re-encoding when led panel is switched
+                                    break;
+                                default:
+                                    frame_length = 2048;
+                                    break;
+	          }
+			
+			//now let's see forward to a part of the file
+			try {
+				raf.seek(x*frame_length);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} 
+			
+   			 
+   			if (frame_length > Integer.MAX_VALUE) {
+   			    try {
+					throw new IOException("The file is too big");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+   			}
+   			 
+   			// Create the byte array to hold the data
+   			BitmapBytes = new byte[(int)frame_length];
+                        
+                        //if merge, then create a new frame that is a merge of previous gif
+
    			// Read in the bytes
    			int offset = 0;
    			int numRead = 0;
@@ -1122,18 +1493,19 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 				e1.printStackTrace();
 			}	
    			
-   			//now that we have the byte array loaded, load it into the frame short array
-   			
-   			int y = 0;
-     		for (int i = 0; i < frame_.length; i++) 
-                {
-     			frame_[i] = (short) (((short) BitmapBytes[y] & 0xFF) | (((short) BitmapBytes[y + 1] & 0xFF) << 8));
-     			y = y + 2;
-     		}
+                        
+                        //now that we have the byte array loaded, load it into the frame short array
+                        int y = 0;
+                        
+                        for (int i = 0; i < frame_.length; i++) 
+                        {
+                                frame_[i] = (short) (((short) BitmapBytes[y] & 0xFF) | (((short) BitmapBytes[y + 1] & 0xFF) << 8));
+                                y = y + 2;
+                        }
      		
 		   	try 
                         {
-		   		matrix.frame(frame_);
+		   		matrix.frame(frame_);  //send the frame to the LED matrix
 				
 			} 
                         catch (ConnectionLostException e) 
@@ -1145,9 +1517,12 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         }
         else 
         {
-            // do nothing huh?
+            System.out.println("Decoded file does not exist");
         }
     }
+    
+ 
+  
    
 //    public void scrollText(String text, int loop, long speed, Color color, boolean pixelConnected,int scrollsmooth)
 //    {
@@ -1873,7 +2248,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     	    		 }
     	            
     	             //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
-    	    		 BufferedImage sendImg  = new BufferedImage(pixelMatrix_width, pixelMatrix_height, BufferedImage.TYPE_USHORT_565_RGB);
+                     BufferedImage sendImg  = new BufferedImage(pixelMatrix_width, pixelMatrix_height, BufferedImage.TYPE_USHORT_565_RGB);
     	             sendImg.getGraphics().drawImage(rotatedFrame, 0, 0, pixelMatrix_width, pixelMatrix_height, null);    
 
     	             int numByte=0;
@@ -2843,7 +3218,18 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     public void writeArcadeAnimation(String selectedPlatformName, String selectedFileName, boolean writeMode, int loop, boolean pixelConnected) throws NoSuchAlgorithmException
     {
        
-         //System.out.println("Looping Flag: " + isLooping);
+        GIFPlayed.add(selectedFileName);
+        System.out.println("GIF Queue: " + GIFPlayed);
+        if (GIFPlayed.size() > 1) {
+            lastGIFName = GIFPlayed.get(GIFPlayed.size()-2);
+            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+        }
+        
+        GIFPlayedDecodedPath.add(selectedPlatformName);
+        if (GIFPlayedDecodedPath.size() > 1) {
+            lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
+            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+        }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
         //ledblinky needed this because ledblanky calls pixelweb.exe and then immediately sends some commands
@@ -2898,7 +3284,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 //let's make sure the target gif exists before proceeding
                 File file = new File(gifFilePath);
 
-                if(file.exists() && !file.isDirectory()) { 
+                if (file.exists() && !file.isDirectory()) { 
 
                        try 
                        {
