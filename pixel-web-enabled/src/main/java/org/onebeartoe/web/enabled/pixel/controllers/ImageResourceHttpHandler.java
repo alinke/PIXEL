@@ -102,6 +102,10 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
             {
                 imageClassPath = requestURI.toString(); //this returns /arcade/stream/mame/pacman?t=1?c=2?r=5
             }
+            else if( path.contains("/pinball/"))
+            {
+                imageClassPath = requestURI.toString(); //this returns /arcade/stream/mame/pacman?t=1?c=2?r=5
+            }
              else if( path.contains("/localplayback"))
             {
                 imageClassPath = requestURI.toString(); 
