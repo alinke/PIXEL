@@ -218,6 +218,7 @@ public class Pixel
 //    private FontMetrics fm;
         
     private StreamGIFTask streamgifTask = new StreamGIFTask();
+    private StreamPinballTask streampinballTask = new StreamPinballTask();
     private ScrollTextTask scollTextTask = new ScrollTextTask();
     private DrawAnalogClockTask clockTask = new DrawAnalogClockTask();
     private PNGLoopTask pngLoopTask = new PNGLoopTask();
@@ -226,11 +227,15 @@ public class Pixel
     private  ScheduledFuture<?> futurescroll ;
     private  ScheduledFuture<?> futureclock ;
     private  ScheduledFuture<?> futureimage ;
+    private  ScheduledFuture<?> futurepinball ;
     
     private final AtomicBoolean streamGIFTimerRunningFlag = new AtomicBoolean();
     private final AtomicBoolean scrollingTextTimerRunningFlag = new AtomicBoolean();
     private final AtomicBoolean clockTimerRunningFlag = new AtomicBoolean();
     private final AtomicBoolean PNGTimerRunningFlag = new AtomicBoolean();
+    private final AtomicBoolean PinballAnimationRunningFlag = new AtomicBoolean();
+    private final AtomicBoolean PinballAnimationInterrupt = new AtomicBoolean();
+    private final AtomicBoolean PinballAnimationWasInterrupted = new AtomicBoolean();
     
     public Queue<String> PixelQueue = new LinkedList<>(); 
     
@@ -1153,19 +1158,20 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         
     }
     
-    public void sendPixelDecodedFrame(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
+    public void sendPixelDecodedFramePinball(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
       
+        //TO DO need to make sure this is no bigger than 3 or so
         GIFLatestFrame.add(x);
         if (GIFLatestFrame.size()>1) {
             lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2);
-            System.out.println("Last Frame index: " + lastGIFLatestFrame);
+            //System.out.println("Last Frame index: " + lastGIFLatestFrame);
         }
         
         GIFTotalFrames.add(selectedFileTotalFrames);
         if (GIFTotalFrames.size()>1) {
             lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2);
-            System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
+            //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
         }
         
         BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
@@ -1291,9 +1297,11 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 				e1.printStackTrace();
 			}
                         
-                    boolean merge = true;
+                    //boolean merge = true;
+                   
                         
-                    if (merge) {
+                    //if (merge) {
+                    if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1) {   //if there is still a pinball animation running, then overaly
                         //get the previous gif frame byte
                         //GetPixelDecodedFrameLast("/Users/al/pixelcade/pinball/decoded/", "Chekkah", 1, 30, 12832, 128, 32); 
                         //GetPixelDecodedFrameLast("/Users/al/pixelcade/" + lastGIFDecodedPath + "/decoded/", lastGIFName, 1, 136, 12832, 128, 32); 
@@ -1303,7 +1311,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                         
                         GetPixelDecodedFrameLast(pixelHome + lastGIFDecodedPath + "/decoded/", lastGIFName, lastGIFLatestFrame, lastGIFTotalFrames, 12832, 128, 32); 
                        
-                        System.out.println("lasttotlframes: " + lastGIFTotalFrames);
+                        //System.out.println("lasttotlframes: " + lastGIFTotalFrames);
                                
                         for (int i = 0; i < BitmapBytes.length; i++) {
                             //System.out.println("byte: " + i);
@@ -1359,16 +1367,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         }
     }
     
-    private BufferedImage createImageFromBytes(byte[] imageData) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-        try {
-            return ImageIO.read(bais);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    public void sendPixelDecodedFrame0(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
+    public void sendPixelDecodedFrame(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
         
         BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
@@ -3182,6 +3181,12 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 future.cancel(true); //dont' interrupt if busy but we're cancelling this timer
                 z = 0; 
             }
+            
+            if (PinballAnimationRunningFlag.get() == true) {
+                PinballAnimationRunningFlag.set(false);
+                futurepinball.cancel(true); //dont' interrupt if busy but we're cancelling this timer
+                z = 0;
+            }
 
             if (scrollingTextTimerRunningFlag.get() == true) {
                 //drawktask.shutdown();    //looks like this is not needed
@@ -3219,19 +3224,6 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     
     public void writeArcadeAnimation(String selectedPlatformName, String selectedFileName, boolean writeMode, int loop, boolean pixelConnected) throws NoSuchAlgorithmException
     {
-       
-        GIFPlayed.add(selectedFileName);
-        System.out.println("GIF Queue: " + GIFPlayed);
-        if (GIFPlayed.size() > 1) {
-            lastGIFName = GIFPlayed.get(GIFPlayed.size()-2);
-            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
-        }
-        
-        GIFPlayedDecodedPath.add(selectedPlatformName);
-        if (GIFPlayedDecodedPath.size() > 1) {
-            lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
-            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
-        }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
         //ledblinky needed this because ledblanky calls pixelweb.exe and then immediately sends some commands
@@ -3377,27 +3369,27 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     {
        
         GIFPlayed.add(selectedFileName);
-        System.out.println("GIF Queue: " + GIFPlayed);
+        //System.out.println("GIF Queue: " + GIFPlayed);
         if (GIFPlayed.size() > 1) {
             lastGIFName = GIFPlayed.get(GIFPlayed.size()-2);
-            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+            //System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
         }
         
         GIFPlayedDecodedPath.add(selectedPlatformName);
         if (GIFPlayedDecodedPath.size() > 1) {
             lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
-            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+            //System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
         }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
         //ledblinky needed this because ledblanky calls pixelweb.exe and then immediately sends some commands
-        if (!pixelConnected) {
+        if (pixelConnected) {
            
             //loop = 0 so we are not looping or we have a write command so let's reset everything and clear the Q
-                isLooping = false;
-                loopGIFCounter = 0;
-                loopTimesGlobal = 0;
-                PixelQueue.clear();
+            isLooping = false;
+            loopGIFCounter = 0;
+            loopTimesGlobal = 0;
+            PixelQueue.clear();
                 
 
                 if (isWindows()) {
@@ -3470,12 +3462,23 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                            }
 
                             interactiveMode();  //we are streaming here so need to put in interactive mode first , otherwise we're just playing locally
+                            
+                            
+//                             ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+//                             future = streamGIFservice.scheduleAtFixedRate(streampinballTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+//                             streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
+                            
+                            if (PinballAnimationInterrupt.get() == true) {  //we want to know if the previous animation had finished or is still running so we can overlay or not
+                                PinballAnimationWasInterrupted.set(true);
+                            }
+                            else {
+                                PinballAnimationWasInterrupted.set(false);
+                            }
 
-                            ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
-                            future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
-                            streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
-
-                           
+                            ScheduledExecutorService streamPinballservice = Executors.newScheduledThreadPool(1);
+                            futurepinball = streamPinballservice.scheduleAtFixedRate(streampinballTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+                            PinballAnimationRunningFlag.set(true);
+                            
                             } 
                             catch (IOException ex) 
                             {
@@ -3485,7 +3488,10 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                      System.out.println("** ERROR ** GIF file not found: " + gifFilePath);
                      logMe.aLogger.severe("GIF file not found: " + gifFilePath);
                 }
-        
+        }
+        else {
+            System.out.println("[ERROR] Pixelcade not Connected");
+            logMe.aLogger.severe("[ERROR] Pixelcade not Connected");
         }
     }
     
@@ -4208,6 +4214,39 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
            
         }
     } 
+     
+      public class StreamPinballTask implements Runnable {  //this is a timer than runs every x ms
+
+        public void run() {
+       
+         if (PinballAnimationRunningFlag.get() == true && !Thread.currentThread().isInterrupted()) {
+            
+            PinballAnimationInterrupt.set(true);  //this is how we know if we got interrupted and need to overlay
+            
+            if (z >= GIFnumFrames) { //then we've completed one loop
+                z = 0;
+                stopExistingTimer();
+                interactiveMode(); //clear the display like this or send a blank frame
+                PinballAnimationInterrupt.set(false);
+                //loopGIFCounter++;
+            }
+            
+            else {
+           
+                if (PinballAnimationRunningFlag.get() == true) {
+                    sendPixelDecodedFramePinball(decodedAnimationsPath, animationFilename, z, GIFnumFrames, GIFresolution, KIND.width,KIND.height);
+                    z++;
+                } //if z is not reset, then we could be sending a frame that doesn't exist and hence ioio disconnect
+                //sendPixelDecodedFrame(decodedAnimationsPath, animationFilename, z, GIFnumFrames, GIFresolution, KIND.width,KIND.height); //if z is not reset, then we could be sending a frame that doesn't exist and hence ioio disconnect
+                //z++; //???????
+            }
+         } 
+        }
+
+        void shutdown() { //not using
+           
+        }
+    }  
      
      
      
