@@ -1296,41 +1296,27 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-                        
-                    //boolean merge = true;
-                   
-                        
-                    //if (merge) {
+                 
                     if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1) {   //if there is still a pinball animation running, then overaly
-                        //get the previous gif frame byte
-                        //GetPixelDecodedFrameLast("/Users/al/pixelcade/pinball/decoded/", "Chekkah", 1, 30, 12832, 128, 32); 
-                        //GetPixelDecodedFrameLast("/Users/al/pixelcade/" + lastGIFDecodedPath + "/decoded/", lastGIFName, 1, 136, 12832, 128, 32); 
+                      
                         
                         //since the pinball gifs are one shot, we should only play the remaining frames left from the last one
                         
                         
                         GetPixelDecodedFrameLast(pixelHome + lastGIFDecodedPath + "/decoded/", lastGIFName, lastGIFLatestFrame, lastGIFTotalFrames, 12832, 128, 32); 
-                       
-                        //System.out.println("lasttotlframes: " + lastGIFTotalFrames);
                                
                         for (int i = 0; i < BitmapBytes.length; i++) {
-                            //System.out.println("byte: " + i);
                             byte transparent = 0x00000000;
                             int output = Byte.compare(BitmapBytes[i], transparent);
                                 
                             if (output == 0) {                                 //if the new byte is transparent, then take the last byte
                                 BitmapBytesOverlay[i] =BitmapBytesLast[i];
-                                 //System.out.println("LENGTH: " + BitmapBytes.length);
-                                //System.out.println("byte is transparent: " + i);
-                                //System.out.println("byte: " + BitmapBytes[i]);
                             }
                             else {                                          //if the new byte is not transparent, then take the new byte
                                 BitmapBytesOverlay[i] = BitmapBytes[i];
-                                //System.out.println("byte not transparent: " + i);
-                                //System.out.println("byte: " + BitmapBytes[i]);
                             }
                         }
-                        
+//                   
                         int y = 0;
                         
                         for (int i = 0; i < frame_.length; i++) 
@@ -3369,16 +3355,20 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     {
        
         GIFPlayed.add(selectedFileName);
-        //System.out.println("GIF Queue: " + GIFPlayed);
+        
         if (GIFPlayed.size() > 1) {
-            lastGIFName = GIFPlayed.get(GIFPlayed.size()-2);
-            //System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+            lastGIFName = GIFPlayed.get(GIFPlayed.size()-2); //get the second to last item, we want to know the gif that was playing before this current one
+//            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+//            System.out.println("GIF Queue: " + GIFPlayed);
+            GIFPlayed.remove(0); //remove the top item of the Q so we don't fill up memory
         }
         
         GIFPlayedDecodedPath.add(selectedPlatformName);
         if (GIFPlayedDecodedPath.size() > 1) {
             lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
-            //System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+//            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+//            System.out.println("Decoded GIF Queue: " + GIFPlayedDecodedPath);
+            GIFPlayedDecodedPath.remove(0); //remove top item of Q so we don't fill up memory
         }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
