@@ -134,7 +134,7 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
           case "loop":
             loop_ = Integer.valueOf(param.getValue()).intValue();
              break;
-          case "no":  //no overlay
+          case "no":  //no overlay , did not implement this yet
             overlay = false;
             break;
         } 
@@ -156,7 +156,6 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
       if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
         pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
         pinTable = "pinball/" + pinTable;
-        System.out.println("Found in table path");
       } 
       else {  //if not in the specific table folder, let's get it from the pinball folder           //pixelcade/pinball/animation
        
@@ -165,9 +164,7 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
           
           if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
                pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
-               System.out.println("Found in generic path");
                pinTable = "pinball";
-              
         } 
       } 
       
@@ -182,14 +179,14 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
         saveAnimation = false; //we're streaming which would be the most common case
         
       if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-          handleGIF(pinTable, pinAnimationNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);  //either pinball/gif or pinball/table/gif
+            handleGIF(pinTable, pinAnimationNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);  //either pinball/gif or pinball/table/gif
       } 
       
     } else {
-      System.out.println("** ERROR ** URL format incorect, use http://localhost:8080/pinball/stream/<Pin Table Name>/<Pin GIF Name>");
-      System.out.println("Example: http://localhost:8080/pinball/write/mame/pacman.png or http://localhost:8080/pinball/stream/atari2600/digdug.gif");
-      LogMe.aLogger.severe("** ERROR ** URL format incorect, use http://localhost:8080/pinball/<stream or write>/<platform name>/<game name .gif or .png>");
-      LogMe.aLogger.severe("Example: http://localhost:8080/pinball/write/mame/pacman.png or http://localhost:8080/pinball/stream/atari2600/digdug.gif");
+            System.out.println("[ERROR] URL format incorect, use http://localhost:8080/pinball/stream/<Pinball Table/ROM Name>/<Pinball GIF Name>");
+            System.out.println("Example: http://localhost:8080/pinball/stream/tron/s02");
+            LogMe.aLogger.severe("[ERROR] URL format incorect, use http://localhost:8080/pinball/stream/<Pinball Table/ROM Name>/<Pinball GIF Name>");
+            LogMe.aLogger.severe("Example: http://localhost:8080/pinball/stream/tron/s02");
     } 
   }
 }

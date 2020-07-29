@@ -7,25 +7,19 @@ import ioio.lib.api.RgbLedMatrix;
 
 import ioio.lib.api.IOIO.VersionType;
 import ioio.lib.api.exception.ConnectionLostException;
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,34 +31,25 @@ import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.DigestInputStream;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 import org.apache.commons.io.FilenameUtils;
 import org.gifdecoder.GifDecoder;
 import org.onebeartoe.pixel.LogMe;
 import java.util.Queue; 
 import java.util.LinkedList;
-import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
@@ -1032,8 +1017,10 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     
     public void GetPixelDecodedFrameLast(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
-        BitmapBytesLast = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
-        frame_ = new short[frameWidth * frameHeight];
+//        BitmapBytesLast = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+//        frame_ = new short[frameWidth * frameHeight];
+        
+        Arrays.fill(BitmapBytesLast, (byte)0); 
 		
 	gifName = FilenameUtils.removeExtension(gifName); //with no extension
     	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
@@ -1121,7 +1108,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
    			}
    			 
    			// Create the byte array to hold the data
-   			BitmapBytesLast = new byte[(int)frame_length];
+   			//BitmapBytesLast = new byte[(int)frame_length];
                         
                         //if merge, then create a new frame that is a merge of previous gif
 
@@ -1174,8 +1161,11 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
         }
         
-        BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
-        frame_ = new short[frameWidth * frameHeight];
+        //made a change to not create new arrays and re-use existing global one so we need to clear the array here before we use it
+        Arrays.fill(BitmapBytes, (byte)0); 
+        Arrays.fill(frame_, (byte)0); 
+        //BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        //frame_ = new short[frameWidth * frameHeight];
 		
 	gifName = FilenameUtils.removeExtension(gifName); //with no extension
     	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
@@ -1263,7 +1253,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
    			}
    			 
    			// Create the byte array to hold the data
-   			BitmapBytes = new byte[(int)frame_length];
+   			//BitmapBytes = new byte[(int)frame_length];
                         
                         //if merge, then create a new frame that is a merge of previous gif
 
@@ -1297,7 +1287,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 				e1.printStackTrace();
 			}
                  
-                    if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1) {   //if there is still a pinball animation running, then overaly
+                      
+                      if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1 ) {   //if there is still a pinball animation running, then overaly
                       
                         
                         //since the pinball gifs are one shot, we should only play the remaining frames left from the last one
@@ -4216,7 +4207,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             if (z >= GIFnumFrames) { //then we've completed one loop
                 z = 0;
                 stopExistingTimer();
-                interactiveMode(); //clear the display like this or send a blank frame
+                //interactiveMode(); //clear the display like this or send a blank frame
                 PinballAnimationInterrupt.set(false);
                 //loopGIFCounter++;
             }
