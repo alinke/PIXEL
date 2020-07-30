@@ -1153,12 +1153,14 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         if (GIFLatestFrame.size()>1) {
             lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2);
             //System.out.println("Last Frame index: " + lastGIFLatestFrame);
+             GIFLatestFrame.remove(0);
         }
         
-        GIFTotalFrames.add(selectedFileTotalFrames);
+        GIFLatestFrame.add(selectedFileTotalFrames);
         if (GIFTotalFrames.size()>1) {
             lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2);
             //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
+            GIFLatestFrame.remove(0);
         }
         
         //made a change to not create new arrays and re-use existing global one so we need to clear the array here before we use it
@@ -4209,7 +4211,6 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 stopExistingTimer();
                 interactiveMode(); //clear the display like this or send a blank frame
                 PinballAnimationInterrupt.set(false);
-                //loopGIFCounter++;
             }
             
             else {
@@ -4217,9 +4218,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 if (PinballAnimationRunningFlag.get() == true) {
                     sendPixelDecodedFramePinball(decodedAnimationsPath, animationFilename, z, GIFnumFrames, GIFresolution, KIND.width,KIND.height);
                     z++;
-                } //if z is not reset, then we could be sending a frame that doesn't exist and hence ioio disconnect
-                //sendPixelDecodedFrame(decodedAnimationsPath, animationFilename, z, GIFnumFrames, GIFresolution, KIND.width,KIND.height); //if z is not reset, then we could be sending a frame that doesn't exist and hence ioio disconnect
-                //z++; //???????
+                } 
             }
          } 
         }
