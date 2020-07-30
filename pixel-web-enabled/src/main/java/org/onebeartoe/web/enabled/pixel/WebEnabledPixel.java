@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.Executors;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -618,6 +619,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         {
             InetSocketAddress anyhost = new InetSocketAddress(httpPort);
             server = HttpServer.create(anyhost, 0);
+            server.setExecutor(Executors.newFixedThreadPool(50));
             
             HttpHandler indexHttpHandler = new IndexHttpHandler();
             

@@ -4207,7 +4207,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             if (z >= GIFnumFrames) { //then we've completed one loop
                 z = 0;
                 stopExistingTimer();
-                //interactiveMode(); //clear the display like this or send a blank frame
+                interactiveMode(); //clear the display like this or send a blank frame
                 PinballAnimationInterrupt.set(false);
                 //loopGIFCounter++;
             }
