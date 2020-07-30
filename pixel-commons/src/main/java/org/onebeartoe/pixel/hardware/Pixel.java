@@ -1017,10 +1017,10 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     
     public void GetPixelDecodedFrameLast(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
-//        BitmapBytesLast = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
-//        frame_ = new short[frameWidth * frameHeight];
+       BitmapBytesLast = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+       frame_ = new short[frameWidth * frameHeight];
         
-        Arrays.fill(BitmapBytesLast, (byte)0); 
+       // Arrays.fill(BitmapBytesLast, (byte)0); 
 		
 	gifName = FilenameUtils.removeExtension(gifName); //with no extension
     	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
@@ -1108,7 +1108,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
    			}
    			 
    			// Create the byte array to hold the data
-   			//BitmapBytesLast = new byte[(int)frame_length];
+   			BitmapBytesLast = new byte[(int)frame_length];
                         
                         //if merge, then create a new frame that is a merge of previous gif
 
@@ -1153,21 +1153,21 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         if (GIFLatestFrame.size()>1) {
             lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2);
             //System.out.println("Last Frame index: " + lastGIFLatestFrame);
-             GIFLatestFrame.remove(0);
+             //GIFLatestFrame.remove(0);
         }
         
         GIFLatestFrame.add(selectedFileTotalFrames);
         if (GIFTotalFrames.size()>1) {
             lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2);
             //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
-            GIFLatestFrame.remove(0);
+            //GIFLatestFrame.remove(0);
         }
         
         //made a change to not create new arrays and re-use existing global one so we need to clear the array here before we use it
-        Arrays.fill(BitmapBytes, (byte)0); 
-        Arrays.fill(frame_, (byte)0); 
-        //BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
-        //frame_ = new short[frameWidth * frameHeight];
+        //Arrays.fill(BitmapBytes, (byte)0); 
+        //Arrays.fill(frame_, (byte)0); 
+        BitmapBytes = new byte[frameWidth * frameHeight * 2]; //512 * 2 = 1024 or 1024 * 2 = 2048
+        frame_ = new short[frameWidth * frameHeight];
 		
 	gifName = FilenameUtils.removeExtension(gifName); //with no extension
     	String gifNamePath = decodedDir + gifName + ".rgb565";  //  ex. c:\animations\decoded\tree.rgb565
@@ -1255,7 +1255,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
    			}
    			 
    			// Create the byte array to hold the data
-   			//BitmapBytes = new byte[(int)frame_length];
+   			BitmapBytes = new byte[(int)frame_length];
                         
                         //if merge, then create a new frame that is a merge of previous gif
 
@@ -3353,7 +3353,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             lastGIFName = GIFPlayed.get(GIFPlayed.size()-2); //get the second to last item, we want to know the gif that was playing before this current one
 //            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
 //            System.out.println("GIF Queue: " + GIFPlayed);
-            GIFPlayed.remove(0); //remove the top item of the Q so we don't fill up memory
+            //GIFPlayed.remove(0); //remove the top item of the Q so we don't fill up memory
         }
         
         GIFPlayedDecodedPath.add(selectedPlatformName);
@@ -3361,7 +3361,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
 //            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
 //            System.out.println("Decoded GIF Queue: " + GIFPlayedDecodedPath);
-            GIFPlayedDecodedPath.remove(0); //remove top item of Q so we don't fill up memory
+            //GIFPlayedDecodedPath.remove(0); //remove top item of Q so we don't fill up memory
         }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
