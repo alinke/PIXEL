@@ -38,16 +38,26 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
   }
   
   public void handleGIF(String pinTable, String PinAnimationName, Boolean saveAnimation, int loop) {
-    Pixel pixel = this.application.getPixel();
-   
-    try {
-      //pixel.writeArcadeAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
-      pixel.writePinballAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
-
-    } catch (NoSuchAlgorithmException ex) {
-      Logger.getLogger(PinballHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-    }
+    
+  try {
+    //pixel.writeArcadeAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
+    this.application.getPixel().writePinballAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
+  } catch (NoSuchAlgorithmException ex) {
+    Logger.getLogger(PinballHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
   }
+}
+  
+//  public void handleGIF(String pinTable, String PinAnimationName, Boolean saveAnimation, int loop) {
+//    Pixel pixel = this.application.getPixel();
+//   
+//    try {
+//      //pixel.writeArcadeAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
+//      pixel.writePinballAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
+//
+//    } catch (NoSuchAlgorithmException ex) {
+//      Logger.getLogger(PinballHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
+//    }
+//  }
   
   public void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
     Pixel pixel = this.application.getPixel();

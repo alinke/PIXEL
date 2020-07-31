@@ -619,7 +619,8 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         {
             InetSocketAddress anyhost = new InetSocketAddress(httpPort);
             server = HttpServer.create(anyhost, 0);
-            server.setExecutor(Executors.newFixedThreadPool(50));
+            //server.setExecutor(Executors.newFixedThreadPool(50));
+            server.setExecutor(Executors.newSingleThreadExecutor());
             
             HttpHandler indexHttpHandler = new IndexHttpHandler();
             
