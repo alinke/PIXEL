@@ -113,7 +113,10 @@ public class Pixel
     private String decodedArcadePath;//to do look into
     
     private int currentResolution;
+    
     ScheduledExecutorService streamPinballservice;
+    
+    ScheduledExecutorService streamGIFservice;
     
 // Is this a dup of currentResolution?    
     private static int GIFresolution;
@@ -2611,11 +2614,13 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 String plsWaitFilePathPNG = pixelHome + "system" + "/" + "wait.png";
                 File plsWaitFilePathPNG_ = new File(plsWaitFilePathPNG);
                
-                //the please wait here screws up the Q so let's do a hack and not call if this is the q is not empty
+                //the please wait here screws up the Q so let's do a hack and only call if the Q is empty
                 
-                if (plsWaitFilePathPNG_.exists() && PixelQueue.isEmpty())
+                if (plsWaitFilePathPNG_.exists() && PixelQueue.isEmpty() && isLooping == false)
                     writeArcadeImage(plsWaitFilePathPNG_, false, 0, "system", "wait.png",true); //loop cannot be blank otherwise we kill the Q for the random feature
         
+                //for some reason, on first time decoding, gif will not play after decoding, it's a problem
+                
                 int arcadeFrameDelayTarget = 100;
                 int arcadeCurrentFrameDelay = 100;
                 int numFramesCopy = 1;
@@ -3156,6 +3161,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             
             if (streamGIFTimerRunningFlag.get() == true) {
                 streamGIFTimerRunningFlag.set(false);
+                streamGIFservice.shutdownNow(); //Kai's memory optimization
                 future.cancel(true); //dont' interrupt if busy but we're cancelling this timer
                 z = 0; 
             }
@@ -3165,8 +3171,6 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                 streamPinballservice.shutdownNow();
                 futurepinball.cancel(true); //dont' interrupt if busy but we're cancelling this timer
                 z = 0;
-
-
             }
 
             if (scrollingTextTimerRunningFlag.get() == true) {
@@ -3328,9 +3332,20 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 
                                interactiveMode();  //we are streaming here so need to put in interactive mode first , otherwise we're just playing locally
 
-                               ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+//                               streampinballTask = new StreamPinballTask();
+//                               streamPinballservice = Executors.newScheduledThreadPool(1);
+//                               futurepinball = streamPinballservice.scheduleAtFixedRate(streampinballTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+//                               PinballAnimationRunningFlag.set(true);
+                               
+                               streamgifTask = new StreamGIFTask();
+                               streamGIFservice = Executors.newScheduledThreadPool(1);
                                future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
                                streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
+                               
+                               
+//                               ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+//                               future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+//                               streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
 
                            }
                        } 
