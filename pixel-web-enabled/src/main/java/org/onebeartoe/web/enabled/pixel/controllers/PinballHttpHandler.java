@@ -72,6 +72,7 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
     
     boolean saveAnimation = false;
     boolean overlay = true;
+    boolean trainingMode = false;
     int loop_ = 0;
     String text_ = "";
     int scrollsmooth_ = 1;
@@ -147,6 +148,12 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
           case "no":  //no overlay , did not implement this yet
             overlay = false;
             break;
+          case "t":  //no overlay , did not implement this yet
+            trainingMode = true;
+            break;
+          case "training":  //no overlay , did not implement this yet
+            trainingMode = true;
+            break;
         } 
       } 
       
@@ -167,6 +174,38 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
         pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
         pinTable = "pinball/" + pinTable;
       } 
+      else if (trainingMode) {
+          text_ = pinAnimationNameOnly;
+          int LED_MATRIX_ID = WebEnabledPixel.getMatrixID();
+          speed = Long.valueOf(WebEnabledPixel.getScrollingTextSpeed(LED_MATRIX_ID));
+          if (speed_ != null) {
+            speed = Long.valueOf(speed_);
+            if (speed.longValue() == 0L)
+              speed = Long.valueOf(10L); 
+          } 
+          
+          if (scrollsmooth_ == 0) {
+            String scrollSpeedSettings = WebEnabledPixel.getTextScrollSpeed();
+            scrollsmooth_ = WebEnabledPixel.getScrollingSmoothSpeed(scrollSpeedSettings);
+          } 
+          
+          if (font_ == null)
+            font_ = WebEnabledPixel.getDefaultFont(); 
+          
+          this.application.getPixel();
+          Pixel.setFontFamily(font_);
+          if (yOffset_ == 0)
+            yOffset_ = WebEnabledPixel.getDefaultyTextOffset(); 
+          
+          this.application.getPixel();
+          Pixel.setYOffset(yOffset_);
+          if (fontSize_ == 0)
+            fontSize_ = WebEnabledPixel.getDefaultFontSize(); 
+          this.application.getPixel();
+          Pixel.setFontSize(fontSize_);
+          
+          pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
+      }
       else {  //if not in the specific table folder, let's get it from the pinball folder           //pixelcade/pinball/animation
        
           arcadeFilePathGIF = pixelHome + "pinball/" + pinAnimationNameOnly + ".gif";  
@@ -193,10 +232,10 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
       } 
       
     } else {
-            System.out.println("[ERROR] URL format incorect, use http://localhost:8080/pinball/stream/<Pinball Table/ROM Name>/<Pinball GIF Name>");
-            System.out.println("Example: http://localhost:8080/pinball/stream/tron/s02");
-            LogMe.aLogger.severe("[ERROR] URL format incorect, use http://localhost:8080/pinball/stream/<Pinball Table/ROM Name>/<Pinball GIF Name>");
-            LogMe.aLogger.severe("Example: http://localhost:8080/pinball/stream/tron/s02");
+            System.out.println("[ERROR] URL format incorect, use http://localhost:8080/pinball/<Pinball Table/ROM Name>/<Pinball GIF Name>");
+            System.out.println("Example: http://localhost:8080/pinball/tron/s02");
+            LogMe.aLogger.severe("[ERROR] URL format incorect, use http://localhost:8080/pinball/<Pinball Table/ROM Name>/<Pinball GIF Name>");
+            LogMe.aLogger.severe("Example: http://localhost:8080/pinball/tron/s02");
     } 
   }
 }
