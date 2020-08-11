@@ -3,7 +3,6 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 
 import ioio.lib.api.exception.ConnectionLostException;
 import java.awt.Color;
-import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.UnhandledException;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.onebeartoe.pixel.LogMe;
@@ -63,14 +61,17 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     String arcadeName = null;
     String arcadeNameExtension = null;
     String arcadeNameOnly = null;
+    String arcadeNameOnlyPNG = null;
     String arcadeFilePathPNG = null;
     String arcadeFilePathGIF = null;
     String consoleFilePathPNG = null;
     String consoleFilePathGIF = null;
     String defaultConsoleFilePathPNG = null;
     String consoleNameMapped = null;
+    Integer animationVersionCounter = 3;
     String pixelHome = System.getProperty("user.home") + File.separator + "pixelcade" + File.separator; //this means "location of pixelcade resources, art, etc"
     LogMe logMe = null;
+    File arcadeFileGIF = new File(pixelHome);
     
     String[] consoleArray = { 
         "mame", "atari2600", "daphne", "nes", "neogeo", "atarilynx", "snes", "atari5200", "atari7800", "atarijaguar", 
@@ -134,8 +135,10 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       
       if (arcadeNameExtension.length() > 3) {
         arcadeNameOnly = arcadeName;
+        arcadeNameOnlyPNG = arcadeName;
       } else {
         arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
+        arcadeNameOnlyPNG = FilenameUtils.removeExtension(arcadeName);
       } 
       
       i = 0;
@@ -216,7 +219,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         
         if (text_ != "")
           System.out.println("alt text if game file not found: " + text_);
-	 
  
         LogMe.aLogger.info(streamOrWrite.toUpperCase() + " MODE");
         LogMe.aLogger.info("Console Before Mapping: " + consoleName);
@@ -229,56 +231,75 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         } 
         if (text_ != "")
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
-      } 
+        } 
       
-      arcadeFilePathPNG = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".png";
+      
+      //let's find the matching PNG
+      
+      arcadeFilePathPNG = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyPNG + ".png";
       File arcadeFilePNG = new File(arcadeFilePathPNG);
       
-      arcadeFilePathGIF = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
-      File arcadeFileGIF = new File(arcadeFilePathGIF);
-      
       if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-        arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
+        arcadeNameOnlyPNG = FilenameUtils.removeExtension(arcadeName);
       } else {
-        String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
+        String arcadeNameOnlyUnderscore = arcadeNameOnlyPNG.replaceAll("_", " ");
         String arcadeFilePathPNGUnderscore = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".png";
         arcadeFilePNG = new File(arcadeFilePathPNGUnderscore);
         
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-          arcadeNameOnly = arcadeNameOnlyUnderscore;
+          arcadeNameOnlyPNG = arcadeNameOnlyUnderscore;
         } else {
-          String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
+          String arcadeNamelowerCase = arcadeNameOnlyPNG.toLowerCase();
           String arcadeFilePathPNGlowerCase = pixelHome + consoleNameMapped + "/" + arcadeNamelowerCase + ".png";
           arcadeFilePNG = new File(arcadeFilePathPNGlowerCase);
           if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory())
-            arcadeNameOnly = arcadeNamelowerCase; 
+            arcadeNameOnlyPNG = arcadeNamelowerCase; 
         } 
       } 
       
-      if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-        arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
-      } 
-      else {
-        String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
-        String arcadeFilePathGIFUnderscore = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
-        arcadeFileGIF = new File(arcadeFilePathGIFUnderscore);
-        
-        if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-          arcadeNameOnly = arcadeNameOnlyUnderscore;
-        } else {
-          String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
-          String arcadeFilePathGIFlowerCase = pixelHome + consoleNameMapped + "/" + arcadeNamelowerCase + ".gif";
-          arcadeFileGIF = new File(arcadeFilePathGIFlowerCase);
-          if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory())
-            arcadeNameOnly = arcadeNamelowerCase; 
-        } 
-      } 
+       // Now let's find the matching GIF
+       // So here's our logic for the gifs, let's first check if arcadenameonly_03 exists and if so we'll take that and then increment down to arcadenameonly_02 for the next one
+       arcadeFilePathGIF = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + "_0" + WebEnabledPixel.getAnimationNumber().toString() + ".gif";
+       arcadeFileGIF = new File(arcadeFilePathGIF);
+       
+       if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
+            //arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
+            arcadeNameOnly = FilenameUtils.getBaseName(arcadeFilePathGIF);
+       } else {  //this means we did not find the multiple version so proceed how we were searching before
+           
+            arcadeFilePathGIF = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".gif";
+            arcadeFileGIF = new File(arcadeFilePathGIF);
       
+            if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
+              arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
+            } 
+            else {
+              String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
+              String arcadeFilePathGIFUnderscore = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyUnderscore + ".gif";
+              arcadeFileGIF = new File(arcadeFilePathGIFUnderscore);
+
+              if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
+                arcadeNameOnly = arcadeNameOnlyUnderscore;
+              } else {
+                String arcadeNamelowerCase = arcadeNameOnly.toLowerCase();
+                String arcadeFilePathGIFlowerCase = pixelHome + consoleNameMapped + "/" + arcadeNamelowerCase + ".gif";
+                arcadeFileGIF = new File(arcadeFilePathGIFlowerCase);
+                if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory())
+                  arcadeNameOnly = arcadeNamelowerCase; 
+              } 
+            } 
+       } 
+      
+      //now that we have arcadeNameOnly, let's proceed
+      
+      String requestedPathPNG = pixelHome + consoleNameMapped + "\\" + arcadeNameOnlyPNG;
       String requestedPath = pixelHome + consoleNameMapped + "\\" + arcadeNameOnly;
       
       if (!CliPixel.getSilentMode()) {
-            System.out.println("Looking for: " + requestedPath + ".png or .gif");
-            LogMe.aLogger.info("Looking for: " + requestedPath + ".png or .gif");
+            System.out.println("Looking for PNG: " + requestedPathPNG + ".png");
+            LogMe.aLogger.info("Looking for PNG: " + requestedPathPNG + ".png");
+            System.out.println("Looking for GIF: " + requestedPath + ".gif");
+            LogMe.aLogger.info("Looking for GIF: " + requestedPath + ".gif");
       }  
       
        if (color_ == null) {
@@ -291,51 +312,11 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             color = WebEnabledPixel.getColorFromHexOrName(color_);
         } 
       
-      
-      //if (WebEnabledPixel.getLCDMarquee().equals("yes") && !consoleNameMapped.equals("retropie") && !consoleNameMapped.equals("power")) { 
-//      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
-//            String arcadeLCDFilePathPNG = pixelHome + "lcdmarquees" + "/" + arcadeNameOnly + ".png"; 
-//            System.out.println("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-//            LogMe.aLogger.info("Looking for lcd marquee @: " + arcadeLCDFilePathPNG);
-//            File arcadeLCDFilePNG = new File(arcadeLCDFilePathPNG);  
-//            
-//            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png";
-//            System.out.println("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
-//            LogMe.aLogger.info("Looking for lcd console marquee @: " + consoleLCDFilePathPNG);
-//            File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
-//            
-//            if (arcadeLCDFilePNG.exists()) {
-//                System.out.println("FOUND: " + arcadeLCDFilePathPNG);
-//                LogMe.aLogger.info("FOUND: " + arcadeLCDFilePathPNG);
-//                if (this.lcdDisplay == null) {
-//                   this.lcdDisplay = new LCDPixelcade();
-//                }  
-//                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-//            } else if (consoleLCDFilePNG.exists()) {
-//                System.out.println("FOUND: " + consoleLCDFilePathPNG);
-//                LogMe.aLogger.info("FOUND: " + consoleLCDFilePathPNG);
-//                if (this.lcdDisplay == null) {
-//                   this.lcdDisplay = new LCDPixelcade();
-//                }  
-//                 lcdDisplay.displayImage(arcadeNameOnly, consoleNameMapped);
-//            } 
-//            else if (text_ != "") {  //if not matching png, do we have some scrolling text we can show?
-//                lcdDisplay.setAltText(text_);	
-//                lcdDisplay.setNumLoops(loop_);   
-//                lcdDisplay.scrollText(text_, new Font(font_, Font.PLAIN, 288), color, 15);
-//            }
-//             else {         //we don't have a matching lcd marquee png or alt text so just show the default marquee
-//                lcdDisplay.displayImage("pixelcade", consoleNameMapped);
-//            }
-//      } else {
-//           System.out.println("SKIPPED LCD Update");
-//      }
-      
       if (streamOrWrite.equals("write")) {
                 saveAnimation = true;
                 if (WebEnabledPixel.arduino1MatrixConnected) {
-                  WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-                  LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
+                  WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
+                  LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
                 } 
                 if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
                   handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
@@ -394,18 +375,18 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         saveAnimation = false; //we're streaming which would be the most common case
         
         if (WebEnabledPixel.arduino1MatrixConnected) {
-          WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnly));
-          LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnly));
+          WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
+          LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
         } 
         
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory() && arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");
           handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), 1);
-          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), 99999, consoleNameMapped, arcadeNameOnly + ".png");
+          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), 99999, consoleNameMapped, arcadeNameOnlyPNG + ".png"); //changed to arcadeNameOnlyPNG as the GIF can now be different with the animation versions
           //to part does not work with the Q and looping, address later
         
         } else if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, arcadeNameOnly + ".png");
+          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, arcadeNameOnlyPNG + ".png");
 
 	} else if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);

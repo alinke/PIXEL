@@ -74,7 +74,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "2.9.5";
+  public static String pixelwebVersion = "2.9.7";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -158,6 +158,12 @@ public class WebEnabledPixel {
   private static int defaultyTextOffset = 0;
   
   private static int  scrollsmooth_ = 1;
+  
+  private static int MaxAnimationVersions = 3;
+  
+  private static boolean NumAnimationVersionsFirstRunFlag = false;
+  
+  private static int AnimationVersionNumber = 3;
   
   public static boolean arduino1MatrixConnected = false;
   
@@ -375,6 +381,13 @@ public class WebEnabledPixel {
         lcdMarqueeMessage_ = (String)sec.get("LCDMarquee_Message");
       } else {
         sec.add("LCDMarquee_Message", "Welcome to Pixelcade and Game On!");
+        ini.store();
+      } 
+     
+      if (sec.containsKey("MaxAnimationVersions")) {
+        MaxAnimationVersions = Integer.parseInt((String)sec.get("MaxAnimationVersions"));
+      } else {
+        sec.add("MaxAnimationVersions", "3");
         ini.store();
       } 
 
@@ -625,7 +638,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             HttpHandler indexHttpHandler = new IndexHttpHandler();
             
             HttpHandler scrollingTextHttpHander = new ScrollingTextHttpHander(this);
-            
+                
             HttpHandler scrollingTextSpeedHttpHander = new ScrollingTextSpeedHttpHandler(this);
             
             HttpHandler scrollingTextScrollSmoothHttpHandler = new ScrollingTextScrollSmoothHttpHandler(this);
@@ -996,6 +1009,20 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
   
   public static String getHome() {
       return pixelHome;
+  }
+  
+  public static Integer getAnimationNumber() {
+     
+      if (NumAnimationVersionsFirstRunFlag == false) { //then this was the first run so set to the max
+          AnimationVersionNumber = MaxAnimationVersions;
+      } else {   
+            AnimationVersionNumber--;
+            if (AnimationVersionNumber == 0) { //then the last name , so now reset to the max
+                AnimationVersionNumber = MaxAnimationVersions;
+            } 
+      }
+      NumAnimationVersionsFirstRunFlag = true; //set the first run flag
+      return AnimationVersionNumber;
   }
   
   public static boolean isWindows() {
