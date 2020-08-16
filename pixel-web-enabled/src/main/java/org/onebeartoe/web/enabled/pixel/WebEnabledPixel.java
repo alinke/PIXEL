@@ -13,37 +13,31 @@ import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.pc.IOIOConsoleApp;
 
+import ioio.lib.api.SpiMaster; //for the LED Strip
+
+
 import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.Executors;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.ini4j.Config;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
-import org.onebeartoe.io.buffered.BufferedTextFileReader;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.pixel.PixelEnvironment;
 import org.onebeartoe.pixel.hardware.Pixel;
-import static org.onebeartoe.pixel.hardware.Pixel.isWindows;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.AnimationsListHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ArcadeHttpHandler;
@@ -188,6 +182,36 @@ public class WebEnabledPixel {
   //private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
   
   private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
+  
+  //for LED Strip
+  
+  public RGB[] frame_ = null;
+  
+  private int height_;
+  
+  private int width_;
+        
+  private double frequency_;
+        
+  private double fadeRate_;
+        
+  public RGB tempRGB_ = new RGB();
+        
+  private byte[] buffer1_ = new byte[48];
+        
+  private byte[] buffer2_ = new byte[48];
+  
+  private static int red = 0;
+  
+  private static int green = 0;
+  
+  private static int blue = 0;
+  
+  public static SpiMaster spi_;
+  
+  private static String LEDStrip_ = "no";
+  
+  private static Integer LEDStripNumberLEDs_ = 13;
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -385,9 +409,20 @@ public class WebEnabledPixel {
       } 
      
       if (sec.containsKey("MaxAnimationVersions")) {
-        MaxAnimationVersions = Integer.parseInt((String)sec.get("MaxAnimationVersions"));
+            MaxAnimationVersions = Integer.parseInt((String)sec.get("MaxAnimationVersions"));
       } else {
         sec.add("MaxAnimationVersions", "3");
+        ini.store();
+      } 
+      
+      if (sec.containsKey("LEDStrip")) {
+            LEDStrip_ = (String)sec.get("LEDStrip");
+            LEDStripNumberLEDs_ = Integer.parseInt((String)sec.get("LEDStripNumberLEDs"));
+      } else {
+        sec.add("LEDStrip", "no");
+        sec.add("LEDStrip_OPTION", "no");
+        sec.add("LEDStrip_OPTION", "yes");
+        sec.add("LEDStripNumberLEDs", "13");
         ini.store();
       } 
 
@@ -850,6 +885,30 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     return defaultyTextOffset;
   }
   
+  public static Boolean LEDStripExists() {
+      Boolean LEDStripExists_ = false;
+      if (LEDStrip_.equals("yes")) {
+          LEDStripExists_ = true;
+      }
+      else {
+           LEDStripExists_ = false;
+      }
+      return LEDStripExists_;
+  }
+  
+  public static Integer GetLEDStripNumberLEDs() {
+      return LEDStripNumberLEDs_;
+  }
+  
+  public static void setLEDStripColor(int r, int g, int b) {  //red and blue are switched
+//				if (r > 127) r = 127;
+//                                if (g > 127) g = 127;
+//                                if (b > 127) b = 127;
+                                red = r;
+                                green = g;
+                                blue = b;
+   }
+  
   public static long getScrollingTextSpeed(int LED_MATRIX_ID) {
     switch (LED_MATRIX_ID) {
       case 11:
@@ -1119,7 +1178,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     Arduino1MatrixOutput.print(Arduino1MatrixText + "\n");
     Arduino1MatrixOutput.flush();
   }
-  
+   
   public static String getConsoleNamefromMapping(String originalConsoleName) {
     String consoleNameMapped = null;
     originalConsoleName = originalConsoleName.toLowerCase();
@@ -1493,6 +1552,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
           if (line.equals("q")) {
             abort = true;
             System.exit(1);
+            spi_.close();
             continue;
           } 
           System.out.println("Unknown input. q=quit.");
@@ -1500,12 +1560,19 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       } 
     }
     
+    
+
     public IOIOLooper createIOIOLooper(String connectionType, Object extra) {
       return (IOIOLooper)new BaseIOIOLooper() {
+      //return new BaseIOIOLooper() {  ///???
+          
+          //private SpiMaster spi_;
+          
           public void disconnected() {
             String message = "PIXEL was Disconnected";
             System.out.println(message);
             LogMe.aLogger.severe(message);
+            //spi_.close();
           }
           
           public void incompatible() {
@@ -1514,11 +1581,19 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             LogMe.aLogger.severe(message);
           }
           
+          @Override
           protected void setup() throws ConnectionLostException, InterruptedException {
-             pixel = new Pixel(pixelEnvironment.LED_MATRIX, pixelEnvironment.currentResolution);
-                    pixel.matrix = ioio_.openRgbLedMatrix(pixel.KIND);
-                    pixel.ioiO = ioio_;
-
+              
+                pixel = new Pixel(pixelEnvironment.LED_MATRIX, pixelEnvironment.currentResolution);
+                pixel.matrix = ioio_.openRgbLedMatrix(pixel.KIND);
+                pixel.ioiO = ioio_;  //TO DO is this really needed?
+                
+                if (LEDStripExists()) { 
+                    spi_ = ioio_.openSpiMaster(6, 4, 5, 8, SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+                    //spi_ = ioio_.openSpiMaster(5, 1, 2, 6, SpiMaster.Rate.RATE_50K); // 1 is clock I think
+                    //spi = ioio_.openSpiMaster(misoPin, mosiPin, clkPin, ssPins,SpiMaster.Rate.RATE_125K);
+                }  
+             
             StringBuilder message = new StringBuilder();
             
             if (WebEnabledPixel.pixel.matrix == null) {
@@ -1564,12 +1639,75 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //            if (month == 7 && day == 4) {
 //                
 //            }
-//            
-//            
           }
+		
+          @Override  
+          public void loop() throws ConnectionLostException {  //for LED Strip
+
+                    if (LEDStripExists()) {
+                            for (int i = 0; i < GetLEDStripNumberLEDs(); i++) {
+                                     tempRGB_.clear();
+                                     setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
+                                     setLed(i, tempRGB_);
+                            }  
+
+                             try {
+                                     ioio_.beginBatch();
+                                     spi_.writeReadAsync(0, buffer1_, buffer1_.length,
+                                                     buffer1_.length, null, 0);
+                                     spi_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
+                                                     null, 0);
+                                     ioio_.endBatch();
+                                     Thread.sleep(50);
+                             } catch (InterruptedException e1) {
+                             }
+                    }
+		}
+                
+                public void setColor(RGB rgb, byte r, byte g, byte b) {  //red and blue are switched
+				rgb.r = b;  //blue
+				rgb.g = g; //green
+				rgb.b = r;  //red
+		}
+                
+                private void setLed(int num, RGB rgb) {
+			// Find the right buffer to write to (first or second half).
+			byte[] buffer;
+			if (num >= 16) {
+				buffer = buffer2_;
+				num -= 16;
+			} else {
+				buffer = buffer1_;
+			}
+			num *= 3;
+			if (rgb.r == 0 && rgb.g == 0 && rgb.b == 0) {
+				fadeOut(buffer, num++);
+				fadeOut(buffer, num++);
+				fadeOut(buffer, num++);
+			} else {
+				// Poor-man's white balanace :)
+				buffer[num++] = fixColor(rgb.r, 0.9);
+				buffer[num++] = rgb.g;
+				buffer[num++] = fixColor(rgb.b, 0.5);
+			}
+		}
+                
+                /** Attenuates a brightness level. */
+		private byte fixColor(byte color, double attenuation) {
+			double d = (double) ((int) color & 0xFF) / 256;
+			d *= attenuation;
+			return (byte) (d * 256);
+		}
+
+		private void fadeOut(byte[] buffer, int num) {
+			final int value = (int) buffer[num] & 0xFF;
+			buffer[num] = (byte) (value * fadeRate_);
+		}
         };
     }
   }
+  
+	
   
   private class SearchTimerTask extends TimerTask {
     final long searchPeriodLength = 45000L;
@@ -1653,4 +1791,36 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
   public static String right(String value, int length) {
     return value.substring(value.length() - length);
   }
+  
+  /** An RGB triplet. */
+    private static class RGB {
+		byte r;
+		byte g;
+		byte b;
+
+		RGB() {
+			clear();
+		}
+
+		public void clear() {
+			r = g = b = 0;
+		}
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
 }
