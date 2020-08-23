@@ -206,26 +206,26 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             color = WebEnabledPixel.getColorFromHexOrName(color_);
         } 
        
-      if (WebEnabledPixel.getLCDMarquee().equals("yes")) { 
-            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
-            System.out.println("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
-            LogMe.aLogger.info("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
-            File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
-            
-            if (consoleLCDFilePNG.exists()) {
-                 System.out.println("FOUND LCD: " + consoleLCDFilePNG);
-                LogMe.aLogger.info("FOUND LCD: " + consoleLCDFilePNG);
-                if (this.lcdDisplay == null) {
-                   this.lcdDisplay = new LCDPixelcade();
-                }  
-                lcdDisplay.displayImage("no-game", consoleNameMapped);
-            } 
-             else {  //we don't have a matching lcd marquee so just display generic pixelcade image
-                System.out.println("Console LCD marquee not found, displaying generic Pixelcade marquee: " + consoleLCDFilePNG);
-                //lcdDisplay.displayImage("pixelcade", consoleNameMapped);
-               lcdDisplay.displayImage("console/pixelcade");
-            }
-      }
+//      if (WebEnabledPixel.getLCDMarquee().equals("yes")) {      //no longer needed now that we have pixelcade dx
+//            String consoleLCDFilePathPNG = pixelHome + "lcdmarquees/console" + "/" + "default-" + consoleNameMapped + ".png"; 
+//            System.out.println("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
+//            LogMe.aLogger.info("Looking for console LCD marquee @: " + consoleLCDFilePathPNG);
+//            File consoleLCDFilePNG = new File(consoleLCDFilePathPNG);  
+//            
+//            if (consoleLCDFilePNG.exists()) {
+//                 System.out.println("FOUND LCD: " + consoleLCDFilePNG);
+//                LogMe.aLogger.info("FOUND LCD: " + consoleLCDFilePNG);
+//                if (this.lcdDisplay == null) {
+//                   this.lcdDisplay = new LCDPixelcade();
+//                }  
+//                lcdDisplay.displayImage("no-game", consoleNameMapped);
+//            } 
+//             else {  //we don't have a matching lcd marquee so just display generic pixelcade image
+//                System.out.println("Console LCD marquee not found, displaying generic Pixelcade marquee: " + consoleLCDFilePNG);
+//                //lcdDisplay.displayImage("pixelcade", consoleNameMapped);
+//               lcdDisplay.displayImage("console/pixelcade");
+//            }
+//      }
       
       if (streamOrWrite.equals("write")) {
         saveAnimation = true;
