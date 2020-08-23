@@ -262,15 +262,13 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
         arcadeNameOnlyPNG = FilenameUtils.removeExtension(arcadeName);
         
-        if (WebEnabledPixel.LEDStripExists()) {
+        if (WebEnabledPixel.LEDStripExists()) {  //to do need to move this somewhere else
             processPNGDominateColor(arcadeFilePNG);
             System.out.println("Red: " + LEDStripRed);
             System.out.println("Green: " + LEDStripGreen);
             System.out.println("Blue: " + LEDStripBlue);
             WebEnabledPixel.setLEDStripColor(LEDStripRed, LEDStripGreen, LEDStripBlue);
         }
-      
-        
         
       } else {
         String arcadeNameOnlyUnderscore = arcadeNameOnlyPNG.replaceAll("_", " ");
@@ -289,12 +287,38 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       } 
       
        // Now let's find the matching GIF
+       // let's first check if there is a ( and if so, take only text to the left
+       // then let's check if there is basename_01, basename_02, or basename_03
+       // let's first check if there is a ( and if so , we'll take what is to the left
        // So here's our logic for the gifs, let's first check if arcadenameonly_03 exists and if so we'll take that and then increment down to arcadenameonly_02 for the next one
+       
+      
+        int iend = arcadeNameOnly.indexOf("("); //this finds the first occurrence of "(" 
+        //in string thus giving you the index of where it is in the string
+
+        //String subString;
+        if (iend != -1)  { //then there was a ( there
+            arcadeNameOnly = (arcadeNameOnly.substring(0 , iend)).trim(); //this will the name to the left of (
+            //System.out.println("parathesis is here: " + arcadeNameOnly);
+            
+            if (WebEnabledPixel.isWindows()) {
+               arcadeNameOnly = arcadeNameOnly.replaceAll("_", " ").trim(); //windows will add an _ for a space so taking care of that here
+               //System.out.println("windows call parathesis is here: " + arcadeNameOnly);
+            }
+        
+            //ok now since we have a ( match for the GIF, let's also see if we have a matching PNG without the (
+             String arcadeFilePathPNGTest = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + ".png";
+             File arcadeFilePNGTest = new File(arcadeFilePathPNGTest);
+             if (arcadeFilePNGTest.exists() && !arcadeFilePNGTest.isDirectory()) {
+                    arcadeNameOnlyPNG = arcadeNameOnly;
+                    arcadeFilePNG = new File(arcadeFilePathPNGTest); //we have to set the new arcadeFilePNG here as we use it in the handlePNG call
+             }     
+        }  
+        
        arcadeFilePathGIF = pixelHome + consoleNameMapped + "/" + arcadeNameOnly + "_0" + WebEnabledPixel.getAnimationNumber().toString() + ".gif";
        arcadeFileGIF = new File(arcadeFilePathGIF);
        
        if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-            //arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
             arcadeNameOnly = FilenameUtils.getBaseName(arcadeFilePathGIF);
        } else {  //this means we did not find the multiple version so proceed how we were searching before
            
@@ -302,7 +326,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             arcadeFileGIF = new File(arcadeFilePathGIF);
       
             if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-              arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);
+              //arcadeNameOnly = FilenameUtils.removeExtension(arcadeName);  //not sure why this was here?
             } 
             else {
               String arcadeNameOnlyUnderscore = arcadeNameOnly.replaceAll("_", " ");
@@ -409,6 +433,8 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
           WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
           LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
         } 
+        
+        //TO DO need to handle PNG without (
         
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory() && arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
           handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");
@@ -615,8 +641,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             }                 
         return true;
     }
-  
-  
   
 }
    
