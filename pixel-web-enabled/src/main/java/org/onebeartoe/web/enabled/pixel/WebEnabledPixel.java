@@ -68,7 +68,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "2.9.7";
+  public static String pixelwebVersion = "2.9.8";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -209,9 +209,23 @@ public class WebEnabledPixel {
   
   public static SpiMaster spi_;
   
-  private static String LEDStrip_ = "no";
+  public static SpiMaster spi2_;
   
-  private static Integer LEDStripNumberLEDs_ = 13;
+  private static String LEDStrip1_ = "no";
+  
+  private static Integer LEDStrip1NumberLEDs_ = 13;
+  
+  private static Integer LEDStrip1DataPin_ = 1;
+  
+  private static Integer LEDStrip1CLKPin_ = 2;
+  
+  private static String LEDStrip2_ = "no";
+  
+  private static Integer LEDStrip2NumberLEDs_ = 13;
+  
+  private static Integer LEDStrip2DataPin_ = 4;
+  
+  private static Integer LEDStrip2CLKPin_ = 5;
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -415,14 +429,38 @@ public class WebEnabledPixel {
         ini.store();
       } 
       
-      if (sec.containsKey("LEDStrip")) {
-            LEDStrip_ = (String)sec.get("LEDStrip");
-            LEDStripNumberLEDs_ = Integer.parseInt((String)sec.get("LEDStripNumberLEDs"));
+//        private static String LEDStrip2_ = "no";
+//  
+//  private static Integer LEDStrip2NumberLEDs_ = 13;
+//  
+//  private static Integer LEDStrip2DataPin_ = 4;
+//  
+//  private static Integer LEDStrip2CLKPin_ = 5;
+      
+      
+      
+      if (sec.containsKey("LEDStrip1")) {
+            LEDStrip1_ = (String)sec.get("LEDStrip1");
+            LEDStrip1NumberLEDs_ = Integer.parseInt((String)sec.get("LEDStrip1NumberLEDs"));
+            LEDStrip1DataPin_ = Integer.parseInt((String)sec.get("LEDStrip1DataPin"));
+            LEDStrip1CLKPin_ = Integer.parseInt((String)sec.get("LEDStrip1CLKPin"));
+            LEDStrip2_ = (String)sec.get("LEDStrip2");
+            LEDStrip2NumberLEDs_ = Integer.parseInt((String)sec.get("LEDStrip2NumberLEDs"));
+            LEDStrip2DataPin_ = Integer.parseInt((String)sec.get("LEDStrip2DataPin"));
+            LEDStrip2CLKPin_ = Integer.parseInt((String)sec.get("LEDStrip2CLKPin"));
       } else {
-        sec.add("LEDStrip", "no");
-        sec.add("LEDStrip_OPTION", "no");
-        sec.add("LEDStrip_OPTION", "yes");
-        sec.add("LEDStripNumberLEDs", "13");
+        sec.add("LEDStrip1", "no");
+        sec.add("LEDStrip1_OPTION", "no");
+        sec.add("LEDStrip1_OPTION", "yes");
+        sec.add("LEDStrip1NumberLEDs", "13");
+        sec.add("LEDStrip1DataPin", "1");
+        sec.add("LEDStrip1CLKPin", "2");
+        sec.add("LEDStrip2", "no");
+        sec.add("LEDStrip2_OPTION", "no");
+        sec.add("LEDStrip2_OPTION", "yes");
+        sec.add("LEDStrip2NumberLEDs", "13");
+        sec.add("LEDStrip2DataPin", "4");
+        sec.add("LEDStrip2CLKPin", "5");
         ini.store();
       } 
 
@@ -887,7 +925,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
   
   public static Boolean LEDStripExists() {
       Boolean LEDStripExists_ = false;
-      if (LEDStrip_.equals("yes")) {
+      if (LEDStrip1_.equals("yes") || LEDStrip2_.equals("yes")) {
           LEDStripExists_ = true;
       }
       else {
@@ -896,9 +934,9 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       return LEDStripExists_;
   }
   
-  public static Integer GetLEDStripNumberLEDs() {
-      return LEDStripNumberLEDs_;
-  }
+//  public static Integer GetLEDStrip1NumberLEDs() {
+//      return LEDStrip1NumberLEDs_;
+//  }
   
   public static void setLEDStripColor(int r, int g, int b) {  //red and blue are switched
 //				if (r > 127) r = 127;
@@ -1552,7 +1590,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
           if (line.equals("q")) {
             abort = true;
             System.exit(1);
-            spi_.close();
             continue;
           } 
           System.out.println("Unknown input. q=quit.");
@@ -1566,13 +1603,14 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       return (IOIOLooper)new BaseIOIOLooper() {
       //return new BaseIOIOLooper() {  ///???
           
-          //private SpiMaster spi_;
+//            private SpiMaster spi_;
+//  
+//            private SpiMaster spi2_;
           
           public void disconnected() {
             String message = "PIXEL was Disconnected";
             System.out.println(message);
             LogMe.aLogger.severe(message);
-            //spi_.close();
           }
           
           public void incompatible() {
@@ -1589,11 +1627,22 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                 pixel.ioiO = ioio_;  //TO DO is this really needed?
                 
                 if (LEDStripExists()) { 
-                    spi_ = ioio_.openSpiMaster(6, 4, 5, 8, SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+                    
+                    if (LEDStrip1_.equals("yes")) {
+                        spi_ = ioio_.openSpiMaster(6, LEDStrip1DataPin_, LEDStrip1CLKPin_, 8, SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+                        //spi_ = ioio_.openSpiMaster(6, LEDStrip1CLKPin_,LEDStrip1DataPin_, 8, SpiMaster.Rate.RATE_50K);
+                        //spi_ = ioio_.openSpiMaster(5, 1, 2, 6, SpiMaster.Rate.RATE_50K); // 1 is clock I think
+                    }
+                    
+                    if (LEDStrip2_.equals("yes")) {
+                        spi2_ = ioio_.openSpiMaster(9, LEDStrip2DataPin_, LEDStrip2CLKPin_, 29  , SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+                    }
+                    
                     //spi_ = ioio_.openSpiMaster(5, 1, 2, 6, SpiMaster.Rate.RATE_50K); // 1 is clock I think
                     //spi = ioio_.openSpiMaster(misoPin, mosiPin, clkPin, ssPins,SpiMaster.Rate.RATE_125K);
-                }  
-             
+                    //https://groups.google.com/g/ioio-users/c/tKVuNFZRreQ/m/1JaMwn9ScEYJ
+                }
+                
             StringBuilder message = new StringBuilder();
             
             if (WebEnabledPixel.pixel.matrix == null) {
@@ -1640,27 +1689,58 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //                
 //            }
           }
+          
+          //it is possible that the WS281x waveforms can be generated using SPI. I would try running at 5.33MHz sending a 0b11000000 = 0xC0 byte for a "0" bit and a 0b11110000 = 0xF0 byte for a "1" bit. Not very efficient, but may not matter. In either case, adding support for this protocol in firmware using either bit-banging or the SPI peripheral is probably not too hard.
 		
           @Override  
           public void loop() throws ConnectionLostException {  //for LED Strip
 
                     if (LEDStripExists()) {
-                            for (int i = 0; i < GetLEDStripNumberLEDs(); i++) {
-                                     tempRGB_.clear();
-                                     setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
-                                     setLed(i, tempRGB_);
-                            }  
+                            
+                            if (LEDStrip1_.equals("yes")) {
+                        
+                                for (int i = 0; i < LEDStrip1NumberLEDs_; i++) {
+                                         tempRGB_.clear();
+                                         red = 120;
+                                         green = 0;
+                                         blue = 0;
+                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
+                                         
+                                         setLed(i, tempRGB_);
+                                }  
 
-                             try {
-                                     ioio_.beginBatch();
-                                     spi_.writeReadAsync(0, buffer1_, buffer1_.length,
-                                                     buffer1_.length, null, 0);
-                                     spi_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
-                                                     null, 0);
-                                     ioio_.endBatch();
-                                     Thread.sleep(50);
-                             } catch (InterruptedException e1) {
-                             }
+                                 try {
+                                         ioio_.beginBatch();
+                                         spi_.writeReadAsync(0, buffer1_, buffer1_.length,
+                                                         buffer1_.length, null, 0);
+                                         spi_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
+                                                         null, 0);
+                                         ioio_.endBatch();
+                                         Thread.sleep(50);
+                                 } catch (InterruptedException e1) {
+                                 }
+                            }
+                            
+                             if (LEDStrip2_.equals("yes")) {
+                        
+                                for (int i = 0; i < LEDStrip2NumberLEDs_; i++) {
+                                         tempRGB_.clear();
+                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
+                                         setLed(i, tempRGB_);
+                                }  
+
+                                 try {
+                                         ioio_.beginBatch();
+                                         spi2_.writeReadAsync(0, buffer1_, buffer1_.length,
+                                                         buffer1_.length, null, 0);
+                                         spi2_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
+                                                         null, 0);
+                                         ioio_.endBatch();
+                                         Thread.sleep(50);
+                                 } catch (InterruptedException e1) {
+                                 }
+                            }
+                             
                     }
 		}
                 
@@ -1806,21 +1886,4 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 			r = g = b = 0;
 		}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-  
 }
