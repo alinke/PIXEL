@@ -43,6 +43,7 @@ git pull
 
 git checkout --ours "Software/RetroPie/V1 -Do not Use/pixelcade/default-coleco.gif"
 
-
+Add customer image 
+scp <image.jpg> pi@pixelcadedx.local:/home/pi/.asstets/.pif.jpg
 
 test
