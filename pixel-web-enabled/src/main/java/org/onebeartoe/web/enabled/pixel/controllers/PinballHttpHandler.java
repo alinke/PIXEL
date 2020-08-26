@@ -168,30 +168,27 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
         pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
         pinTable = "pinball/" + pinTable;
       } 
-      else {  //if not in the specific table folder, let's get it from the pinball folder           //pixelcade/pinball/animation
-
-        pinTable = "pinball";
-        //magic
-        Integer number = Integer.valueOf(pinAnimationNameOnly.substring(1));
-        Integer res = 17;
-        while (res > 16){
-          res = number % 16;
-          if (res <= 0) res = 1;
-        }
-
-          arcadeFilePathGIF = pixelHome + "pinball/" + pinAnimationNameOnly + ".gif";  
-          arcadeFileGIF = new File(arcadeFilePathGIF);
-          
-          if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-               pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
-        } else {
+     else {  //if not in the specific table folder, let's get it from the pinball folder           //pixelcade/pinball/animation
+            pinTable = "auto";
             //magic
-            pinAnimationNameOnly = String.format("s%d",res);
-            arcadeFilePathGIF = pixelHome + "pinball/" + pinAnimationNameOnly + ".gif";
-            arcadeFileGIF = new File(arcadeFilePathGIF);
-            System.out.println("Macically: " + pinAnimationNameOnly);
-          }
-      } 
+            Integer number = Integer.valueOf(pinAnimationNameOnly.substring(1));
+            Integer res = 17;
+            while (res > 16){
+              res = number % 16;
+              if (res <= 0) res = 1;
+            }
+              arcadeFilePathGIF = pixelHome + "pinball/auto/" + pinAnimationNameOnly + ".gif";  
+              arcadeFileGIF = new File(arcadeFilePathGIF);
+              if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
+                   pinAnimationNameOnly = FilenameUtils.removeExtension(PinAnimationName);
+            } else {
+                //magic
+                pinAnimationNameOnly = String.format("s%d",res);
+                arcadeFilePathGIF = pixelHome + "pinball/auto/" + pinAnimationNameOnly + ".gif";
+                arcadeFileGIF = new File(arcadeFilePathGIF);
+                System.out.println("Macically: " + pinAnimationNameOnly);
+              }
+    } 
       
       //String requestedPath = pixelHome + pinTable + "\\" + pinAnimationNameOnly;
       String requestedPath = arcadeFilePathGIF;
