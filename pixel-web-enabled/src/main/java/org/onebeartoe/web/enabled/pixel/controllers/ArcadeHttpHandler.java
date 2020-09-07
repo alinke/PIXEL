@@ -34,7 +34,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import static org.apache.velocity.texen.util.FileUtil.file;
+//import static org.apache.velocity.texen.util.FileUtil.file;
 
 
 public class ArcadeHttpHandler extends ImageResourceHttpHandler {
@@ -262,12 +262,8 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
         arcadeNameOnlyPNG = FilenameUtils.removeExtension(arcadeName);
         
-        if (WebEnabledPixel.LEDStripExists()) {  //to do need to move this somewhere else
-            processPNGDominateColor(arcadeFilePNG);
-            System.out.println("Red: " + LEDStripRed);
-            System.out.println("Green: " + LEDStripGreen);
-            System.out.println("Blue: " + LEDStripBlue);
-            WebEnabledPixel.setLEDStripColor(LEDStripRed, LEDStripGreen, LEDStripBlue);
+        if (WebEnabledPixel.LEDStripExists()) { 
+            setStripColor(arcadeFilePNG);
         }
         
       } else {
@@ -277,12 +273,18 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
           arcadeNameOnlyPNG = arcadeNameOnlyUnderscore;
+           if (WebEnabledPixel.LEDStripExists()) {  
+                setStripColor(arcadeFilePNG);
+           }
         } else {
           String arcadeNamelowerCase = arcadeNameOnlyPNG.toLowerCase();
           String arcadeFilePathPNGlowerCase = pixelHome + consoleNameMapped + "/" + arcadeNamelowerCase + ".png";
           arcadeFilePNG = new File(arcadeFilePathPNGlowerCase);
           if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory())
             arcadeNameOnlyPNG = arcadeNamelowerCase; 
+            if (WebEnabledPixel.LEDStripExists()) {  
+                setStripColor(arcadeFilePNG);
+           }
         } 
       } 
       
@@ -528,6 +530,19 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     } 
   }
   
+  private static void setStripColor (File file) {
+        
+            try {
+                processPNGDominateColor(file);
+            } catch (IOException ex) {
+                Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            System.out.println("Red: " + LEDStripRed);
+            System.out.println("Green: " + LEDStripGreen);
+            System.out.println("Blue: " + LEDStripBlue);
+            WebEnabledPixel.setLEDStripColor(LEDStripRed, LEDStripGreen, LEDStripBlue);
+}
+           
   public static boolean consoleMatch(String[] arr, String targetValue) {
     for (String s : arr) {
       if (s.equals(targetValue))
@@ -554,7 +569,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       return max;
   }
   
-  private void processPNGDominateColor (File file ) throws IOException {
+  private static void processPNGDominateColor (File file) throws IOException {
         ImageInputStream is = ImageIO.createImageInputStream(file);
         Iterator iter = ImageIO.getImageReaders(is);
 

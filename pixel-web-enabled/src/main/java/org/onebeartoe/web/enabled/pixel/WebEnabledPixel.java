@@ -15,7 +15,6 @@ import ioio.lib.util.pc.IOIOConsoleApp;
 
 import ioio.lib.api.SpiMaster; //for the LED Strip
 
-
 import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -68,7 +67,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "2.9.8";
+  public static String pixelwebVersion = "3.0.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -429,15 +428,7 @@ public class WebEnabledPixel {
         ini.store();
       } 
       
-//        private static String LEDStrip2_ = "no";
-//  
-//  private static Integer LEDStrip2NumberLEDs_ = 13;
-//  
-//  private static Integer LEDStrip2DataPin_ = 4;
-//  
-//  private static Integer LEDStrip2CLKPin_ = 5;
-      
-      
+
       
       if (sec.containsKey("LEDStrip1")) {
             LEDStrip1_ = (String)sec.get("LEDStrip1");
@@ -465,6 +456,7 @@ public class WebEnabledPixel {
       } 
 
 if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
+        //dxEnvironment = true;
 	if(lcdDisplay == null) lcdDisplay = new LCDPixelcade();
         try {
           Font temp = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(pixelHome + "fonts/" + defaultFont + ".ttf"));
@@ -939,9 +931,10 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //  }
   
   public static void setLEDStripColor(int r, int g, int b) {  //red and blue are switched
-//				if (r > 127) r = 127;
-//                                if (g > 127) g = 127;
-//                                if (b > 127) b = 127;
+  //public static void setLEDStripColor(int b, int g, int r) {  //red and blue are switched
+				//if (r > 127) r = 127;
+                                //if (g > 127) g = 127;
+                                //if (b > 127) b = 127;
                                 red = r;
                                 green = g;
                                 blue = b;
@@ -1701,9 +1694,9 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                         
                                 for (int i = 0; i < LEDStrip1NumberLEDs_; i++) {
                                          tempRGB_.clear();
-                                         red = 120;
-                                         green = 0;
-                                         blue = 0;
+                                         //red = 0; //120
+                                         //green = 0;
+                                         //blue = 0;
                                          setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
                                          
                                          setLed(i, tempRGB_);
@@ -1744,10 +1737,10 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                     }
 		}
                 
-                public void setColor(RGB rgb, byte r, byte g, byte b) {  //red and blue are switched
-				rgb.r = b;  //blue
-				rgb.g = g; //green
-				rgb.b = r;  //red
+                public void setColor(RGB rgb, byte r, byte g, byte b) {  //blue and green are switched, not sure but that may be strip dependent, may need to make this configurable
+				rgb.r = r;  
+				rgb.g = b; 
+				rgb.b = g;  
 		}
                 
                 private void setLed(int num, RGB rgb) {

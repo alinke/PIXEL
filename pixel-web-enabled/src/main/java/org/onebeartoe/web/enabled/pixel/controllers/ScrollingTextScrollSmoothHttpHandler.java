@@ -37,17 +37,19 @@ public class ScrollingTextScrollSmoothHttpHandler extends TextHttpHandler
         int i = path.lastIndexOf("/") + 1;
         String s = path.substring(i);
 
-        try {
-            if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
-                WebEnabledPixel.dxEnvironment = true;
-                System.out.println("Requested: " + requestURI.getPath());
-                URL url = new URL("http://pixelcadedx.local:8080" + requestURI.getPath());
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-                con.getResponseCode();
-                con.disconnect();
-            }
-        }catch (  Exception e){}
+        if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+            try {
+                    if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                        WebEnabledPixel.dxEnvironment = true;
+                        System.out.println("Requested: " + requestURI.getPath());
+                        URL url = new URL("http://pixelcadedx.local:8080" + requestURI.getPath());
+                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                        con.setRequestMethod("GET");
+                        con.getResponseCode();
+                        con.disconnect();
+                    }
+                }catch (  Exception e){}
+        }
         
         int scrollsmooth = Integer.valueOf(s);
         

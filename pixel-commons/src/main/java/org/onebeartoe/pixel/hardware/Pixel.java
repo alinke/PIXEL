@@ -1291,7 +1291,9 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 				e1.printStackTrace();
 			}
                  
-                      
+                      //boolean removeme = true; //test code to disable overlay
+                              
+                      //if (removeme == false && PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1 ) {   //if there is still a pinball animation running, then overaly
                       if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1 ) {   //if there is still a pinball animation running, then overaly
                       
                         

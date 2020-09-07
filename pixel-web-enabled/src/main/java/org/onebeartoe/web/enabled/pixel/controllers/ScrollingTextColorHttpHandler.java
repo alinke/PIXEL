@@ -30,17 +30,19 @@ public class ScrollingTextColorHttpHandler extends TextHttpHandler {
     String colorString = path.substring(i);
     Color color = Color.red;
 
-    try {
-      if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
-        WebEnabledPixel.dxEnvironment = true;
-        System.out.println("Requested: " + requestURI.getPath());
-        URL url = new URL("http://pixelcadedx.local:8080" + requestURI.getPath());
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.getResponseCode();
-        con.disconnect();
-      }
-    }catch (  Exception e){}
+    if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+        try {
+          if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+            WebEnabledPixel.dxEnvironment = true;
+            System.out.println("Requested: " + requestURI.getPath());
+            URL url = new URL("http://pixelcadedx.local:8080" + requestURI.getPath());
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getResponseCode();
+            con.disconnect();
+          }
+        }catch (  Exception e){}
+    }
     
     if (colorString != null)
       color = WebEnabledPixel.getColorFromHexOrName(colorString); 
