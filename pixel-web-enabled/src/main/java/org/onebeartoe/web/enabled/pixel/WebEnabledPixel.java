@@ -67,7 +67,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.0.0";
+  public static String pixelwebVersion = "3.1.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -456,7 +456,6 @@ public class WebEnabledPixel {
       } 
 
 if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
-        //dxEnvironment = true;
 	if(lcdDisplay == null) lcdDisplay = new LCDPixelcade();
         try {
           Font temp = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(pixelHome + "fonts/" + defaultFont + ".ttf"));
