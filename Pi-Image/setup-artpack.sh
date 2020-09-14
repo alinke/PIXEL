@@ -29,18 +29,25 @@ echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB an
 echo "If you have PixelcadeLCD, then ensure PixelcadeLCD is connected to your Pi with a microUSB cable"
 
 
-if [ ! -d "$HOME/pixelcade" ]
+if [ ! -d "/home/pi/pixelcade" ]
 then
     echo "${yellow}Pixelcade is not installed${white}"
     echo "${yellow}Please install Pixelcade from http://pixelcade.org first and then re-run this installer${white}"
     exit 1
 fi
 
+if [ -d "/home/pi/pixelcade" ]
+then
+    echo "${yellow}Upgrading Pixelcade software...${white}"
+    cd /home/pi/ && curl -LO http://pixelcade.org/pi/pixelweb.jar
+    cp /home/pi/pixelweb.jar /home/pi/pixelcade/pixelweb.jar
+fi
+
 if type -p java ; then
-  echo "${yellow}Java already installed, skipping..."
+  echo "${yellow}Java detected..."
   java_installed=true
 elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
-  echo "${yellow}Java already installed, skipping..."
+  echo "${yellow}Java detected..."
   java_installed=true
 else
    echo "${yellow}Java is not installed, please install Pixelcade for Pi first at http://pixelcade.org...${white}"
@@ -59,7 +66,7 @@ done
 
 if [ "$lcd_marquee" = true ] ; then
   echo "${yellow}Downloading PixelcadeLCD Marquee Files...${white}"
-  cd $HOME
+  cd /home/pi/
   curl -LO pixelcade.org/pi/591333.jar
 fi
 
@@ -70,21 +77,45 @@ echo "${yellow}Installing Git...${white}"
 sudo apt -y install git
 
 # let's delete the art pack if already there and download new so we have the latest and greatest
-if [[ -d "$HOME/pixelcade-artpack" ]]; then
+if [[ -d "/home/pi/pixelcade-artpack" ]]; then
   echo "${yellow}Removing Existing Art Pack...${white}"
-  cd $HOME && sudo rm -r pixelcade-artpack
+  cd /home/pi/ && sudo rm -r pixelcade-artpack
 fi
 
 #this java program will prompt for serial code and then prompt for LED and LCD marquees
 echo "${green}Starting Download...${green}"
-cd $HOME
+cd /home/pi/
 curl -LO pixelcade.org/pi/222111.jar
 java -jar 222111.jar
 
 # now let's cleanup
-if [[ -d "$HOME/pixelcade-artpack" ]]; then
+if [[ -d "/home/pi/pixelcade-artpack" ]]; then
   echo "${yellow}Cleaning Up...${white}"
-  sudo rm -r $HOME/pixelcade-artpack && rm $HOME/591333.jar & rm $HOME/222111.jar
+  sudo rm -r /home/pi/pixelcade-artpack
+fi
+
+if [[ -f "/home/pi/591333.jar" ]]; then
+  sudo rm /home/pi/591333.jar
+fi
+
+if [[ -f "/home/pi/222111.jar" ]]; then
+  sudo rm /home/pi/222111.jar
+fi
+
+if [[ -f "/home/pi/setup-artpack.sh" ]]; then
+  sudo rm /home/pi/setup-artpack.sh
+fi
+
+if [[ -f "/home/pi/esmod-pi4.deb" ]]; then
+  sudo rm /home/pi/esmod-pi4.deb
+fi
+
+if [[ -f "/home/pi/setup.sh" ]]; then
+  sudo rm /home/pi/setup.sh
+fi
+
+if [[ -f "/home/pi/pixelweb.jar" ]]; then
+  sudo rm /home/pi/pixelweb.jar
 fi
 
 install_succesful=true

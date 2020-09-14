@@ -17,7 +17,7 @@ blue=`tput setaf 4`
 magenta=`tput setaf 5`
 white=`tput setaf 7`
 reset=`tput sgr0`
-version=4  #increment this as the script is updated
+version=5  #increment this as the script is updated
 #echo "${red}red text ${green}green text${reset}"
 
 cat << "EOF"
@@ -53,30 +53,32 @@ echo "Ensure the toggle switch on the Pixelcade board is pointing towards USB an
 #    auto_update=false
 #fi
 
-while true; do
-    read -p "${magenta}Would you like to enable auto updates (y/n)? ${white}" yn
-    case $yn in
-        [Yy]* ) auto_update=true; break;;
-        [Nn]* ) auto_update=false; break;;
-        * ) echo "Please answer y or n";;
-    esac
-done
+#while true; do
+#    read -p "${magenta}Would you like to enable auto updates (y/n)? ${white}" yn
+#    case $yn in
+#        [Yy]* ) auto_update=true; break;;
+#        [Nn]* ) auto_update=false; break;;
+#        * ) echo "Please answer y or n";;
+#    esac
+#done
+
+auto_update=false
 
 #add a prompt here if user really wants to install again
 
 # let's check the version and only proceed if the user has an older version
-if [[ -d "$HOME/pixelcade" ]]; then
-    if [[ -f "$HOME/pixelcade/pixelcade-version" ]]; then
+if [[ -d "/home/pi/pixelcade" ]]; then
+    if [[ -f "/home/pi/pixelcade/pixelcade-version" ]]; then
       echo "Existing Pixelcade installation detected, checking version..."
-      read -r currentVersion<$HOME/pixelcade/pixelcade-version
+      read -r currentVersion</home/pi/pixelcade/pixelcade-version
       if [[ $currentVersion -lt $version ]]; then
             echo "Older Pixelcade version detected, now upgrading..."
         else
             while true; do
                 read -p "${magenta}Your Pixelcade version is already up to date. If you continue, your Pixelcade installation will be deleted including any custom artwork you've added, do you want to re-install? Or select n to just check for new artwork. (y/n) ${white}" yn
                 case $yn in
-                    [Yy]* ) cd $HOME && sudo rm -r pixelcade; break;;
-                    [Nn]* ) cd $HOME/pixelcade/system && sh ./update.sh && exit; break;;
+                    [Yy]* ) cd /home/pi && sudo rm -r pixelcade; break;;
+                    [Nn]* ) cd /home/pi/pixelcade/system && sh ./update.sh && exit; break;;
                     * ) echo "Please answer y or n";;
                 esac
             done
@@ -85,8 +87,8 @@ if [[ -d "$HOME/pixelcade" ]]; then
        while true; do
            read -p "${magenta}Your existing Pixelcade installation will be deleted including any custom artwork you've added, do you want to re-install? Or select n to just check for new artwork. (y/n) ${white}" yn
            case $yn in
-               [Yy]* ) cd $HOME && sudo rm -r pixelcade; break;;
-               [Nn]* ) cd $HOME/pixelcade/system && sh ./update.sh && exit; break;;
+               [Yy]* ) cd /home/pi && sudo rm -r pixelcade; break;;
+               [Nn]* ) cd /home/pi/pixelcade/system && sh ./update.sh && exit; break;;
                * ) echo "Please answer y or n";;
            esac
        done
@@ -114,7 +116,9 @@ fi
 
 # let's detect if Pixelcade is connected
 if ls /dev/ttyACM0 | grep -q '/dev/ttyACM0'; then
-   echo "${yellow}Pixelcade LED Marquee Detected${white}"
+   echo "${yellow}Pixelcade LED Marquee Detected on /dev/ttyACM0${white}"
+elif ls /dev/ttyACM1 | grep -q '/dev/ttyACM1'; then
+  echo "${yellow}Pixelcade LED Marquee Detected on /dev/ttyACM1${white}"
 else
    echo "${red}Sorry, Pixelcade LED Marquee was not detected, pleasse ensure Pixelcade is USB connected to your Pi and the toggle switch on the Pixelcade board is pointing towards USB, exiting..."
    exit 1
@@ -182,19 +186,19 @@ sudo apt -y install git
 # this is where pixelcade will live
 
 echo "${yellow}Installing Pixelcade from GitHub Repo...${white}"
-cd $HOME
-git clone https://github.com/alinke/pixelcade.git
-cd $HOME/pixelcade
+cd /home/pi
+git clone --depth 1 https://github.com/alinke/pixelcade.git
+cd /home/pi/pixelcade
 git config user.email "sample@sample.com"
 git config user.name "sample"
 
 
 if [ "$retropie" = true ] ; then #skip if no retropie as we'll start this later using systemd
-    cd $HOME/pixelcade
+    cd /home/pi/pixelcade
     java -jar pixelweb.jar -b & #run pixelweb in the background\
 fi
 
-cd $HOME
+cd /home/pi
 #if retropie is present, add our mods
 if [ "$retropie" = true ] ; then
   # lets install the correct mod based on the OS
@@ -214,17 +218,17 @@ fi
 
 #now lets check if the user also has attractmode installed
 
-if [[ -d "/$HOME/.attract" ]]; then
+if [[ -d "//home/pi/.attract" ]]; then
   echo "Attract Mode front end detected, installing Pixelcade plug-in for Attract Mode..."
   attractmode=true
-  cd $HOME
-  if [[ -d "$HOME/pixelcade-attract-mode" ]]; then
-    sudo rm -r $HOME/pixelcade-attract-mode
+  cd /home/pi
+  if [[ -d "/home/pi/pixelcade-attract-mode" ]]; then
+    sudo rm -r /home/pi/pixelcade-attract-mode
     git clone https://github.com/tnhabib/pixelcade-attract-mode.git
   else
     git clone https://github.com/tnhabib/pixelcade-attract-mode.git
   fi
-  sudo cp -r $HOME/pixelcade-attract-mode/Pixelcade $HOME/.attract/plugins
+  sudo cp -r /home/pi/pixelcade-attract-mode/Pixelcade /home/pi/.attract/plugins
 else
   attractmode=false
   echo "${yellow}Attract Mode front end is not installed..."
@@ -233,18 +237,18 @@ fi
 #get the pixelcade startup-up script
 #note this file is not in the git repo because we're going to make a change locally
 echo "${yellow}Configuring Pixelcade Startup Script...${white}"
-cd $HOME/pixelcade/system
+cd /home/pi/pixelcade/system
 curl -LO http://pixelcade.org/pi/pixelcade-startup.sh
-sudo chmod +x $HOME/pixelcade/system/pixelcade-startup.sh
+sudo chmod +x /home/pi/pixelcade/system/pixelcade-startup.sh
 curl -LO http://pixelcade.org/pi/update.sh
-sudo chmod +x $HOME/pixelcade/system/update.sh
+sudo chmod +x /home/pi/pixelcade/system/update.sh
 
 if [ "$auto_update" = true ] ; then #add git pull to startup
-    if cat $HOME/pixelcade/system/pixelcade-startup.sh | grep -q 'sh ./update.sh'; then
+    if cat /home/pi/pixelcade/system/pixelcade-startup.sh | grep -q 'sh ./update.sh'; then
        echo "${yellow}Auto-update was already added to pixelcade-startup.sh, skipping...${white}"
     else
       echo "${yellow}Adding auto-update to pixelcade-startup.sh...${white}"
-      sudo sed -i '/^exit/i cd $HOME/pixelcade/system && sh ./update.sh' $HOME/pixelcade/system/pixelcade-startup.sh #insert this line before exit
+      sudo sed -i '/^exit/i cd /home/pi/pixelcade/system && sh ./update.sh' /home/pi/pixelcade/system/pixelcade-startup.sh #insert this line before exit
     fi
 fi
 
@@ -255,30 +259,30 @@ if [ "$retropie" = true ] ; then
       echo "${yellow}Pixelcade already added to autostart.sh, skipping...${white}"
     else
       echo "${yellow}Adding Pixelcade /opt/retropie/configs/all/autostart.sh...${white}"
-      sudo sed -i '/^emulationstation.*/i cd $HOME/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
-      sudo sed -i '/^emulationstation.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
+      sudo sed -i '/^emulationstation.*/i cd /home/pi/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
+      sudo sed -i '/^emulationstation.*/i sleep 10 && cd /home/pi/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before emulationstation #auto
       if [ "$attractmode" = true ] ; then
           echo "${yellow}Adding Pixelcade for Attract Mode to /opt/retropie/configs/all/autostart.sh...${white}"
-          sudo sed -i '/^attract.*/i cd $HOME/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
-          sudo sed -i '/^attract.*/i sleep 10 && cd $HOME/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
+          sudo sed -i '/^attract.*/i cd /home/pi/pixelcade && java -jar pixelweb.jar -b &' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
+          sudo sed -i '/^attract.*/i sleep 10 && cd /home/pi/pixelcade/system && ./pixelcade-startup.sh' /opt/retropie/configs/all/autostart.sh #insert this line before attract #auto
       fi
     fi
     echo "${yellow}Installing Fonts...${white}"
-    cd $HOME/pixelcade
-    mkdir $HOME/.fonts
-    sudo cp $HOME/pixelcade/fonts/*.ttf /$HOME/.fonts
+    cd /home/pi/pixelcade
+    mkdir /home/pi/.fonts
+    sudo cp /home/pi/pixelcade/fonts/*.ttf /home/pi/.fonts
     sudo apt -y install font-manager
     sudo fc-cache -v -f
 else #there is no retropie so we need to add pixelcade /etc/rc.local instead
   echo "${yellow}Installing Fonts...${white}"
-  cd $HOME/pixelcade
-  mkdir $HOME/.fonts
-  sudo cp $HOME/pixelcade/fonts/*.ttf /$HOME/.fonts
+  cd /home/pi/pixelcade
+  mkdir /home/pi/.fonts
+  sudo cp /home/pi/pixelcade/fonts/*.ttf /home/pi/.fonts
   sudo apt -y install font-manager
   sudo fc-cache -v -f
   echo "${yellow}Adding Pixelcade to Startup...${white}"
-  cd $HOME/pixelcade/system
-  sudo chmod +x $HOME/pixelcade/system/autostart.sh
+  cd /home/pi/pixelcade/system
+  sudo chmod +x /home/pi/pixelcade/system/autostart.sh
   sudo cp pixelcade.service /etc/systemd/system/pixelcade.service
   #to do add check if the service is already running
   sudo systemctl start pixelcade.service
@@ -303,11 +307,11 @@ fi
 
 # let's send a test image and see if it displays
 sleep 5
-cd $HOME/pixelcade
+cd /home/pi/pixelcade
 java -jar pixelcade.jar -m stream -c mame -g 1941
 
 #let's write the version so the next time the user can try and know if he/she needs to upgrade
-echo $version > $HOME/pixelcade/pixelcade-version
+echo $version > /home/pi/pixelcade/pixelcade-version
 
 echo " "
 while true; do
