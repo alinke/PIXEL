@@ -251,6 +251,7 @@ public class Pixel
     private ArrayList<String> GIFPlayedDecodedPath = new ArrayList<>();
     
     private int lastGIFLatestFrame = 0;
+    private int currentGIFLatestFrame = 0;
     private ArrayList<Integer> GIFLatestFrame = new ArrayList<>();
     
     private int lastGIFTotalFrames = 0;
@@ -1151,19 +1152,26 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     
     public void sendPixelDecodedFramePinball(String decodedDir, String gifName, int x, int selectedFileTotalFrames, int selectedFileResolution, int frameWidth, int frameHeight) 
     {
-      
-        //TO DO need to make sure this is no bigger than 3 or so
-        GIFLatestFrame.add(x);
-        if (GIFLatestFrame.size()>1) {
-            lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2);
-            //System.out.println("Last Frame index: " + lastGIFLatestFrame);
-        }
+                
+        currentGIFLatestFrame = x;
+
+        //System.out.println("Current Frame index: " + x);
+        //System.out.println("Current Total Frames: " + selectedFileTotalFrames);
+
+//        //TO DO need to make sure this is no bigger than 3 or so
+//        GIFLatestFrame.add(x);   //GIFLastFrame is an array list that tracks the index of the last frame
+//        if (GIFLatestFrame.size()>1) {
+//            lastGIFLatestFrame = GIFLatestFrame.get(GIFLatestFrame.size()-2); 
+//            //System.out.println("Last Frame index: " + lastGIFLatestFrame);
+//        }
         
-        GIFTotalFrames.add(selectedFileTotalFrames);
-        if (GIFTotalFrames.size()>1) {
-            lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2);
-            //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
-        }
+//        GIFTotalFrames.add(selectedFileTotalFrames);
+//        if (GIFTotalFrames.size()>1) {
+//            lastGIFTotalFrames = GIFTotalFrames.get(GIFTotalFrames.size()-2); //gets the second to last value?
+//            //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
+//            //System.out.println("Array Size: " + GIFTotalFrames.size());
+//            //System.out.println("Array Current Value: " + GIFTotalFrames.get(x));
+//        }
         
         //made a change to not create new arrays and re-use existing global one so we need to clear the array here before we use it
         Arrays.fill(BitmapBytes, (byte)0); 
@@ -1294,12 +1302,18 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                       //boolean removeme = true; //test code to disable overlay
                               
                       //if (removeme == false && PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1 ) {   //if there is still a pinball animation running, then overaly
-                      if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1 ) {   //if there is still a pinball animation running, then overaly
+                      // we should NOT overlay if the last gif index has exceeded
+                      //if (PinballAnimationWasInterrupted.get() == true && GIFLatestFrame.size()>1) {   //if there is still a pinball animation running, then overaly
                       
+                       //System.out.println("Last Frame index: " + lastGIFLatestFrame);
+                       //System.out.println("Last Total Frames: " + lastGIFTotalFrames);
+                      
+                      if (PinballAnimationWasInterrupted.get() == true && (lastGIFLatestFrame  < lastGIFTotalFrames - 1 )) { //the overlay
                         
                         //since the pinball gifs are one shot, we should only play the remaining frames left from the last one
-                        
-                        
+                        //lastGIFLatestFrame
+                        //lastGIFTotalFrames
+                        lastGIFLatestFrame++;
                         GetPixelDecodedFrameLast(pixelHome + lastGIFDecodedPath + "/decoded/", lastGIFName, lastGIFLatestFrame, lastGIFTotalFrames, 12832, 128, 32); 
                                
                         for (int i = 0; i < BitmapBytes.length; i++) {
@@ -1307,7 +1321,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                             int output = Byte.compare(BitmapBytes[i], transparent);
                                 
                             if (output == 0) {                                 //if the new byte is transparent, then take the last byte
-                                BitmapBytesOverlay[i] =BitmapBytesLast[i];
+                                BitmapBytesOverlay[i] = BitmapBytesLast[i]; //BitmapBytes last is the previous GIF that hadn't finished playing yet
                             }
                             else {                                          //if the new byte is not transparent, then take the new byte
                                 BitmapBytesOverlay[i] = BitmapBytes[i];
@@ -2029,8 +2043,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 	             //rotatedFrame = rotate90ToLeft(rotatedFrame);  //quick hack, same as above, have to rotate
 	              
 	    		 if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-	    			 System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
-                                  logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
+	    			 //System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
+                                  //logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
 	    			// rotatedFrame = Scalr.resize(rotatedFrame, pixelMatrix_width, pixelMatrix_height); //resize it, need to make sure we do not anti-alias
 	    			 
 	    			 try {
@@ -2043,8 +2057,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 	    			 
 	    		 }
 	    		 else {
-	    			 System.out.println("Encoding " + selectedFileName + " frame " + i);
-                                 logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
+	    			 //System.out.println("Encoding " + selectedFileName + " frame " + i);
+                                 //logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
 	    		 }
 	            
 	             //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
@@ -2213,7 +2227,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     	             //rotatedFrame = rotate90ToLeft(rotatedFrame);  //quick hack, same as above, have to rotate
     	              
     	    		 if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-    	    			 System.out.println("Resizing and encoding " + gifName + ".gif" + " frame " + i);
+    	    			 //System.out.println("Resizing and encoding " + gifName + ".gif" + " frame " + i);
                                  //logMe.aLogger.info("Resizing and encoding " + gifName + ".gif" + " frame " + i);
     	    			// rotatedFrame = Scalr.resize(rotatedFrame, pixelMatrix_width, pixelMatrix_height); //resize it, need to make sure we do not anti-alias
     	    			 
@@ -2227,7 +2241,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     	    			 
     	    		 }
     	    		 else {
-    	    			 System.out.println("DO NOT INTERRUPT: Encoding " + gifName + ".gif" + " frame " + i);
+    	    			 //System.out.println("DO NOT INTERRUPT: Encoding " + gifName + ".gif" + " frame " + i);
                                  //logMe.aLogger.info("DO NOT INTERRUPT: Encoding " + gifName + ".gif" + " frame " + i);
     	    		 }
     	            
@@ -2336,7 +2350,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 		//we should add another flag here if we're decoding from the jar or user supplied gif
 		
 		//we're going to decode a native GIF into our RGB565 format
-	    //we'll need to know the resolution of the currently selected matrix type: 16x32, 32x32, 32x64, or 64x64
+	        //we'll need to know the resolution of the currently selected matrix type: 16x32, 32x32, 32x64, or 64x64
 		//and then we will receive the gif accordingly as we decode
 		//we also need to get the original width and vuHeight of the gif which is easily done from the gif decoder class
 		//String gifName = FilenameUtils.removeExtension(gifName); //with no extension
@@ -2354,11 +2368,11 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 		File file = new File(gifFilePath);
 		if (file.exists()) {
                     
-                           MessageDigest md = MessageDigest.getInstance("MD5");
-                           String md5 = checksum(gifFilePath, md);
-                            //since we are decoding, we need to first make sure the .rgb565 and .txt decoded file is not there and delete if so.
-			  String gifName565Path =  decodedDir + gifNameNoExt + ".rgb565";  //   ex. c:\animation\decoded\tree.rgb565
-			  String gifNameTXTPath = decodedDir + gifNameNoExt + ".txt";  //   ex. c:\animation\decoded\tree.txt
+                        MessageDigest md = MessageDigest.getInstance("MD5");
+                        String md5 = checksum(gifFilePath, md);
+                        //since we are decoding, we need to first make sure the .rgb565 and .txt decoded file is not there and delete if so.
+			String gifName565Path =  decodedDir + gifNameNoExt + ".rgb565";  //   ex. c:\animation\decoded\tree.rgb565
+			String gifNameTXTPath = decodedDir + gifNameNoExt + ".txt";  //   ex. c:\animation\decoded\tree.txt
 			 
                           
 			  //since we are decoding, we need to first make sure the .rgb565 and .txt decoded file is not there and delete if so.
@@ -2381,21 +2395,24 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 	          int frameWidth = frameSize.width;
 	          int frameHeight = frameSize.height;
 	         
+                 
 	          System.out.println("frame count: " + numFrames);
 	          System.out.println("frame delay: " + frameDelay);
 	          System.out.println("frame height: " + frameHeight);
 	          System.out.println("frame width: " + frameWidth);
+                  System.out.println("One time decoding..." + gifNameNoExt);
                   logMe.aLogger.info("frame count: " + numFrames);
                   logMe.aLogger.info("frame delay: " + frameDelay);
                   logMe.aLogger.info("frame height: " + frameHeight);
                   logMe.aLogger.info("frame width: " + frameWidth);
+                  logMe.aLogger.info("One time decoding..." + gifNameNoExt);
 	          	          
 	          if (numFrames == 1) {  //ok this is a hack, for some reason only on raspberry pi, single frame gifs are not writing so the work around is to write 2 frames for a single frame GIF
                            for (int i = 0; i < 2; i++) { 
                            BufferedImage rotatedFrame = d.getFrame(0);  
                                if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-                                       System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
-                                       logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
+                                       //System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
+                                       //logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
 
                                        try {
                                                       rotatedFrame = getScaledImage(rotatedFrame, pixelMatrix_width,pixelMatrix_height);
@@ -2406,8 +2423,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                                               }
                                }
                                else {
-                                       System.out.println("Encoding " + selectedFileName + " frame " + i);
-                                       logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
+                                       //System.out.println("Encoding " + selectedFileName + " frame " + i);
+                                       //logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
                                }
 
                            //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
@@ -2480,8 +2497,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                            //rotatedFrame = rotate90ToLeft(rotatedFrame);  //quick hack, same as above, have to rotate
 
                                if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-                                       System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
-                                       logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
+                                       //System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
+                                       //logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
                                       // rotatedFrame = Scalr.resize(rotatedFrame, pixelMatrix_width, pixelMatrix_height); //resize it, need to make sure we do not anti-alias
 
                                        try {
@@ -2494,8 +2511,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 
                                }
                                else {
-                                       System.out.println("Encoding " + selectedFileName + " frame " + i);
-                                       logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
+                                       //System.out.println("Encoding " + selectedFileName + " frame " + i);
+                                       //logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
                                }
 
                            //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
@@ -2697,17 +2714,19 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                     System.out.println("frame delay: " + arcadeFrameDelayTarget);
                     System.out.println("frame height: " + frameHeight);
                     System.out.println("frame width: " + frameWidth);
+                    System.out.println("One time decoding..." + gifNameNoExt);
                     logMe.aLogger.info("frame count: " + numFrames);
                     logMe.aLogger.info("frame delay: " + arcadeFrameDelayTarget);
                     logMe.aLogger.info("frame height: " + frameHeight);
                     logMe.aLogger.info("frame width: " + frameWidth);
+                    logMe.aLogger.info("One time decoding..." + gifNameNoExt);
 	          	          
                     if (numFrames == 1) {  //ok this is a hack, for some reason only on raspberry pi, single frame gifs are not writing so the work around is to write 2 frames for a single frame GIF
                              for (int i = 0; i < 2; i++) { 
                              BufferedImage rotatedFrame = d.getFrame(0);  
                                  if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-                                         System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
-                                         logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
+                                         //System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
+                                         //logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
 
                                          try {
                                                         rotatedFrame = getScaledImage(rotatedFrame, pixelMatrix_width,pixelMatrix_height);
@@ -2718,8 +2737,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                                                 }
                                  }
                                  else {
-                                         System.out.println("Encoding " + selectedFileName + " frame " + i);
-                                         logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
+                                         //System.out.println("Encoding " + selectedFileName + " frame " + i);
+                                         //logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
                                  }
 
                              //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
@@ -2801,8 +2820,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                                 BufferedImage rotatedFrame = d.getFrame(i);  
 
                                 if (frameWidth != pixelMatrix_width || frameHeight != pixelMatrix_height) {
-                                        System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
-                                        logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
+                                        //System.out.println("Resizing and encoding " + selectedFileName + " frame " + i);
+                                        //logMe.aLogger.info("Resizing and encoding " + selectedFileName + " frame " + i);
 
                                         try {
                                                        rotatedFrame = getScaledImage(rotatedFrame, pixelMatrix_width,pixelMatrix_height);
@@ -2812,8 +2831,8 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                                                }
                                 }
                                 else {
-                                        System.out.println("Encoding " + selectedFileName + " frame " + i);
-                                        logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
+                                        //System.out.println("Encoding " + selectedFileName + " frame " + i);
+                                        //logMe.aLogger.info("Encoding " + selectedFileName + " frame " + i);
                                 }
 
                                 //this code here to convert a java image to rgb565 taken from stack overflow http://stackoverflow.com/questions/8319770/java-image-conversion-to-rgb565/
@@ -3334,10 +3353,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 
                                interactiveMode();  //we are streaming here so need to put in interactive mode first , otherwise we're just playing locally
 
-//                               streampinballTask = new StreamPinballTask();
-//                               streamPinballservice = Executors.newScheduledThreadPool(1);
-//                               futurepinball = streamPinballservice.scheduleAtFixedRate(streampinballTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
-//                               PinballAnimationRunningFlag.set(true);
+
                                
                                streamgifTask = new StreamGIFTask();
                                streamGIFservice = Executors.newScheduledThreadPool(1);
@@ -3370,17 +3386,20 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         
         if (GIFPlayed.size() > 1) {
             lastGIFName = GIFPlayed.get(GIFPlayed.size()-2); //get the second to last item, we want to know the gif that was playing before this current one
-//            System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
-//            System.out.println("GIF Queue: " + GIFPlayed);
+            //System.out.println("2nd to Last: " + GIFPlayed.get(GIFPlayed.size() -2));
+            //System.out.println("GIF Queue: " + GIFPlayed);
             GIFPlayed.remove(0); //remove the top item of the Q so we don't fill up memory
         }
         
         GIFPlayedDecodedPath.add(selectedPlatformName);
         if (GIFPlayedDecodedPath.size() > 1) {
             lastGIFDecodedPath = GIFPlayedDecodedPath.get(GIFPlayedDecodedPath.size()-2);
-//            System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
-//            System.out.println("Decoded GIF Queue: " + GIFPlayedDecodedPath);
+            //System.out.println("2nd Last GIF Platform: " + lastGIFDecodedPath);
+            //System.out.println("Decoded GIF Queue: " + GIFPlayedDecodedPath);
             GIFPlayedDecodedPath.remove(0); //remove top item of Q so we don't fill up memory
+            //let's get the 2nd to last GIF number of frames
+            lastGIFTotalFrames = getDecodednumFrames(pixelHome + lastGIFDecodedPath + File.separator + "decoded" + File.separator, lastGIFName); //File.separator
+            //System.out.println("Last GIF Total Frames: " + lastGIFTotalFrames);
         }
 
         //we first need to check that pixel is connected and if not, let's write it to the queue
@@ -3472,6 +3491,9 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                             
                             if (PinballAnimationInterrupt.get() == true) {  //we want to know if the previous animation had finished or is still running so we can overlay or not
                                 PinballAnimationWasInterrupted.set(true);
+                                lastGIFLatestFrame = currentGIFLatestFrame;
+                                System.out.println("lastGIFIndex before interrupt: " +  lastGIFLatestFrame);
+                                //if we were interrupted, let's get the index counter of last gif here!
 
                             }
                             else {
@@ -4226,7 +4248,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
             
             PinballAnimationInterrupt.set(true);  //this is how we know if we got interrupted and need to overlay
             
-            if (z >= GIFnumFrames) { //then we've completed one loop
+            if (z >= GIFnumFrames) { //then we've completed one loop nd these are on shot
                 z = 0;
                 stopExistingTimer();
                 interactiveMode(); //clear the display like this or send a blank frame
