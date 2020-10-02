@@ -9,10 +9,10 @@ import kotlin.system.exitProcess
 
 var retries = 0
 val host = "pixelcadedx.local"
-val user = "pi"
+val user = "xxxxx"
 val args = arrayOf<String>()
-val password = "flynn-lives"
-val command = "killall java && unzip -qqoXK package.pxl && rm package.pxl && sudo chmod +x pixelcade/pixelweb && pixelcade/pixelweb & exit\n"
+val password = "xxxxxxx"
+val command = "killall java && unzip -qqoXK package.pxl && unzip -qqoXK package1.pxl && rm package.pxl  && rm package1.pxl && sudo chmod +x pixelcade/pixelweb && pixelcade/pixelweb & exit\n"
 
 fun main(args:Array<String>?) {
     /* if (args != null && args.count() == 0) {
@@ -85,13 +85,17 @@ fun main(args:Array<String>?) {
 
             val jarFile = JarFile(File(progressMonitor::class.java.protectionDomain.codeSource.location
                     .toURI()).path);
-            val size = jarFile.getEntry("package.pxl").size;
+            var size = jarFile.getEntry("package.pxl").size;
             println("Size: $size")
             progress = progressMonitor(size)
 
             val sftpChannel = session.openChannel("sftp") as ChannelSftp
             sftpChannel.connect()
             sftpChannel.put(object {}.javaClass.getResource("/package.pxl").openStream(), "/home/pi/package.pxl", progress)
+
+            size = jarFile.getEntry("package1.pxl").size;
+            progress = progressMonitor(size)
+            sftpChannel.put(object {}.javaClass.getResource("/package1.pxl").openStream(), "/home/pi/package1.pxl", progress)
 
             sftpChannel.disconnect()
             print("\nFinishing...")
