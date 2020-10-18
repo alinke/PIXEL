@@ -68,7 +68,7 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
              System.out.println("Scrolling text handler received a request: " + requestURI);
          }
 
-         if(WebEnabledPixel.getLCDMarquee().equals("yes")) {
+         if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
             try {
                if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
                    WebEnabledPixel.dxEnvironment = true;

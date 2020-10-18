@@ -4,8 +4,11 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 import ioio.lib.api.exception.ConnectionLostException;
 import java.awt.Color;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.List;
@@ -111,6 +114,20 @@ public class AnimationsHttpHandler extends ImageResourceHttpHandler
         if (!CliPixel.getSilentMode()) {
             System.out.println("animation handler received: " + urlParams);
             logMe.aLogger.info("animation handler received: " + urlParams);
+        }
+        
+        if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+            try {
+                    if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                        WebEnabledPixel.dxEnvironment = true;
+                        System.out.println("Requested: " + tempURI.getPath());
+                        URL url = new URL("http://pixelcadedx.local:8080" + tempURI.getPath());
+                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                        con.setRequestMethod("GET");
+                        con.getResponseCode();
+                        con.disconnect();
+                    }
+                }catch (  Exception e){}
         }
         
         //System.out.println("length: " + animationURLarray.length);  //a

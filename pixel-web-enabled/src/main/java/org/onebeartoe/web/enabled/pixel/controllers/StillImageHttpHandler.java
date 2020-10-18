@@ -5,11 +5,13 @@ import ioio.lib.api.exception.ConnectionLostException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
+//import javax.imageio.ImageIO;
 import org.apache.commons.io.FilenameUtils;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.pixel.hardware.Pixel;
@@ -71,6 +73,23 @@ public class StillImageHttpHandler extends ImageResourceHttpHandler
         System.out.println("arcadeNameOnly: " + arcadeName);
         System.out.println("ext: " + ext);
         System.out.println("path to file: " + path);
+        
+        
+        if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+            try {
+                if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                    WebEnabledPixel.dxEnvironment = true;
+                    //System.out.println("Requested: " + requestURI.getPath());
+                    //URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
+                    System.out.println("Requested: " + "/arcade/stream/mame/" + arcadeName);
+                    URL url2 = new URL("http://pixelcadedx.local:8080" + "/arcade/stream/mame/" + arcadeName);
+                    HttpURLConnection con = (HttpURLConnection) url2.openConnection();
+                    con.setRequestMethod("GET");
+                    con.getResponseCode();
+                    con.disconnect();
+                }
+            }catch (  Exception e){}
+        }
         
         if (ext.equals("gif")) {
             

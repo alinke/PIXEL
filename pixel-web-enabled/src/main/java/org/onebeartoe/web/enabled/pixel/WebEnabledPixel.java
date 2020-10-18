@@ -67,7 +67,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.1.0";
+  public static String pixelwebVersion = "3.3.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
