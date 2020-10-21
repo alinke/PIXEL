@@ -3163,6 +3163,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         System.out.println("color hex: " + toHexString(color)); 
         System.out.println("scroll smooth: " + scrollSmooth);
         */
+  
         
         try { 
             
@@ -3171,6 +3172,11 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
         catch (Exception e) { 
             System.out.println("Queue Exception: " + e); 
         } 
+        
+        if (PixelQueue.size() > 50) {      //kind of a hack, adding this for LCD, we don't want the Q getting too big and taking up too much memory
+            PixelQueue.clear();
+            System.out.println("Max Queue Size Exceeded, Clearing Queue"); 
+        }
         
         System.out.println("Queue Contents : " + PixelQueue);
     }
