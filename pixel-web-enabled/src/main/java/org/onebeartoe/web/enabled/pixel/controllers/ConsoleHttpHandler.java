@@ -23,13 +23,13 @@ import org.onebeartoe.web.enabled.pixel.CliPixel;
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 
 public class ConsoleHttpHandler extends ImageResourceHttpHandler {
-    protected LCDPixelcade lcdDisplay = null;
+    //protected LCDPixelcade lcdDisplay = null;  //do we need these ?
     
   public ConsoleHttpHandler(WebEnabledPixel application) {
     super(application);
     
-     if(WebEnabledPixel.getLCDMarquee().equals("yes"))
-       lcdDisplay = new LCDPixelcade();
+//     if(WebEnabledPixel.getLCDMarquee().equals("yes"))
+//       lcdDisplay = new LCDPixelcade();
      
     this.basePath = "";
     this.defaultImageClassPath = "mame";
@@ -54,6 +54,12 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
   }
   
   protected void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
+    
+    //If we are LCD only, let's re-direct this call to arcade handler
+    
+    
+    
+      
     Pixel pixel = this.application.getPixel();
     String streamOrWrite = null;
     String consoleName = null;
@@ -253,6 +259,8 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
             LogMe.aLogger.info("Accessory Call Console: " + WebEnabledPixel.getConsoleMetaData(consoleName));
           } 
         handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG),consoleNameMapped);
+        
+        
           
           
         } else if (text_ != "") {

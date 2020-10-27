@@ -67,7 +67,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.3.0";
+  public static String pixelwebVersion = "3.4.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -225,6 +225,8 @@ public class WebEnabledPixel {
   private static Integer LEDStrip2DataPin_ = 4;
   
   private static Integer LEDStrip2CLKPin_ = 5;
+  
+  private static Boolean LCDOnly = false;
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -1591,7 +1593,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     
     
 
-    public IOIOLooper createIOIOLooper(String connectionType, Object extra) {
+    public IOIOLooper createIOIOLooper(String connectionType, Object extra) { //we only go here if the Pixelcade board is detected via correct COM port
       return (IOIOLooper)new BaseIOIOLooper() {
       //return new BaseIOIOLooper() {  ///???
           

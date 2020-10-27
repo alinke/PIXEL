@@ -46,7 +46,8 @@ public class LCDPixelcade {
                 if (InetAddress.getByName("pixelcadedx.local").isReachable(20000)) {
 
                     dxChecked = true;
-                    System.out.print("PixelcadeLCD: Setting DXEnvironment\n");
+                    //System.out.print("PixelcadeLCD: Setting DXEnvironment\n");
+                    System.out.print("PixelcadeLCD Detected\n");
                 } else {
                     System.out.print("LCD used in non-DXE...)\n");
                     WebEnabledPixel.dxEnvironment = false;
