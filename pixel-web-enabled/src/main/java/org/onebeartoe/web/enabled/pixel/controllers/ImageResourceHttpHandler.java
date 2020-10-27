@@ -73,12 +73,26 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                 try {
                     if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
                         WebEnabledPixel.dxEnvironment = true;
-                        System.out.println("Requested: " + requestURI.getPath());
-                        URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setRequestMethod("GET");
-                        con.getResponseCode();
-                        con.disconnect();
+                        
+                        //if it's a console call, let's re-direct to arcade because pixelcade embedded doesn't know about the console calls
+                        if (requestURI.getPath().contains("console")) {
+                             System.out.println("Request Console Redirected: " + requestURI.getPath());
+                             String consoleName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1)).toLowerCase();
+                             String redirect = "/arcade/stream/mame/" + consoleName;
+                             URL url = new URL("http://pixelcadedx.local:8080" + redirect);
+                             HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                             con.setRequestMethod("GET");
+                             con.getResponseCode();
+                             con.disconnect();
+                        }
+                        else {
+                            System.out.println("Requested: " + requestURI.getPath());  
+                            URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
+                              HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                              con.setRequestMethod("GET");
+                              con.getResponseCode();
+                              con.disconnect();
+                        }
                     }
                 }catch (  Exception e){}
             }
