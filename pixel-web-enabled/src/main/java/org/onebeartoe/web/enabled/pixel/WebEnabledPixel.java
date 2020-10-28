@@ -18,6 +18,9 @@ import ioio.lib.api.SpiMaster; //for the LED Strip
 import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.concurrent.Executors;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +32,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.ini4j.Config;
@@ -67,7 +71,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.4.0";
+  public static String pixelwebVersion = "3.5.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -228,6 +232,10 @@ public class WebEnabledPixel {
   
   private static Boolean LCDOnly = false;
   
+  private static boolean aluInitMode_ = false;
+  
+  private static boolean easterEggMode_ = false;
+  
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
     this.cli = new CliPixel(args);
@@ -235,12 +243,14 @@ public class WebEnabledPixel {
     this.httpPort = this.cli.getWebPort();
     silentMode_ = CliPixel.getSilentMode();
     backgroundMode_ = CliPixel.getBackgroundMode();
+    easterEggMode_ = CliPixel.getEasterEggCheck();
+    aluInitMode_ = CliPixel.getALUInitMode();
     logMe = LogMe.getInstance();
     
     if (!silentMode_) {
       LogMe.aLogger.info("Pixelcade Listener (pixelweb) Version " + pixelwebVersion);
       System.out.println("Pixelcade Listener (pixelweb) Version " + pixelwebVersion);
-    } 
+    }      
     
 //    Map<String, String> map = System.getenv();  //shows the env variables available to us
 //    map.entrySet().forEach(System.out::println);
@@ -1669,6 +1679,60 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               System.out.println(message);
               LogMe.aLogger.info(message.toString());
             } 
+            
+            
+            if (isALU) {
+            
+                if (aluInitMode_) {
+                     System.out.println("[Status]: ALU First Connect Successful");
+                     System.out.println("Stopped");
+                     System.exit(1);
+                }
+
+                Date date = new Date();
+                LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                int month = localDate.getMonthValue();
+                int day   = localDate.getDayOfMonth();
+
+                if (!aluInitMode_ && easterEggMode_)  {  //if this is the second ALU run and we are in easter egg mode
+                    if (month == 7 && (day == 3 || day == 4)) {
+                            System.out.println("Fourth of July Easter Egg Match");
+                            pixel.scrollText("Happy Fourth of July!", 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+
+
+                        try {
+                            pixel.writeArcadeAnimation("alu", "fireworks.gif", false, 10, WebEnabledPixel.pixelConnected);
+                        } catch (NoSuchAlgorithmException ex) {
+                            Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+
+
+                    } else {
+
+                        pixel.scrollText(lcdMarqueeMessage_, 1, 10L, Color.cyan,WebEnabledPixel.pixelConnected,1);
+
+                        try {
+                            pixel.writeArcadeAnimation("alu", "legends.gif", false, 99999, WebEnabledPixel.pixelConnected);
+                        } catch (NoSuchAlgorithmException ex) {
+                            Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                    }
+                } else {
+                    if (!aluInitMode_) {  //this is the second run and we're not in easter egg mode
+                        try {
+                            System.out.println("Welcome to Pixelcade");
+                            String logoConsoleFilePathPNG = WebEnabledPixel.pixelHome + "alu/default-alu.png";
+                            File logoConsoleFilePNG = new File(logoConsoleFilePathPNG);
+                            pixel.writeArcadeImage(logoConsoleFilePNG, false, 99999, "alu", "default-alu.png", WebEnabledPixel.pixelConnected);
+                        } catch (IOException ex) {
+                            Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            
+            }
             
             //to do later possibly, easter egg holiday animations could go here 
             
