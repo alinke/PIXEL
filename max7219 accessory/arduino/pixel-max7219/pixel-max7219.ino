@@ -96,7 +96,7 @@ unsigned long delaytime=250;
 // Global message buffers shared by Serial and Scrolling functions
 #define  BUF_SIZE  200     //had to increase the buffer size from the default of 75 becasue our string length was exceeding and note on the pixelcade side we also truncate to ensure the incoming serial message is not too long
 char curMessage[BUF_SIZE] = { "" };
-char newMessage[BUF_SIZE] = { "Pixelcade" };
+char newMessage[BUF_SIZE] = { "Pixelcade Sub-Display" };
 bool newMessageAvailable = true;
 // **********************************************
 
