@@ -17,6 +17,7 @@ import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.pixel.hardware.Pixel;
 import org.onebeartoe.web.enabled.pixel.CliPixel;
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
+import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.getLCDMarqueeHostName;
 
 /**
  * @author Roberto Marquez
@@ -77,12 +78,10 @@ public class StillImageHttpHandler extends ImageResourceHttpHandler
         
         if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
             try {
-                if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
                     WebEnabledPixel.dxEnvironment = true;
-                    //System.out.println("Requested: " + requestURI.getPath());
-                    //URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
                     System.out.println("Requested: " + "/arcade/stream/mame/" + arcadeName);
-                    URL url2 = new URL("http://pixelcadedx.local:8080" + "/arcade/stream/mame/" + arcadeName);
+                    URL url2 = new URL("http://" + getLCDMarqueeHostName() + ":8080" + "/arcade/stream/mame/" + arcadeName);
                     HttpURLConnection con = (HttpURLConnection) url2.openConnection();
                     con.setRequestMethod("GET");
                     con.getResponseCode();

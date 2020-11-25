@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
+import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.getLCDMarqueeHostName;
 
 /**
  * @author Roberto Marquez
@@ -68,10 +69,11 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
 
             int i = path.lastIndexOf("/") + 1;
             String name = path.substring(i);
-
+            
+            
             if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
                 try {
-                    if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+                    if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
                         WebEnabledPixel.dxEnvironment = true;
                         
                         //if it's a console call, let's re-direct to arcade because pixelcade embedded doesn't know about the console calls
@@ -79,7 +81,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                              System.out.println("Request Console Redirected: " + requestURI.getPath());
                              String consoleName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1)).toLowerCase();
                              String redirect = "/arcade/stream/mame/" + consoleName;
-                             URL url = new URL("http://pixelcadedx.local:8080" + redirect);
+                             URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
                              HttpURLConnection con = (HttpURLConnection) url.openConnection();
                              con.setRequestMethod("GET");
                              con.getResponseCode();
@@ -87,7 +89,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                         }
                         else {
                             System.out.println("Requested: " + requestURI.getPath());  
-                            URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
+                            URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
                               HttpURLConnection con = (HttpURLConnection) url.openConnection();
                               con.setRequestMethod("GET");
                               con.getResponseCode();

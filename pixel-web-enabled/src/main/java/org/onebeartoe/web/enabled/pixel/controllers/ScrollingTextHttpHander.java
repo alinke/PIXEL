@@ -21,6 +21,7 @@ import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.pixel.hardware.Pixel;
 import org.onebeartoe.web.enabled.pixel.CliPixel;
+import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.getLCDMarqueeHostName;
 
 /**
  * @author Roberto Marquez
@@ -70,10 +71,10 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
 
          if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
             try {
-               if (InetAddress.getByName("pixelcadedx.local").isReachable(5000)){
+               if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
                    WebEnabledPixel.dxEnvironment = true;
                    System.out.println("Requested: " + requestURI.getPath());
-                   URL url = new URL("http://pixelcadedx.local:8080" + requestURI);
+                   URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
                    con.setRequestMethod("GET");
                    con.getResponseCode();

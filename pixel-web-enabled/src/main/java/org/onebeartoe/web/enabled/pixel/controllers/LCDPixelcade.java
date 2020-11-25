@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.URL;
 
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
+import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.getLCDMarqueeHostName;
 
 public class LCDPixelcade {
 
@@ -43,7 +44,7 @@ public class LCDPixelcade {
     {
         if (!dxChecked){
             try {
-                if (InetAddress.getByName("pixelcadedx.local").isReachable(20000)) {
+                if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(20000)) {
 
                     dxChecked = true;
                     //System.out.print("PixelcadeLCD: Setting DXEnvironment\n");
