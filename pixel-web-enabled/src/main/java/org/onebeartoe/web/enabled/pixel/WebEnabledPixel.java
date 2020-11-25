@@ -17,6 +17,7 @@ import ioio.lib.api.SpiMaster; //for the LED Strip
 
 import java.awt.*;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
@@ -71,7 +72,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.5.0";
+  public static String pixelwebVersion = "3.4.1";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -145,6 +146,8 @@ public class WebEnabledPixel {
   private static String textSpeed_ = "normal";
   
   private static String lcdMarquee_ = "no";
+  
+  private static String lcdMarqueeHostName_ = "pixelcadedx.local";
   
   private static String lcdMarqueeMessage_ = "Welcome to Pixelcade and Game On!";
   
@@ -417,6 +420,13 @@ public class WebEnabledPixel {
         ini.store();
       } 
       
+      if (sec.containsKey("LCDMarqueeHostName")) {
+        lcdMarqueeHostName_ = (String)sec.get("LCDMarqueeHostName");
+      } else {
+        sec.add("LCDMarqueeHostName", "pixelcadedx.local");
+        ini.store();
+      } 
+      
       if (sec.containsKey("LCDMarquee")) {
         lcdMarquee_ = (String)sec.get("LCDMarquee");
       } else {
@@ -439,8 +449,6 @@ public class WebEnabledPixel {
         sec.add("MaxAnimationVersions", "3");
         ini.store();
       } 
-      
-
       
       if (sec.containsKey("LEDStrip1")) {
             LEDStrip1_ = (String)sec.get("LEDStrip1");
@@ -466,6 +474,19 @@ public class WebEnabledPixel {
         sec.add("LEDStrip2CLKPin", "5");
         ini.store();
       } 
+      
+     //let's test if the LCD (pixelcadedx.local) is there and turn on if so
+     //some users turned on LCD in settings but they only had LED making things slower, this call will take care of that
+      
+    if (InetAddress.getByName(lcdMarqueeHostName_).isReachable(5000)){
+       lcdMarquee_ = "yes";
+       System.out.println("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
+       LogMe.aLogger.info("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
+    } else
+    {
+       lcdMarquee_ = "no"; 
+    }  
+      
 
 if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 	if(lcdDisplay == null) lcdDisplay = new LCDPixelcade();
@@ -916,6 +937,10 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
   
   public static String getLCDMarquee() {
     return lcdMarquee_;
+  }
+  
+  public static String getLCDMarqueeHostName() {
+    return lcdMarqueeHostName_;
   }
   
   public static int getDefaultFontSize() {
@@ -1680,7 +1705,6 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
               LogMe.aLogger.info(message.toString());
             } 
             
-            
             if (isALU) {
             
                 if (aluInitMode_) {
@@ -1732,6 +1756,18 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                     }
                 }
             
+            }
+            
+            else {  //if not an ALU
+            
+                //may need this for the Raspberry Pi issue where first connect is not successful
+                if (aluInitMode_) {
+                         System.out.println("[Status]: First Connect Attempt");
+                         System.out.println("Exiting...");
+                         LogMe.aLogger.info("[Status]: First Connect Attempt");
+                         LogMe.aLogger.info("Exiting...");
+                         System.exit(1);
+                }
             }
             
             //to do later possibly, easter egg holiday animations could go here 
