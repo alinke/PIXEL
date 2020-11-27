@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.setCurrentPlatformGame;
 //import static org.apache.velocity.texen.util.FileUtil.file;
 
 
@@ -252,6 +253,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         if (text_ != "")
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
         } 
+      
+      //set the vars for the API of the current / last game
+      setCurrentPlatformGame(consoleNameMapped,arcadeNameOnly);
       
       
       //let's find the matching PNG

@@ -17,8 +17,12 @@ import ioio.lib.api.SpiMaster; //for the LED Strip
 
 import java.awt.*;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -68,11 +72,12 @@ import org.onebeartoe.web.enabled.pixel.controllers.UploadPlatformHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.ShutdownHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.UpdateHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
+import org.onebeartoe.web.enabled.pixel.controllers.CurrentGameHttpHandler;
 
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.4.1";
+  public static String pixelwebVersion = "3.4.2";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -238,6 +243,10 @@ public class WebEnabledPixel {
   private static boolean aluInitMode_ = false;
   
   private static boolean easterEggMode_ = false;
+  
+  private static String currentGame = "NotSelectedYet";
+   
+  private static String currentPlatform = "NotSelectedYet";
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -477,15 +486,19 @@ public class WebEnabledPixel {
       
      //let's test if the LCD (pixelcadedx.local) is there and turn on if so
      //some users turned on LCD in settings but they only had LED making things slower, this call will take care of that
-      
-    if (InetAddress.getByName(lcdMarqueeHostName_).isReachable(5000)){
-       lcdMarquee_ = "yes";
-       System.out.println("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
-       LogMe.aLogger.info("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
-    } else
-    {
-       lcdMarquee_ = "no"; 
-    }  
+     
+//       try {
+//            if (InetAddress.getByName(lcdMarqueeHostName_).isReachable(5000)){
+//                lcdMarquee_ = "yes";
+//                System.out.println("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
+//                LogMe.aLogger.info("PixelcadeLCD detected on startup: " + lcdMarqueeHostName_);
+//             } else
+//             {
+//                lcdMarquee_ = "no"; 
+//                System.out.println("PixelcadeLCD not detected on startup: " + lcdMarqueeHostName_);
+//                LogMe.aLogger.info("PixelcadeLCD not detected on startup: " + lcdMarqueeHostName_);
+//             } 
+//       } catch (  Exception e){}
       
 
 if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
@@ -721,6 +734,46 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
         Arduino1MatrixOutput.flush();
       } 
     } 
+    
+    //this is a shutdown listener that we'll want to use if we have LCD to do a graceful shutdown when the JVM is terminated
+    
+//    if (lcdMarquee_.equals("yes")) {
+//    
+//        Runtime.getRuntime().addShutdownHook(
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                System.out.println("Graceful shutdown command sent to PixelcadeLCD");
+//                LogMe.aLogger.info("Graceful shutdown command sent to PixelcadeLCD");
+//                // this is executed on JVM shut-down
+//                URL url = null;
+//                try {
+//                    url = new URL("http://" + lcdMarqueeHostName_ + ":8080/shutdown");
+//                } catch (MalformedURLException ex) {
+//                    Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                 HttpURLConnection con = null;
+//                try {
+//                    con = (HttpURLConnection) url.openConnection();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                try {
+//                    con.setRequestMethod("GET");
+//                } catch (ProtocolException ex) {
+//                    Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                try {
+//                    con.getResponseCode();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(WebEnabledPixel.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                 con.disconnect();
+//            }
+//        }));
+//    }
+    
+    
   }
   
   private void createControllers()
@@ -782,9 +835,14 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
             
             HttpHandler rebootHttpHandler = new RebootHttpHandler(this);
             
+            HttpHandler currentGameHttpHandler = new CurrentGameHttpHandler();
+          
+            
             // ARE WE GONNA DO ANYTHING WITH THE HttpContext OBJECTS?   
             
             HttpContext createContext =     server.createContext("/", indexHttpHandler);
+                                            server.createContext("/currentgame", currentGameHttpHandler);
+            
             
             HttpContext animationsContext = server.createContext("/animations", animationsHttpHandler);
                                             server.createContext("/animations/list", animationsListHttpHandler);
@@ -966,6 +1024,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //      return LEDStrip1NumberLEDs_;
 //  }
   
+  
   public static void setLEDStripColor(int r, int g, int b) {  //red and blue are switched
   //public static void setLEDStripColor(int b, int g, int r) {  //red and blue are switched
 				//if (r > 127) r = 127;
@@ -974,6 +1033,16 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                                 red = r;
                                 green = g;
                                 blue = b;
+   }
+  
+   public static void setCurrentPlatformGame(String Platform, String Game) {  //used by API to get current platform and game
+       currentPlatform = Platform;                       
+       currentGame = Game;
+   }
+   
+    public static String getCurrentPlatformGame() {  //used by API to get current platform and game
+       String PlatformGame = currentPlatform + "," + currentGame;
+       return PlatformGame;
    }
   
   public static long getScrollingTextSpeed(int LED_MATRIX_ID) {
