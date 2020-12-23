@@ -3,12 +3,11 @@ package org.onebeartoe.web.enabled.pixel.controllers;
 import com.sun.net.httpserver.HttpExchange;
 import ioio.lib.api.exception.ConnectionLostException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.WordUtils;
 import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.LogMe;
 import org.onebeartoe.web.enabled.pixel.WebEnabledPixel;
@@ -70,10 +69,9 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
             int i = path.lastIndexOf("/") + 1;
             String name = path.substring(i);
             
-            
             if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
                 try {
-                    if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
+                    if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){ //to do should we be checking everytime if reachable?
                         WebEnabledPixel.dxEnvironment = true;
                         
                         //if it's a console call, let's re-direct to arcade because pixelcade embedded doesn't know about the console calls
@@ -88,12 +86,46 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                              con.disconnect();
                         }
                         else {
-                            System.out.println("Requested: " + requestURI.getPath());  
-                            URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
-                              HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                              con.setRequestMethod("GET");
-                              con.getResponseCode();
-                              con.disconnect();
+                            //System.out.println("Requested: " + requestURI.getPath());  
+                            
+                            String string = requestURI.getPath();
+                            String[] bits = string.split("/");
+                            String gameName = bits[bits.length - 1];
+                            
+                            //String gameName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1));
+                          
+                            //System.out.println("Game name original: " + gameName);
+                            
+                            if(gameName.contains("_")) {
+                            //if(gameName.contains("_") && WebEnabledPixel.isWindows()) { //only do this check if there is an _ and we are on Windows
+                                
+                                //we want to capital the first char after the delimineters of: space, left paranth, and comma
+                                //for example on Windows with LEDBlinky, we will get this 007_-_NIGHTFIRE_(USA,_EUROPE)_(EN,FR,DE) which we will convert to 007 - Nightfire (Usa, Europe) (En,Fr,De)
+                                
+                                gameName = WordUtils.capitalizeFully(gameName.replace("_"," "),new char[]{' ', '(', ','});
+                                gameName = gameName.replace("Usa","USA").replace("(Xbox)","(XBOX)".replace("Nfl ","NFL ").replace("Lego ","LEGO ").replace("Nba ","NBA ").replace("Nhl ","NHL ").replace("Mlb ","MLB ").replace("Bmx ","BMX ").replace("Gt ","GT ").replace("Ncaa ","NCAA ").replace("Ii ","II ").replace("Iii ","III ").replace("Nascar ","NASCAR ").replace("Espn ","ESPN ").replace("Sd ","SD "));
+                                //System.out.println("Game name2 : " + gameName);
+                                
+                                String console = bits[bits.length - 2];
+                                
+                                String redirect = "/arcade/stream/" + console + "/" + gameName + ".jpg";
+                                System.out.println("_ Detected and Redirected:" + redirect);
+                                redirect = redirect.replace(" ","%20"); //if we don't add this, the URL call wont' make it and will be truncated at the spaces
+                               
+                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
+                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                                con.setRequestMethod("GET");
+                                con.getResponseCode();
+                                con.disconnect();
+                            }
+                            
+                            else { //we're good and no need to rename the call, send as is
+                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
+                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                                con.setRequestMethod("GET");
+                                con.getResponseCode();
+                                con.disconnect();
+                            }
                         }
                     }
                 }catch (  Exception e){}

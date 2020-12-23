@@ -77,7 +77,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.CurrentGameHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.4.2";
+  public static String pixelwebVersion = "3.4.5";
   public static LogMe logMe = null;
   
   private HttpServer server;
