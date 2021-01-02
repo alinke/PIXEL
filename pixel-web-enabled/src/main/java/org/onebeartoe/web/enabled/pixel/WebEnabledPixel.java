@@ -7,6 +7,7 @@ import com.fazecast.jSerialComm.SerialPortMessageListener;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+//import ioio.lib.api.AnalogInput;
 import ioio.lib.api.RgbLedMatrix;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
@@ -77,7 +78,7 @@ import org.onebeartoe.web.enabled.pixel.controllers.CurrentGameHttpHandler;
 
 public class WebEnabledPixel {
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.4.5";
+  public static String pixelwebVersion = "3.5.0";
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -1705,6 +1706,8 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //  
 //            private SpiMaster spi2_;
           
+          //private  AnalogInput audioIn;
+          
           public void disconnected() {
             String message = "PIXEL was Disconnected";
             System.out.println(message);
@@ -1723,6 +1726,12 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                 pixel = new Pixel(pixelEnvironment.LED_MATRIX, pixelEnvironment.currentResolution);
                 pixel.matrix = ioio_.openRgbLedMatrix(pixel.KIND);
                 pixel.ioiO = ioio_;  //TO DO is this really needed?
+                
+                // ******** analog input testing ***********
+                
+                //audioIn = ioio_.openAnalogInput(33);
+               
+                // *****************************************
                 
                 if (LEDStripExists()) { 
                     
@@ -1853,59 +1862,67 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //            }
           }
           
-          //it is possible that the WS281x waveforms can be generated using SPI. I would try running at 5.33MHz sending a 0b11000000 = 0xC0 byte for a "0" bit and a 0b11110000 = 0xF0 byte for a "1" bit. Not very efficient, but may not matter. In either case, adding support for this protocol in firmware using either bit-banging or the SPI peripheral is probably not too hard.
+            // had to take out the loop as it was consuming CPU even when idle, this is only needed for the LED strips which is not a production feature, use IOIOFactory instead I guess here
+          
+            //it is possible that the WS281x waveforms can be generated using SPI. I would try running at 5.33MHz sending a 0b11000000 = 0xC0 byte for a "0" bit and a 0b11110000 = 0xF0 byte for a "1" bit. Not very efficient, but may not matter. In either case, adding support for this protocol in firmware using either bit-banging or the SPI peripheral is probably not too hard.
 		
-          @Override  
-          public void loop() throws ConnectionLostException {  //for LED Strip
-
-                    if (LEDStripExists()) {
-                            
-                            if (LEDStrip1_.equals("yes")) {
-                        
-                                for (int i = 0; i < LEDStrip1NumberLEDs_; i++) {
-                                         tempRGB_.clear();
-                                         //red = 0; //120
-                                         //green = 0;
-                                         //blue = 0;
-                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
-                                         
-                                         setLed(i, tempRGB_);
-                                }  
-
-                                 try {
-                                         ioio_.beginBatch();
-                                         spi_.writeReadAsync(0, buffer1_, buffer1_.length,
-                                                         buffer1_.length, null, 0);
-                                         spi_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
-                                                         null, 0);
-                                         ioio_.endBatch();
-                                         Thread.sleep(50);
-                                 } catch (InterruptedException e1) {
-                                 }
-                            }
-                            
-                             if (LEDStrip2_.equals("yes")) {
-                        
-                                for (int i = 0; i < LEDStrip2NumberLEDs_; i++) {
-                                         tempRGB_.clear();
-                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
-                                         setLed(i, tempRGB_);
-                                }  
-
-                                 try {
-                                         ioio_.beginBatch();
-                                         spi2_.writeReadAsync(0, buffer1_, buffer1_.length,
-                                                         buffer1_.length, null, 0);
-                                         spi2_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
-                                                         null, 0);
-                                         ioio_.endBatch();
-                                         Thread.sleep(50);
-                                 } catch (InterruptedException e1) {
-                                 }
-                            }
-                             
-                    }
-		}
+//          @Override  
+//          //public void loop() throws ConnectionLostException, InterruptedException {  //for LED Strip
+//          public void loop() throws ConnectionLostException {  //for LED Strip
+//              
+//                    //float audioValue = audioIn.read();
+//                    //System.out.println("Audio Value: " + audioValue);
+//                    
+//              
+//              
+//                    if (LEDStripExists()) {
+//                            
+//                            if (LEDStrip1_.equals("yes")) {
+//                        
+//                                for (int i = 0; i < LEDStrip1NumberLEDs_; i++) {
+//                                         tempRGB_.clear();
+//                                         //red = 0; //120
+//                                         //green = 0;
+//                                         //blue = 0;
+//                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
+//                                         
+//                                         setLed(i, tempRGB_);
+//                                }  
+//
+//                                 try {
+//                                         ioio_.beginBatch();
+//                                         spi_.writeReadAsync(0, buffer1_, buffer1_.length,
+//                                                         buffer1_.length, null, 0);
+//                                         spi_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
+//                                                         null, 0);
+//                                         ioio_.endBatch();
+//                                         Thread.sleep(50);
+//                                 } catch (InterruptedException e1) {
+//                                 }
+//                            }
+//                            
+//                             if (LEDStrip2_.equals("yes")) {
+//                        
+//                                for (int i = 0; i < LEDStrip2NumberLEDs_; i++) {
+//                                         tempRGB_.clear();
+//                                         setColor(tempRGB_,(byte) red,(byte) green,(byte) blue);  //red, green, blue are set from a public method
+//                                         setLed(i, tempRGB_);
+//                                }  
+//
+//                                 try {
+//                                         ioio_.beginBatch();
+//                                         spi2_.writeReadAsync(0, buffer1_, buffer1_.length,
+//                                                         buffer1_.length, null, 0);
+//                                         spi2_.writeRead(buffer2_, buffer2_.length, buffer2_.length,
+//                                                         null, 0);
+//                                         ioio_.endBatch();
+//                                         Thread.sleep(50);
+//                                 } catch (InterruptedException e1) {
+//                                 }
+//                            }
+//                             
+//                    }
+//		}
                 
                 public void setColor(RGB rgb, byte r, byte g, byte b) {  //blue and green are switched, not sure but that may be strip dependent, may need to make this configurable
 				rgb.r = r;  
