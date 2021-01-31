@@ -26,7 +26,6 @@ import org.ini4j.Profile;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.onebeartoe.pixel.LogMe;
 
 public class lcdfinder implements ServiceListener {
     
@@ -72,13 +71,15 @@ public class lcdfinder implements ServiceListener {
     
     private JSONObject pairingResult = new JSONObject();
     
+    private boolean PixelcadeV1Detected = false;
+    
     public static String OS = System.getProperty("os.name").toLowerCase();
     
    
     public lcdfinder(String[] args)
     {
-        cli = new CliPixel(args);
-        cli.parse();
+        //cli = new CliPixel(args);
+        //cli.parse();
         
         System.out.println("Searching for Pixelcades for 10 seconds...");
         
@@ -92,20 +93,16 @@ public class lcdfinder implements ServiceListener {
         } catch (IOException e) {
           e.printStackTrace();
         }
-
         // Add a service listener
         jmdns.addServiceListener("_pixelcade._tcp.local.", this);
-
         // Wait a bit
         try {
           Thread.sleep(10000);
         } catch (InterruptedException e) {
         }
-
         Thread.currentThread().interrupt();
       });
       thread.start();
-      
       //****************************************
       
        TimerTask task = new TimerTask() {  //one time timer that run afer 10 seconds of searching for Pixelcades
@@ -133,17 +130,14 @@ public class lcdfinder implements ServiceListener {
                     }  
                     else {
                         System.out.println(Pixelcades.get(i) + " is a V1 Pixelcade LCD, skipping...");   
+                        PixelcadeV1Detected = true;
                     }
-
                 }  //end for loop so not let's check if there is more than one unpaired
-                
-            
                     
                 //UnpairedPixelcades.add("pixelcadedx.local"); //TO DO undo this one just for testing
-                
                 //ok now we're done looping through them, let's see if we have more than 1 unpaired
                     
-                if (UnpairedPixelcades.size() == 1) { //ok we just have one so let's pair it, easy
+                if (UnpairedPixelcades.size() == 1) { //ok we just have one unpaired so let's pair it, easy
                      System.out.println("One unpaired Pixelcade LCD: [" + UnpairedPixelcades.get(0) + "] has been detected, now pairing...");  
                      pairingAPIResult_ = PairingAPICall(UnpairedPixelcades.get(0),"message",":8080/v2/utility/pairing/set/on");
                      System.out.println("[PAIRED] " + UnpairedPixelcades.get(0) + " has been paired with result: " + pairingAPIResult_); 
@@ -251,6 +245,11 @@ public class lcdfinder implements ServiceListener {
                     System.out.println("You did not unpair an existing Pixelcade LCD");
                     System.out.println("This computer is NOT paired to a Pixelcade LCD now but you may run this program again later");
                     System.out.println("Exiting...");
+                    System.exit(0);
+                }
+                else if (PixelcadeV1Detected) { //then there was only a Pixelcade V1 on the network which will always be pixelcadedx.local
+                    System.out.println("Pixelcade V1 detected...");
+                    writeSettingsINI("pixelcadedx.local");
                     System.exit(0);
                 }
                 else {
