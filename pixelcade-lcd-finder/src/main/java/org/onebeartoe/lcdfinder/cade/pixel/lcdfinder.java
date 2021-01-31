@@ -36,7 +36,7 @@ public class lcdfinder implements ServiceListener {
       embeddedLoc = event.getInfo().getServer().replace("._pixelcade._tcp","");
       embeddedLoc = embeddedLoc.substring(0, embeddedLoc.length() - 1);
       embeddedLoc = embeddedLoc.replace("SuperPixelcade-","");
-      System.out.println("Pixelcade LCD mDNS Detected from Service Listener: " + embeddedLoc);
+      System.out.println("Pixelcade LCD mDNS Detected: [" + embeddedLoc +"]");
       Pixelcades.add(embeddedLoc);
     }
 
@@ -81,7 +81,7 @@ public class lcdfinder implements ServiceListener {
         //cli = new CliPixel(args);
         //cli.parse();
         
-        System.out.println("Searching for Pixelcades for 10 seconds...");
+        System.out.println("Searching your network for Pixelcades for 10 seconds...");
         
       //***************************************************
       // Create a JmDNS instance, we'll use this to auto-detect Pixelcade LCD on the network using Bonjour mDNS
@@ -113,12 +113,12 @@ public class lcdfinder implements ServiceListener {
                 for (int i = 0; i < Pixelcades.size(); i++) {
 
                     pairingAPIResult_ = OPiCheck(Pixelcades.get(i),"name",":8080/v2/info");
-                    System.out.println("Pixelcade Version 2 and Higher Check: " + pairingAPIResult_);   
+                    System.out.println("Pixelcade Version 2 and Higher Check: " + "[" + pairingAPIResult_ + "]");   
 
                     if (pairingAPIResult_.equals("SuperPixelcade") || pairingAPIResult_.equals("Pixelcade")) {
 
                         pairingAPIResult_ = PairingAPICall(Pixelcades.get(i),"message",":8080/v2/utility/pairing/");
-                        System.out.println(Pixelcades.get(i) + " Pairing Status: " + pairingAPIResult_); 
+                        System.out.println(Pixelcades.get(i) + " Pairing Status: " + "[" + pairingAPIResult_ +"]"); 
 
                          if (pairingAPIResult_.equals("unpaired")) { //let's first see if we have more than 1 unpaired
                              UnpairedPixelcades.add(Pixelcades.get(i));
@@ -138,9 +138,9 @@ public class lcdfinder implements ServiceListener {
                 //ok now we're done looping through them, let's see if we have more than 1 unpaired
                     
                 if (UnpairedPixelcades.size() == 1) { //ok we just have one unpaired so let's pair it, easy
-                     System.out.println("One unpaired Pixelcade LCD: [" + UnpairedPixelcades.get(0) + "] has been detected, now pairing...");  
+                     System.out.println("One unpaired Pixelcade LCD: [" + UnpairedPixelcades.get(0) + "] detected, now pairing...");  
                      pairingAPIResult_ = PairingAPICall(UnpairedPixelcades.get(0),"message",":8080/v2/utility/pairing/set/on");
-                     System.out.println("[PAIRED] " + UnpairedPixelcades.get(0) + " has been paired with result: " + pairingAPIResult_); 
+                     System.out.println("[PAIRED] " + UnpairedPixelcades.get(0) + " paired with result: " + pairingAPIResult_); 
                      sendURL(UnpairedPixelcades.get(0),":8080/text?t=PAIRED&color=green");
                      writeSettingsINI(UnpairedPixelcades.get(0));
                      System.exit(0);
@@ -172,7 +172,7 @@ public class lcdfinder implements ServiceListener {
                                System.out.println("Now pairing with: " + UnpairedPixelcades.get(i));
                                sendURL(UnpairedPixelcades.get(i),":8080/text?t=PAIRED&color=green");
                                pairingAPIResult_ = PairingAPICall(UnpairedPixelcades.get(i),"message",":8080/v2/utility/pairing/set/on");
-                               System.out.println("[PAIRED] " + UnpairedPixelcades.get(i) + " has been paired with result: " + pairingAPIResult_); 
+                               System.out.println("[PAIRED] " + UnpairedPixelcades.get(i) + " paired with result: " + pairingAPIResult_); 
                                writeSettingsINI(UnpairedPixelcades.get(i));
                                System.exit(0);
                            }
@@ -219,10 +219,10 @@ public class lcdfinder implements ServiceListener {
 
                                //let's unpair
                                pairingAPIResult_ = PairingAPICall(PairedPixelcades.get(i),"message",":8080/v2/utility/pairing/set/off");
-                               System.out.println("[UNPAIRED] " + PairedPixelcades.get(i) + " has been unpaired with result: " + pairingAPIResult_); 
+                               System.out.println("[UNPAIRED] " + PairedPixelcades.get(i) + " unpaired with result: " + pairingAPIResult_); 
                                //and then pair
                                pairingAPIResult_ = PairingAPICall(PairedPixelcades.get(i),"message",":8080/v2/utility/pairing/set/on");
-                               System.out.println("[PAIRED] " + PairedPixelcades.get(i) + " has been paired with result: " + pairingAPIResult_); 
+                               System.out.println("[PAIRED] " + PairedPixelcades.get(i) + " paired with result: " + pairingAPIResult_); 
 
                                //now we've paired so let's write to settings.ini
                                writeSettingsINI(PairedPixelcades.get(i));
@@ -248,7 +248,7 @@ public class lcdfinder implements ServiceListener {
                     System.exit(0);
                 }
                 else if (PixelcadeV1Detected) { //then there was only a Pixelcade V1 on the network which will always be pixelcadedx.local
-                    System.out.println("Pixelcade V1 detected...");
+                    System.out.println("Pixelcade LCD V1 detected...");
                     writeSettingsINI("pixelcadedx.local");
                     System.exit(0);
                 }
