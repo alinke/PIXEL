@@ -3547,7 +3547,7 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
 
                {
 
-                   if (loop!=0 && !writeMode) {            //we were not already looping but new command has a loop and is not a write so let's continue and loop the gif
+                   if (loop!=0 && !writeMode) {     //we were not already looping but new command has a loop and is not a write so let's continue and loop the gif
                        isLooping = true;
                        loopGIFCounter = 0;
                        loopTimesGlobal = loop; 
@@ -3688,10 +3688,17 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
                               //System.out.println("Future version of the timer is starting.");
                               //scheduledExecutorService.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
 
-                              //define and get reference
-                              ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+                             
+                              streamgifTask = new StreamGIFTask();
+                              streamGIFservice = Executors.newScheduledThreadPool(1);
                               future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
                               streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
+
+                              //bug fixed here, the above fixes, the below was causing multiple timers to run and speeding up the animations too much
+                              //define and get reference
+                              //ScheduledExecutorService streamGIFservice = Executors.newScheduledThreadPool(1);
+                              //future = streamGIFservice.scheduleAtFixedRate(streamgifTask, 0, gifSelectedFileDelay, TimeUnit.MILLISECONDS);
+                              //streamGIFTimerRunningFlag.set(true);  //atomic boolean , better for threads
 
                               //timer = new Timer();
                               //TimerTask animateTimer = new AnimateTimer(); 
