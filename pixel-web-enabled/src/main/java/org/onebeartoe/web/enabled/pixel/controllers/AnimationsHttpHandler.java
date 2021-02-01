@@ -117,19 +117,21 @@ public class AnimationsHttpHandler extends ImageResourceHttpHandler
             logMe.aLogger.info("animation handler received: " + urlParams);
         }
         
-        if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
-            try {
-                    if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
-                        WebEnabledPixel.dxEnvironment = true;
-                        System.out.println("Requested: " + tempURI.getPath());
-                        URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + tempURI.getPath());
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setRequestMethod("GET");
-                        con.getResponseCode();
-                        con.disconnect();
-                    }
-                }catch (  Exception e){}
-        }
+        //animations not supported on LCD yet so no need for this call
+        
+//        if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+//            try {
+//                    if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){
+//                        WebEnabledPixel.dxEnvironment = true;
+//                        System.out.println("Requested: " + tempURI.getPath());
+//                        URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + tempURI.getPath());
+//                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//                        con.setRequestMethod("GET");
+//                        con.getResponseCode();
+//                        con.disconnect();
+//                    }
+//                }catch (  Exception e){}
+//        }
         
         //System.out.println("length: " + animationURLarray.length);  //a
         

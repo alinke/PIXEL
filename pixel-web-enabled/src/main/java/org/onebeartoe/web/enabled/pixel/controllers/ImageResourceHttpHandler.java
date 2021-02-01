@@ -65,67 +65,77 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
         try {
             URI requestURI = exchange.getRequestURI();
             String path = requestURI.getPath();
-
+            //System.out.println("[Original URL] " + path);
+                     
             int i = path.lastIndexOf("/") + 1;
             String name = path.substring(i);
             
-            if (WebEnabledPixel.getLCDMarquee().equals("yes")) {
+            if (WebEnabledPixel.getLCDMarquee().equals("yes") && (path.contains("/arcade/") || path.contains("/console/") )) {  //relaying the api call to pixelcadedx.local but don't relay quit and shutdown commands
                 try {
                     if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)){ //to do should we be checking everytime if reachable?
                         WebEnabledPixel.dxEnvironment = true;
-                        
                         //if it's a console call, let's re-direct to arcade because pixelcade embedded doesn't know about the console calls
                         if (requestURI.getPath().contains("console")) {
                              System.out.println("Request Console Redirected: " + requestURI.getPath());
                              String consoleName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1)).toLowerCase();
-                             String redirect = "/arcade/stream/mame/" + consoleName;
+                             consoleName = consoleName.replace(" ", "_"); //had to add this one as Dennis made change to send native console names with no more _
+                             String redirect = "/arcade/stream/mame/" + consoleName + ".jpg";
+                             //String redirect = "/console/stream/" + consoleName + ".jpg";
                              URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
                              HttpURLConnection con = (HttpURLConnection) url.openConnection();
                              con.setRequestMethod("GET");
                              con.getResponseCode();
                              con.disconnect();
                         }
-                        else {
+                        else { // it's not a console call
                             //System.out.println("Requested: " + requestURI.getPath());  
                             
                             String string = requestURI.getPath();
                             String[] bits = string.split("/");
                             String gameName = bits[bits.length - 1];
                             
+                            String console = bits[bits.length - 2];
+                            console = console.replace(" ", "_").toUpperCase(); //had to add this one as Dennis made change to send native console names with no more _, to do fix this later, _ and Uppercase is what was originally there and works so didn't want to mess with it
+                            
                             //String gameName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1));
                           
                             //System.out.println("Game name original: " + gameName);
                             
-                            if(gameName.contains("_")) {
-                            //if(gameName.contains("_") && WebEnabledPixel.isWindows()) { //only do this check if there is an _ and we are on Windows
+//                            if(gameName.contains("_")) {  // this hack no longer needed with the LEDBlinky fix to maintain the native file names
+//                            //if(gameName.contains("_") && WebEnabledPixel.isWindows()) { //only do this check if there is an _ and we are on Windows
+//                                
+//                                //we want to capital the first char after the delimineters of: space, left paranth, and comma
+//                                //for example on Windows with LEDBlinky, we will get this 007_-_NIGHTFIRE_(USA,_EUROPE)_(EN,FR,DE) which we will convert to 007 - Nightfire (Usa, Europe) (En,Fr,De)
+//                                
+//                                gameName = WordUtils.capitalizeFully(gameName.replace("_"," "),new char[]{' ', '(', ','});
+//                                gameName = gameName.replace("Usa","USA").replace("(Xbox)","(XBOX)".replace("Nfl ","NFL ").replace("Lego ","LEGO ").replace("Nba ","NBA ").replace("Nhl ","NHL ").replace("Mlb ","MLB ").replace("Bmx ","BMX ").replace("Gt ","GT ").replace("Ncaa ","NCAA ").replace("Ii ","II ").replace("Iii ","III ").replace("Nascar ","NASCAR ").replace("Espn ","ESPN ").replace("Sd ","SD "));
+//                                //System.out.println("Game name2 : " + gameName);
+//                                
+//                                //String console = bits[bits.length - 2];
+//                                //console = console.replace(" ", "_"); //had to add this one as Dennis made change to send native console names with no more _
+//                                
+//                                String redirect = "/arcade/stream/" + console + "/" + gameName + ".jpg";
+//                                System.out.println("_ Detected and Redirected:" + redirect);
+//                                redirect = redirect.replace(" ","%20"); //if we don't add this, the URL call wont' make it and will be truncated at the spaces
+//                               
+//                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
+//                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//                                con.setRequestMethod("GET");
+//                                con.getResponseCode();
+//                                con.disconnect();
+//                            }
+//                            
+//                            else { 
                                 
-                                //we want to capital the first char after the delimineters of: space, left paranth, and comma
-                                //for example on Windows with LEDBlinky, we will get this 007_-_NIGHTFIRE_(USA,_EUROPE)_(EN,FR,DE) which we will convert to 007 - Nightfire (Usa, Europe) (En,Fr,De)
+                                String revisedURL = "/arcade/stream/" + console + "/" + gameName + ".jpg"; //console has the _ and game name will be original with spaces
+                                revisedURL = revisedURL.replace(" ","%20"); //if we don't add this, the URL call wont' make it and will be truncated at the spaces
                                 
-                                gameName = WordUtils.capitalizeFully(gameName.replace("_"," "),new char[]{' ', '(', ','});
-                                gameName = gameName.replace("Usa","USA").replace("(Xbox)","(XBOX)".replace("Nfl ","NFL ").replace("Lego ","LEGO ").replace("Nba ","NBA ").replace("Nhl ","NHL ").replace("Mlb ","MLB ").replace("Bmx ","BMX ").replace("Gt ","GT ").replace("Ncaa ","NCAA ").replace("Ii ","II ").replace("Iii ","III ").replace("Nascar ","NASCAR ").replace("Espn ","ESPN ").replace("Sd ","SD "));
-                                //System.out.println("Game name2 : " + gameName);
-                                
-                                String console = bits[bits.length - 2];
-                                
-                                String redirect = "/arcade/stream/" + console + "/" + gameName + ".jpg";
-                                System.out.println("_ Detected and Redirected:" + redirect);
-                                redirect = redirect.replace(" ","%20"); //if we don't add this, the URL call wont' make it and will be truncated at the spaces
-                               
-                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
+                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + revisedURL);
                                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                                 con.setRequestMethod("GET");
                                 con.getResponseCode();
                                 con.disconnect();
-                            }
-                            
-                            else { //we're good and no need to rename the call, send as is
-                                URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
-                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                                con.setRequestMethod("GET");
-                                con.getResponseCode();
-                                con.disconnect();
-                            }
+                           // }
                         }
                     }
                 }catch (  Exception e){}
@@ -146,7 +156,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
             }
             else if( path.contains("/console/"))
             { 
-                imageClassPath = requestURI.toString(); //this returns /arcade/stream/mame/pacman?t=1?c=2?r=5
+                imageClassPath = requestURI.toString(); //this returns /console/stream/mame/pacman?t=1?c=2?r=5
             }
             else if( path.contains("/arcade/"))
             {

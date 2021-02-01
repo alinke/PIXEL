@@ -138,6 +138,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     } 
     
     String URLPath = tempURI.getPath();
+    //System.out.println("[Original URL]: " + URLPath);
+    
+    
     String[] arcadeURLarray = URLPath.split("/");
     logMe = LogMe.getInstance();
     
@@ -216,6 +219,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         } 
       } 
       
+      consoleName = consoleName.replace(" ", "_"); //had to add this as Dennis made the change to send the native console name with spaces as prior code and mapping tables assumed an _ instead of space
       consoleName = consoleName.toLowerCase();
       if (!consoleMatch(consoleArray, consoleName)) {
         consoleNameMapped = WebEnabledPixel.getConsoleMapping(consoleName);
@@ -531,6 +535,12 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
       System.out.println("Example: http://localhost:8080/arcade/write/mame/pacman.png or http://localhost:8080/arcade/stream/atari2600/digdug.gif");
       LogMe.aLogger.severe("** ERROR ** URL format incorect, use http://localhost:8080/arcade/<stream or write>/<platform name>/<game name .gif or .png>");
       LogMe.aLogger.severe("Example: http://localhost:8080/arcade/write/mame/pacman.png or http://localhost:8080/arcade/stream/atari2600/digdug.gif");
+      
+      //the URL call was bad so lets just display a default so at least something happens
+      String noMatchFilePathPNG = pixelHome + "console" + "/" + "default-marquee" + ".png";
+      File noMatchFilePNG = new File(noMatchFilePathPNG);
+      handlePNG(noMatchFilePNG, false, 0, "console", "default-marquee.png");
+      
     } 
   }
   

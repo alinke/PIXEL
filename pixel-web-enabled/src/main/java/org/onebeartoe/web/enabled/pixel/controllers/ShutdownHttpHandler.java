@@ -77,7 +77,7 @@ public class ShutdownHttpHandler extends TextHttpHandler
                             
                     } else {
                             //abnormal...
-                            returnMessage = "Shutdown command failed:\n";
+                            returnMessage = "Shutdown command sent:\n";
                             returnMessage = returnMessage + output;
                             System.out.println(returnMessage);
                     }

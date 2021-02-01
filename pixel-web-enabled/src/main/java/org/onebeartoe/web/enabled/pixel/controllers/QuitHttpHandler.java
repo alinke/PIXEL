@@ -33,8 +33,8 @@ public class QuitHttpHandler extends ImageResourceHttpHandler
     protected void writeImageResource(String urlParams) throws IOException, ConnectionLostException
     { 
         LogMe logMe = LogMe.getInstance();
-        System.out.println("Received shut down command, now exiting...");
-        logMe.aLogger.info("Received shut down command, now exiting...");
+        System.out.println("Received quit command, now exiting...");
+        logMe.aLogger.info("Received quit command, now exiting...");
         System.exit(1);
    }
     

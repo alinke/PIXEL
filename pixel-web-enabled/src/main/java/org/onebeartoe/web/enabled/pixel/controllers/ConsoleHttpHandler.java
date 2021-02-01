@@ -160,8 +160,10 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
       streamOrWrite = arcadeURLarray[2];
       consoleName = arcadeURLarray[3];
       consoleName = consoleName.trim();
-      consoleName = consoleName.replace("\n", "").replace("\r", "");
+      consoleName = consoleName.replace("\n", "").replace("\r", "").replace(" ", "_"); //since Dennis made the change to send the native console name, having to add the space to _ here as existing code and mapping tables looks for the _, could eventually get rid of this by adding more mapping table entries if desired
       consoleName = consoleName.toLowerCase();
+      
+      //might need to convert space to _ after LEDBlinky 7.1.1 change ???
       
       if (!consoleMatch(consoleArray, consoleName)) {
         consoleNameMapped = WebEnabledPixel.getConsoleMapping(consoleName);
@@ -385,6 +387,11 @@ public class ConsoleHttpHandler extends ImageResourceHttpHandler {
       System.out.println("Example: http://localhost:8080/conosle/write/mame");
       LogMe.aLogger.severe("** ERROR ** URL format incorect, use http://localhost:8080/console/<stream or write>/<platform name>");
       LogMe.aLogger.severe("Example: http://localhost:8080/conosle/write/mame");
+      
+      //got a bad URL call so let's at least display something
+      String noMatchFilePathPNG = pixelHome + "console" + "/" + "default-marquee" + ".png";
+      File noMatchFilePNG = new File(noMatchFilePathPNG);
+      handlePNG(noMatchFilePNG, false, 0, "console", "default-marquee.png","console");
     } 
   }
   

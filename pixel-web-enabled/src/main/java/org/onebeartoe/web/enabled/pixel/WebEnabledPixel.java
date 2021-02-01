@@ -75,10 +75,43 @@ import org.onebeartoe.web.enabled.pixel.controllers.UpdateHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.RebootHttpHandler;
 import org.onebeartoe.web.enabled.pixel.controllers.CurrentGameHttpHandler;
 
+import xyz.gianlu.zeroconf.*;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceListener;
 
-public class WebEnabledPixel {
+
+public class WebEnabledPixel implements ServiceListener {
+    
+    @Override
+    public void serviceAdded(ServiceEvent event) {
+      //System.out.println("Service added: " + event.getInfo());
+      //System.out.println("Service Port: " + event.getInfo().getPort());
+      embeddedLoc = event.getInfo().getServer().replace("._pixelcade._tcp","");
+      embeddedLoc = embeddedLoc.substring(0, embeddedLoc.length() - 1);
+      embeddedLoc = embeddedLoc.replace("PixelcadeLCD-","");
+      //System.out.println("Service URL: " + embeddedLoc);
+       System.out.println("Pixelcade LCD mDNS Detected: " + embeddedLoc);
+       LogMe.aLogger.info("Pixelcade LCD mDNS Detected: " + embeddedLoc);
+    }
+
+    @Override
+    public void serviceRemoved(ServiceEvent event) {
+      System.out.println("Service removed: " + event.getInfo());
+    }
+
+    @Override
+    public void serviceResolved(ServiceEvent event) {
+      //System.out.println("Service resolved: " + event.getDNS().getHostName());
+      //event.getDNS().getHostName();
+    }
+    
+  public String embeddedLoc = "pixelcadedx.local"; 
+    
   public static boolean dxEnvironment = true;
-  public static String pixelwebVersion = "3.5.0";
+  
+  public static String pixelwebVersion = "3.5.4";
+  
   public static LogMe logMe = null;
   
   private HttpServer server;
@@ -611,6 +644,30 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       System.out.println("Pixelcade HOME DIRECTORY: " + pixelHome);
     }  
     //extractDefaultContent();  //saving space by removing this as the retropie installer now includes all these files so no need to include here and make the .jar bigger
+    
+ 
+     // Create a JmDNS instance, we'll use this to auto-detect Pixelcade LCD on the network using Bonjour mDNS
+//      Thread thread = new Thread(() -> {
+//        JmDNS jmdns = null;
+//        try {
+//          jmdns = JmDNS.create(InetAddress.getLocalHost());
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        }
+//
+//        // Add a service listener
+//        jmdns.addServiceListener("_pixelcade._tcp.local.", this);
+//
+//        // Wait a bit
+//        try {
+//          Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//        }
+//
+//        Thread.currentThread().interrupt();
+//      });
+//      thread.start();
+    
     
     createControllers();
     
@@ -1732,23 +1789,17 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
                 //audioIn = ioio_.openAnalogInput(33);
                
                 // *****************************************
-                
-                if (LEDStripExists()) { 
-                    
-                    if (LEDStrip1_.equals("yes")) {
-                        spi_ = ioio_.openSpiMaster(6, LEDStrip1DataPin_, LEDStrip1CLKPin_, 8, SpiMaster.Rate.RATE_50K); // 1 is clock I think 
-                        //spi_ = ioio_.openSpiMaster(6, LEDStrip1CLKPin_,LEDStrip1DataPin_, 8, SpiMaster.Rate.RATE_50K);
-                        //spi_ = ioio_.openSpiMaster(5, 1, 2, 6, SpiMaster.Rate.RATE_50K); // 1 is clock I think
-                    }
-                    
-                    if (LEDStrip2_.equals("yes")) {
-                        spi2_ = ioio_.openSpiMaster(9, LEDStrip2DataPin_, LEDStrip2CLKPin_, 29  , SpiMaster.Rate.RATE_50K); // 1 is clock I think 
-                    }
-                    
-                    //spi_ = ioio_.openSpiMaster(5, 1, 2, 6, SpiMaster.Rate.RATE_50K); // 1 is clock I think
-                    //spi = ioio_.openSpiMaster(misoPin, mosiPin, clkPin, ssPins,SpiMaster.Rate.RATE_125K);
-                    //https://groups.google.com/g/ioio-users/c/tKVuNFZRreQ/m/1JaMwn9ScEYJ
-                }
+                //TO DO need to re-do the LED strip, do not use the IOIO Loop as PixelIntegation is arleady there
+//                if (LEDStripExists()) { //https://groups.google.com/g/ioio-users/c/tKVuNFZRreQ/m/1JaMwn9ScEYJ
+//                    
+//                    if (LEDStrip1_.equals("yes")) {
+//                        spi_ = ioio_.openSpiMaster(6, LEDStrip1DataPin_, LEDStrip1CLKPin_, 8, SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+//                    }
+//                    
+//                    if (LEDStrip2_.equals("yes")) {
+//                        spi2_ = ioio_.openSpiMaster(9, LEDStrip2DataPin_, LEDStrip2CLKPin_, 29  , SpiMaster.Rate.RATE_50K); // 1 is clock I think 
+//                    }
+//                }
                 
             StringBuilder message = new StringBuilder();
             

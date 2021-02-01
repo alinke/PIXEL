@@ -78,7 +78,7 @@ public class RebootHttpHandler extends TextHttpHandler
                             
                     } else {
                             //abnormal...
-                            returnMessage = "Reboot command failed:\n";
+                            returnMessage = "Reboot command sent:\n";
                             returnMessage = returnMessage + output;
                             System.out.println(returnMessage);
                     }
