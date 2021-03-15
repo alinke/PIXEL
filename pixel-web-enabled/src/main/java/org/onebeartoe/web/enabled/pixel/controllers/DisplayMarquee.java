@@ -1,6 +1,9 @@
 
+//THIS CLASS DOES NOT WORK, DON'T USE
+
 package org.onebeartoe.web.enabled.pixel.controllers;
 
+import ioio.lib.api.RgbLedMatrix;
 import ioio.lib.api.exception.ConnectionLostException;
 import java.awt.Color;
 import java.io.File;
@@ -35,36 +38,32 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.setCurrentPlatformGame;
-//import static org.apache.velocity.texen.util.FileUtil.file;
 
 
-public class ArcadeHttpHandler extends ImageResourceHttpHandler {
+//public class DisplayMarquee {
+public class DisplayMarquee  {
   protected LCDPixelcade lcdDisplay = null;
   private static  Integer LEDStripRed = 0;
   private static Integer LEDStripGreen = 0;
   private static Integer LEDStripBlue = 0;
+  private static Pixel pixel;
 
-  public ArcadeHttpHandler(WebEnabledPixel application) {
-    super(application);
+  public DisplayMarquee(WebEnabledPixel application) {
+    //super(application);
     
     if(WebEnabledPixel.getLCDMarquee().equals("yes"))
        lcdDisplay = new LCDPixelcade();
-
-    this.basePath = "";
-    this.defaultImageClassPath = "btime.png";
-    this.modeName = "arcade";
   }
   
-  public void handlePNG(File arcadeFilePNGFullPath, Boolean saveAnimation, int loop, String consoleNameMapped, String PNGNameWithExtension) throws MalformedURLException, IOException, ConnectionLostException {
+  public  void handlePNG(File arcadeFilePNGFullPath, Boolean saveAnimation, int loop, String consoleNameMapped, String PNGNameWithExtension) throws MalformedURLException, IOException, ConnectionLostException {
     
     LogMe logMe = LogMe.getInstance();
-    Pixel pixel = this.application.getPixel();
     pixel.writeArcadeImage(arcadeFilePNGFullPath, saveAnimation, loop, consoleNameMapped, PNGNameWithExtension, WebEnabledPixel.pixelConnected);
     
   }
   
   public void handleGIF(String consoleName, String arcadeName, Boolean saveAnimation, int loop) {
-    Pixel pixel = this.application.getPixel();
+    //Pixel pixel = this.application.getPixel();
     try {
       pixel.writeArcadeAnimation(consoleName, arcadeName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
 
@@ -73,9 +72,10 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     }
   }
   
-  public void writeImageResource(String urlParams) throws IOException, ConnectionLostException {
-    Pixel pixel = this.application.getPixel();
-    String streamOrWrite = null;
+  public void display (String system_, String game_, int loop_) throws IOException, ConnectionLostException {
+    //Pixel pixel = this.application.getPixel();
+    
+    String streamOrWrite = "stream";
     String consoleName = null;
     String arcadeName = null;
     String arcadeNameExtension = null;
@@ -102,7 +102,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         "wonderswan", "wonderswancolor", "zinc", "sss", "zmachine", "zxspectrum" };
     
     boolean saveAnimation = false;
-    int loop_ = 0;
+    
     String text_ = "";
     int scrollsmooth_ = 1;
     Long speeddelay_ = Long.valueOf(10L);
@@ -116,43 +116,19 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
     int yOffset_ = 0;
     int lines_ = 1;
     String font_ = null;
-    String event_ = null;
+    
+    loop_ = 0;
     
     pixelHome = WebEnabledPixel.getHome();
     
     if (WebEnabledPixel.isWindows())
       scrollsmooth_ = 3; 
     
-    List<NameValuePair> params = null;
-    try {
-      params = URLEncodedUtils.parse(new URI(urlParams), "UTF-8");
-    } catch (URISyntaxException ex) {
-      Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-    } 
-    URI tempURI = null;
-    
-    try {
-      tempURI = new URI("http://localhost:8080" + urlParams);
-    } catch (URISyntaxException ex) {
-      Logger.getLogger(ArcadeHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-    } 
-    
-    String URLPath = tempURI.getPath();
-    //System.out.println("[Original URL]: " + URLPath);
-    
-    
-    String[] arcadeURLarray = URLPath.split("/");
-    logMe = LogMe.getInstance();
-    
-    if (!CliPixel.getSilentMode()) {
-      System.out.println("arcade handler received: " + urlParams);
-      LogMe.aLogger.info("arcade handler received: " + urlParams);
-    } 
-    
-    if (arcadeURLarray.length == 5) {
-      streamOrWrite = arcadeURLarray[2];
-      consoleName = arcadeURLarray[3];
-      arcadeName = arcadeURLarray[4];
+    if (system_ != null && game_ != null) {
+      streamOrWrite = "stream";
+      consoleName = system_;
+      arcadeName = game_;
+      
       arcadeName = arcadeName.trim();
       arcadeName = arcadeName.replace("\n", "").replace("\r", "");
       arcadeNameExtension = FilenameUtils.getExtension(arcadeName);
@@ -165,63 +141,6 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         arcadeNameOnlyPNG = FilenameUtils.removeExtension(arcadeName);
       } 
       
-      i = 0;
-      for (NameValuePair param : params) {
-        i++;
-        switch (param.getName()) {
-          case "t":
-            text_ = param.getValue();
-            textSelected = true;
-            break;
-          case "text":
-            text_ = param.getValue();
-            textSelected = true;
-             break;
-          case "l":
-            loop_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "loop":
-            loop_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "gt":
-            text_ = WebEnabledPixel.getGameName(arcadeNameOnly);
-             break;
-          case "gametitle":
-            text_ = WebEnabledPixel.getGameName(arcadeNameOnly);
-             break;
-          case "ss":
-            scrollsmooth_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "font":
-            font_ = param.getValue();
-             break;
-          case "size":
-            fontSize_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "yoffset":
-            yOffset_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "lines":
-            lines_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "scrollsmooth":
-            scrollsmooth_ = Integer.valueOf(param.getValue()).intValue();
-             break;
-          case "speed":
-            speed_ = param.getValue();
-             break;
-          case "c":
-            color_ = param.getValue();
-             break;
-          case "color":
-            color_ = param.getValue();
-            break;
-          case "event":
-           event_ = param.getValue();
-           break;
-        } 
-      } 
-      
       consoleName = consoleName.replace(" ", "_"); //had to add this as Dennis made the change to send the native console name with spaces as prior code and mapping tables assumed an _ instead of space
       consoleName = consoleName.toLowerCase();
       if (!consoleMatch(consoleArray, consoleName)) {
@@ -230,6 +149,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         consoleNameMapped = consoleName;
       } 
       
+       
       if (consoleNameMapped.equals("mame-libretro"))
         consoleNameMapped = "mame"; 
       
@@ -260,12 +180,13 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         if (text_ != "")
           LogMe.aLogger.info("alt text if marquee file not found: " + text_); 
         } 
-      
+        System.out.println("WENT HERE 7");
       //set the vars for the API of the current / last game
       setCurrentPlatformGame(consoleNameMapped,arcadeNameOnly);
       
-      //let's find the matching PNG
       
+      //let's find the matching PNG
+      System.out.println("WENT HERE 8");
       arcadeFilePathPNG = pixelHome + consoleNameMapped + "/" + arcadeNameOnlyPNG + ".png";
       File arcadeFilePNG = new File(arcadeFilePathPNG);
       
@@ -297,7 +218,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
            }
         } 
       } 
-      
+      System.out.println("WENT HERE 9");
        // Now let's find the matching GIF
        // let's first check if there is a ( and if so, take only text to the left
        // then let's check if there is basename_01, basename_02, or basename_03
@@ -356,19 +277,19 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
               } 
             } 
        } 
-      
+      System.out.println("WENT HERE 10");
       //now that we have arcadeNameOnly, let's proceed
       
       String requestedPathPNG = pixelHome + consoleNameMapped + "\\" + arcadeNameOnlyPNG;
       String requestedPath = pixelHome + consoleNameMapped + "\\" + arcadeNameOnly;
-      
+        System.out.println("WENT HERE 11");
       if (!CliPixel.getSilentMode()) {
             System.out.println("Looking for PNG: " + requestedPathPNG + ".png");
             LogMe.aLogger.info("Looking for PNG: " + requestedPathPNG + ".png");
             System.out.println("Looking for GIF: " + requestedPath + ".gif");
             LogMe.aLogger.info("Looking for GIF: " + requestedPath + ".gif");
       }  
-      
+       System.out.println("WENT HERE 12");
        if (color_ == null) {
             if (WebEnabledPixel.getTextColor().equals("random")) {
               color = WebEnabledPixel.getRandomColor();
@@ -379,66 +300,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             color = WebEnabledPixel.getColorFromHexOrName(color_);
         } 
       
-      if (streamOrWrite.equals("write")) {
-                saveAnimation = true;
-                if (WebEnabledPixel.arduino1MatrixConnected) {
-                  WebEnabledPixel.writeArduino1Matrix(WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
-                  LogMe.aLogger.info("Accessory Call: " + WebEnabledPixel.getGameMetaData(arcadeNameOnlyPNG));
-                } 
-                if (arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {
-                  handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
-
-                } else if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory()) {
-                  handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), loop_, consoleNameMapped, FilenameUtils.getName(arcadeFilePathPNG));
-
-                } else if (text_ != "" && !text_.equals("nomatch")) {
-                int LED_MATRIX_ID = WebEnabledPixel.getMatrixID();
-                speed = Long.valueOf(10L);
-                speed = Long.valueOf(WebEnabledPixel.getScrollingTextSpeed(LED_MATRIX_ID));
-
-                if (speeddelay_.longValue() != 10L)
-                    speed = speeddelay_; 
-
-//                if (color_ != null)
-//                    color = WebEnabledPixel.getColorFromHexOrName(color_);
-
-                pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
-
-                } else {
-                  consoleFilePathGIF = pixelHome + "console/default-" + consoleNameMapped + ".gif";
-                  File consoleFileGIF = new File(consoleFilePathGIF);
-                  consoleFilePathPNG = pixelHome + "console/default-" + consoleNameMapped + ".png";
-
-                  File consoleFilePNG = new File(consoleFilePathPNG);
-                  if (consoleFileGIF.exists() && !consoleFileGIF.isDirectory()) {
-                    if (!CliPixel.getSilentMode()) {
-                      System.out.println("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-                      LogMe.aLogger.info("PNG default console LED Marquee file not found, looking for GIF version: " + consoleFilePathPNG);
-                    } 
-                    handleGIF("console", "default-" + consoleNameMapped + ".gif", Boolean.valueOf(saveAnimation), loop_);
-
-                  } else if (consoleFilePNG.exists() && !consoleFilePNG.isDirectory()) {
-                    handlePNG(consoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(consoleFilePathPNG));
-
-                  } else {
-
-                      if (!CliPixel.getSilentMode()) {
-                      System.out.println("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-                      LogMe.aLogger.info("GIF default console LED Marquee file not found, looking for default marquee: " + consoleFilePathGIF);
-                    } 
-                    defaultConsoleFilePathPNG = pixelHome + "console/default-marquee.png";
-                    File defaultConsoleFilePNG = new File(defaultConsoleFilePathPNG);
-                    if (defaultConsoleFilePNG.exists() && !defaultConsoleFilePNG.isDirectory()) {
-                      handlePNG(defaultConsoleFilePNG, Boolean.valueOf(saveAnimation), loop_, "console", FilenameUtils.getName(defaultConsoleFilePathPNG));
-                    } else if (!CliPixel.getSilentMode()) {
-                      System.out.println("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-                      System.out.println("Skipping LED marquee " + streamOrWrite + ", please check the files");
-                      LogMe.aLogger.info("Default console LED Marquee file not found: " + defaultConsoleFilePathPNG);
-                      LogMe.aLogger.info("Skipping LED marquee " + streamOrWrite + ", please check the files");
-                    } 
-                  } 
-                } 
-      } else {
+    System.out.println("WENT HERE 13");
         saveAnimation = false; //we're streaming which would be the most common case
         
         if (WebEnabledPixel.arduino1MatrixConnected) {
@@ -449,29 +311,19 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         //TO DO need to handle PNG without (
        
         if (arcadeFilePNG.exists() && !arcadeFilePNG.isDirectory() && arcadeFileGIF.exists() && !arcadeFileGIF.isDirectory()) {  //if there is both a png and a gif, we'll play gif and then png
-          //original code which wasn't working with the Q and high scores for example
-          //handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");
-          //handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_); 
-          //handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), 1); //have to loop the gif at least one to get Q going
-          
-          //so the problem is if the user is scrolling from the front end, we need to stop the Q but we need the Q here to play GIF first and then PNG
-          //we could be playing high score scrolling text before here for example
-          
-          //if we're looping, don't interrupt
-          //if we're not loopign like scrolling through front end for example, then yes interrupt
-         
-          
-          if (pixel.getLoopStatus() == false || event_.equals("FEScroll")) {   //note if it's a text scroll before this like high score for example, that would be looping so we won't interrupt here
-              handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata"); //interrupting the previous one playing
-              //System.out.println("FEScroll Interrupt");
+          System.out.println("WENT HERE 14");
+          if (pixel.getLoopStatus() == false) {
+               System.out.println("WENT HERE 15");
+              handlePNG(arcadeFilePNG, Boolean.valueOf(false), 0, "black", "nodata");
+              
           }
-          
+          System.out.println("WENT HERE 16");
           if (loop_ == 0 || loop_ == 99999) {  //we'll need to loop the GIF in the Q before the PNG plays, had to add 99999 because the gif will loop on 99999 forever and not get to the PNG
              loop_ = 1; 
           }
-          
-          handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_); //send the gif with a loop
-          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), 99999, consoleNameMapped, arcadeNameOnlyPNG + ".png"); //send the PNG with 99999 so stays on the PNG, changed to arcadeNameOnlyPNG as the GIF can now be different with the animation versions
+          System.out.println("LOOP: " + loop_);
+          handleGIF(consoleNameMapped, arcadeNameOnly + ".gif", Boolean.valueOf(saveAnimation), loop_);
+          handlePNG(arcadeFilePNG, Boolean.valueOf(saveAnimation), 99999, consoleNameMapped, arcadeNameOnlyPNG + ".png"); //changed to arcadeNameOnlyPNG as the GIF can now be different with the animation versions
           
           //to do known issue here in that if scrolling through front end and one with gif and png are selected back to back, the second one won't interrupt and must complete before the next
         
@@ -499,16 +351,16 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
           if (font_ == null)
             font_ = WebEnabledPixel.getDefaultFont(); 
           
-          this.application.getPixel();
+          //this.application.getPixel();
           Pixel.setFontFamily(font_);
           if (yOffset_ == 0)
             yOffset_ = WebEnabledPixel.getDefaultyTextOffset(); 
           
-          this.application.getPixel();
+          //this.application.getPixel();
           Pixel.setYOffset(yOffset_);
           if (fontSize_ == 0)
             fontSize_ = WebEnabledPixel.getDefaultFontSize(); 
-          this.application.getPixel();
+          //this.application.getPixel();
           Pixel.setFontSize(fontSize_);
           
           
@@ -552,7 +404,7 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
                   } 
                 } 
               } 
-      } 
+     
     } else {
       System.out.println("** ERROR ** URL format incorect, use http://localhost:8080/arcade/<stream or write>/<platform name>/<game name .gif or .png>");
       System.out.println("Example: http://localhost:8080/arcade/write/mame/pacman.png or http://localhost:8080/arcade/stream/atari2600/digdug.gif");
@@ -693,6 +545,11 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
             }                 
         return true;
     }
+
+//    @Override
+//    protected void writeImageResource(String imageClassPath) throws IOException, ConnectionLostException {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
   
 }
    

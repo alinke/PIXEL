@@ -44,13 +44,16 @@ public class LCDPixelcade {
     {
         if (!dxChecked){
             try {
-                if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(20000)) {
+                if (InetAddress.getByName(getLCDMarqueeHostName()).isReachable(5000)) {  //changing to 5000
 
                     dxChecked = true;
-                    //System.out.print("PixelcadeLCD: Setting DXEnvironment\n");
-                    System.out.print("PixelcadeLCD Detected\n");
+                    //System.out.print("Pixelcade LCD: Setting DXEnvironment\n");
+                    System.out.print("Pixelcade LCD Detected\n");
                 } else {
-                    System.out.print("LCD used in non-DXE...)\n");
+                    //System.out.print("LCD used in non-DXE...)\n");
+                    System.out.print("[WARNING] Pixelcade LCD is enabled but was not detected\n");
+                    System.out.print("[WARNING] This will slow down performance of Pixelcade LED so please\n");
+                    System.out.print("[WARNING] turn off Pixelcade LCD in Pixelcade Settings if you don't have Pixelcade LCD\n");
                     WebEnabledPixel.dxEnvironment = false;
                     dxChecked = true;
                 }

@@ -7,6 +7,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.WordUtils;
 import org.onebeartoe.network.TextHttpHandler;
 import org.onebeartoe.pixel.LogMe;
@@ -40,7 +41,9 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
     protected String getHttpText(HttpExchange exchange)
     {        
         String imageClassPath;
-        
+        String redirect = "";
+        String arcadeNameExtension = "";
+        String consoleNameExtension = "";
         
          //thought i might need to do this but turns out not
         //String encoding = "UTF-8";
@@ -65,6 +68,7 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
         try {
             URI requestURI = exchange.getRequestURI();
             String path = requestURI.getPath();
+            String revisedURL = "";
             //System.out.println("[Original URL] " + path);
                      
             int i = path.lastIndexOf("/") + 1;
@@ -79,7 +83,17 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
                              System.out.println("Request Console Redirected: " + requestURI.getPath());
                              String consoleName = (requestURI.getPath().substring(requestURI.getPath().lastIndexOf("/") + 1)).toLowerCase();
                              consoleName = consoleName.replace(" ", "_"); //had to add this one as Dennis made change to send native console names with no more _
-                             String redirect = "/arcade/stream/mame/" + consoleName + ".jpg";
+                             
+                             consoleNameExtension = FilenameUtils.getExtension(consoleName);
+                             if (arcadeNameExtension.isEmpty()) {  //if its empty, then we need to add the extension
+                                    redirect = "/arcade/stream/mame/" + consoleName + ".jpg";
+                                    //redirect = "/console/stream/" + consoleName + ".jpg";  //this may break on Pi LCD as it doesn't accept console
+                             }
+                             else {  //there is already an extension so no need to add an additional one
+                                    redirect = "/arcade/stream/mame/" + consoleName;
+                                    //redirect = "/console/stream/" + consoleName + ".jpg";
+                             }
+                             
                              //String redirect = "/console/stream/" + consoleName + ".jpg";
                              URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + redirect);
                              HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -127,7 +141,15 @@ public abstract class ImageResourceHttpHandler extends TextHttpHandler
 //                            
 //                            else { 
                                 
-                                String revisedURL = "/arcade/stream/" + console + "/" + gameName + ".jpg"; //console has the _ and game name will be original with spaces
+                                //let's see if the front end also included the extension
+                                arcadeNameExtension = FilenameUtils.getExtension(gameName);
+                                if (arcadeNameExtension.isEmpty()) {  //if its empty, then we need to add the extension
+                                    revisedURL = "/arcade/stream/" + console + "/" + gameName + ".jpg"; //console has the _ and game name will be original with spaces
+                                }
+                                else {  //there is already an extension so no need to add an additional one
+                                    revisedURL = "/arcade/stream/" + console + "/" + gameName;
+                                }
+                                
                                 revisedURL = revisedURL.replace(" ","%20"); //if we don't add this, the URL call wont' make it and will be truncated at the spaces
                                 
                                 URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + revisedURL);

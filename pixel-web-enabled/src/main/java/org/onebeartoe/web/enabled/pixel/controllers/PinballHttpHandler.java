@@ -40,12 +40,8 @@ public class PinballHttpHandler extends ImageResourceHttpHandler {
 
   public void handleGIF(String pinTable, String PinAnimationName, Boolean saveAnimation, int loop) {
 
-    try {
       //pixel.writeArcadeAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
-      this.application.getPixel().writePinballAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
-    } catch (NoSuchAlgorithmException ex) {
-      Logger.getLogger(PinballHttpHandler.class.getName()).log(Level.SEVERE, (String)null, ex);
-    }
+      //this.application.getPixel().writePinballAnimation(pinTable, PinAnimationName, saveAnimation.booleanValue(), loop, WebEnabledPixel.pixelConnected);
   }
 
 //  public void handleGIF(String pinTable, String PinAnimationName, Boolean saveAnimation, int loop) {

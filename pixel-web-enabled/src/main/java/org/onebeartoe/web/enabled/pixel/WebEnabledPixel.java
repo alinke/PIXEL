@@ -110,7 +110,7 @@ public class WebEnabledPixel implements ServiceListener {
     
   public static boolean dxEnvironment = true;
   
-  public static String pixelwebVersion = "3.5.4";
+  public static String pixelwebVersion = "3.5.7";
   
   public static LogMe logMe = null;
   
@@ -738,7 +738,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       BufferedReader reader = new BufferedReader(new FileReader(filePath));
       String line;
       while ((line = reader.readLine()) != null) {
-        String[] parts = line.split(",", 2);
+        String[] parts = line.split("@", 2); //note switched over to this separate for LCD so changing here too
         if (parts.length >= 2) {
           String key = parts[0];
           String value = parts[1];
