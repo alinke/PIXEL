@@ -7,12 +7,17 @@ import java.util.jar.JarFile
 import kotlin.system.exitProcess
 
 
+
 var retries = 0
-val host = "pixelcadedx.local"
-val user = "xxxxx"
+var host = "pixelcadedx.local" //need to read this from settings.ini
+val user = "xx"
 val args = arrayOf<String>()
-val password = "xxxxxxx"
-val command = "killall java && unzip -qqoXK package.pxl && unzip -qqoXK package1.pxl && rm package.pxl  && rm package1.pxl && sudo chmod +x pixelcade/pixelweb && pixelcade/pixelweb & exit\n"
+val password = "xxxxxxxx"
+//val command = "killall java && unzip -qqoXK package.pxl && unzip -qqoXK package1.pxl && rm package.pxl  && rm package1.pxl && sudo chmod +x pixelcade/pixelweb && pixelcade/pixelweb & exit\n"
+//val command = "killall java && unzip -qqoXK package.pxl && unzip -qqoXK package1.pxl && rm package.pxl  && rm package1.pxl && cd ~/pixelcade && java -jar pixelvidz.jar -b & exit\n"
+//val command = "killall java && rm /home/pi/pixelcade/gsho && unzip -qqoXK package.pxl && rm package.pxl && cd ~/pixelcade && chmod +x update1.sh && ./update1.sh & exit\n"
+//val command = "cd ~/pixelcade && chmod +x update1.sh && ./update1.sh & exit\n"
+val command = "unzip -o package.pxl && cd ~/pixelcade && chmod +x update1.sh && ./update1.sh & exit\n"
 
 fun main(args:Array<String>?) {
     /* if (args != null && args.count() == 0) {
@@ -20,9 +25,24 @@ fun main(args:Array<String>?) {
         println("PixelcadeLCDUploader <path to folder of jpeg marquee images>")
         exitProcess(0)
     } */
+    
+    // let's get the LCD host name from settings.ini
+    val inputStream: InputStream = File("settings.ini").inputStream()
+    val out = mutableListOf<String>()
+
+    inputStream.bufferedReader().useLines { lines -> lines.forEach { out.add(it) } }
+
+    out.forEach { 
+        if (it.contains("LCDMarqueeHostName")) {
+            val lcdline = it
+            val hostnameArray = lcdline.split("=").toTypedArray()
+            host = hostnameArray[1]
+            //println("Pixelcade LCD host name: " + host) 
+        }
+    }
 
     if (retries > 4){
-        println("Your PixelcadeLCD could not be found.")
+        println("Your Pixelcade LCD [" + host + "] could not be found.")
         println("Please check your connections and try again.")
         exitProcess(-1)
     }
@@ -30,18 +50,20 @@ fun main(args:Array<String>?) {
     retries += 1
     try {
         val jsch = JSch()
-        val session = jsch.getSession(user, host, 22)
+        
+        val session = jsch.getSession(user, host, 22) 
+        
         session.userInfo = org.Pixelcade.SSHRemoteExampleUserInfo(user, password)
         var progress : progressMonitor
         session.connect()
         val channel = session.openChannel("shell")
         if (args != null && args.count() > 0) {
-            println("PixelcadeLCD Artwork Uploader")
+            println("Pixelcade LCD Artwork Uploader")
         }else{
-            println("PixelcadeLCD Firmware Updater 1.0.25")
+            println("Pixelcade LCD Firmware Updater 2.9.0.39")
         }
 
-        println("Updating Your PixelcadeLCD, Please Wait...")
+        println("Updating Your Pixelcade LCD, Please Wait...")
 
         try {
 
@@ -49,9 +71,9 @@ fun main(args:Array<String>?) {
                 val stuff = args!!
                 if (stuff.count() > 0){
                     println("Uploader Mode")
-                    println("Instead of updating your PixelcadeLCD, the Updater is checking")
+                    println("Instead of updating your Pixelcade LCD, the Updater is checking")
                     println("if the option(s) supplied are folders of jpegs, and if so, updating")
-                    println("your PixelcadeLCD with them, then will quit.")
+                    println("your Pixelcade LCD with them, then will quit.")
                     for (arg in stuff) {
                         val file = File(arg)
                         val filter = FilenameFilter { f, name -> // We want to find only .c files
@@ -100,14 +122,15 @@ fun main(args:Array<String>?) {
             sftpChannel.disconnect()
             print("\nFinishing...")
         } catch (ioEx: FileNotFoundException) {
-            print("Your PixelcadeLCD did not connect...retrying...\n")
+            print("Your Pixelcade LCD did not connect...retrying...\n")
             Thread.sleep(500)
             session.disconnect()
             main(null)
         } catch (illEx: IllegalStateException){
+            println("")
             println("No Firmware Update!")
             println("Usage:")
-            println("PixelcadeLCDUploader <path to folder of jpeg marquee images>")
+            println("Pixelcade LCD Uploader <path to folder of jpeg marquee images>")
             exitProcess(-1)
         }
         channel.inputStream = ByteArrayInputStream(command.toByteArray(StandardCharsets.UTF_8))
@@ -131,18 +154,19 @@ fun main(args:Array<String>?) {
         channel.disconnect()
         session.disconnect()
         if (exitStatus == 0) {
-            println("Update Complete.")
+            println("Upload Complete")
+            println("Firmware Update in Progress...")
         } else {
-            print("Your PixelcadeLCD did not connect...retrying...\n")
+            print("Your Pixelcade LCD did not connect...retrying...\n")
             main(null)
         }
 
 
     } catch (ioEx: IOException) {
-        print("Your PixelcadeLCD did not connect...retrying...\n")
+        print("Your Pixelcade LCD did not connect...retrying...\n")
         main(null)
     } catch (ioEx: JSchException) {
-        print("Your PixelcadeLCD did not connect...retrying...\n")
+        print("Your Pixelcade LCD did not connect...retrying...\n")
         main(null)
     }
 }
