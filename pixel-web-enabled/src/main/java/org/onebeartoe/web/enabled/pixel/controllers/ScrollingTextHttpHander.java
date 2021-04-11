@@ -32,8 +32,14 @@ import org.onebeartoe.web.enabled.pixel.CliPixel;
 import static org.onebeartoe.web.enabled.pixel.WebEnabledPixel.getLCDMarqueeHostName;
 
 /**
- * @author Roberto Marquez
- */
+ Logic for LCD and LED Text Scrolling
+LED Only - Scroll text on LED as normal
+LCD Only - Scroll text on LCD as normal including sub-displays if there
+LED + LCD - Scroll text on LED, do not scroll text on LCD
+But note that alt text and text send to LCD scrolls on the smaller displays
+Therefore we need to send a new flag that tells LCD that LED is there and don't scroll on LCD but still scroll on the sub displays
+ **/
+
 public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextHttpHandler send a return
 {
     protected LCDPixelcade lcdDisplay = null;
@@ -107,7 +113,15 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
 //                   }
 //                   URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + textURL);
 
-                   URL url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
+                    URL url = null;
+                    if (WebEnabledPixel.getLCDLEDCompliment() == true && WebEnabledPixel.pixelConnected == true) { //then we need to add &led to the end of the URL params
+                       String textURL = requestURI.toString();
+                       url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + textURL + "&led"); //this flag tells LCD not to scroll as we already have LED scrolling
+                    }
+                    else {
+                       url = new URL("http://" + getLCDMarqueeHostName() + ":8080" + requestURI);
+                    }
+
                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
                    con.setRequestMethod("GET");
                    con.getResponseCode();

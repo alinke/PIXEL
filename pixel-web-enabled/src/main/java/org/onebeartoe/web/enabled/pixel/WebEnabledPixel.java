@@ -110,7 +110,7 @@ public class WebEnabledPixel implements ServiceListener {
     
   public static boolean dxEnvironment = true;
   
-  public static String pixelwebVersion = "3.5.7";
+  public static String pixelwebVersion = "3.5.8";
   
   public static LogMe logMe = null;
   
@@ -281,6 +281,8 @@ public class WebEnabledPixel implements ServiceListener {
   private static String currentGame = "NotSelectedYet";
    
   private static String currentPlatform = "NotSelectedYet";
+  
+  private static String LCDLEDCompliment_ = "yes";
   
   public WebEnabledPixel(String[] args) throws FileNotFoundException, IOException {
       
@@ -476,6 +478,15 @@ public class WebEnabledPixel implements ServiceListener {
         sec.add("LCDMarquee", "no");
         sec.add("LCDMarquee_OPTION", "no");
         sec.add("LCDMarquee_OPTION", "yes");
+        ini.store();
+      } 
+      
+      if (sec.containsKey("LCDLEDCompliment")) {
+        LCDLEDCompliment_ = (String)sec.get("LCDLEDCompliment");
+      } else {
+        sec.add("LCDLEDCompliment", "yes");
+        sec.add("LCDLEDCompliment_OPTION", "yes");
+        sec.add("LCDLEDCompliment_OPTION", "no");
         ini.store();
       } 
       
@@ -1065,6 +1076,17 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
   
   public static int getDefaultyTextOffset() {
     return defaultyTextOffset;
+  }
+  
+  public static Boolean getLCDLEDCompliment() {
+     Boolean LCDLEDComplimentBool_;
+     if (LCDLEDCompliment_.equals("yes")) {
+         LCDLEDComplimentBool_ = true;
+     }
+     else {
+         LCDLEDComplimentBool_ = false;
+     }
+      return LCDLEDComplimentBool_;
   }
   
   public static Boolean LEDStripExists() {
