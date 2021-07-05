@@ -162,7 +162,7 @@ public class SerialPortIOIOConnectionBootstrap implements
                 ledResolution_=ini.get("PIXELCADE SETTINGS", "ledResolution"); 
                 settingsINIExists = true; 
 
-                 if (port_.equals("COM99")) {  //COM99 is the default so this means the user has not specified the port in settings.ini
+                if (port_.equals("COM99")) {  //COM99 is the default so this means the user has not specified the port in settings.ini
                     String msgport = "The default port has not been changed, all ports will be scanned to detect your PIXEL board\n"
 					+ "To save time, edit settings.ini in the same directory as this jar or .exe and specify the port\n"
 					+ "and connect to PIXEL over each one.\n"
@@ -170,7 +170,20 @@ public class SerialPortIOIOConnectionBootstrap implements
                     System.out.println(msgport);
                     logMe.aLogger.info(msgport);
                 }
-
+                
+                //adding this for LCD only installations, let's return the port so we don't do a port scan which was confusing users and also causing a conflict with Sinden light guns
+                if (port_.equals("COM89")) {  
+                    String lcdport = "[INFO] Pixelcade LCD Only Installation, Skipping Port Scan\n"
+					+ "[INFO] Please ignore the 'Waiting for underlying connection' message below\n"
+					+ "[INFO] as this means Pixelcade is looking for the Pixelcade LED hardware\n"
+                                        + "[INFO] which you don't have in this installation";
+                    System.out.println(lcdport);
+                    logMe.aLogger.info(lcdport);
+                    result.add(port_);
+                    return result;
+                }
+                
+                //if the port is not COM99, it means the user specified  port so let's return it and skip the port scan
                 if (port_ != null && !port_.equals("COM99")) {  //COM99 is the default in settings.ini which means the user didn't touch it so don't use if that's the case
                     System.out.println("PIXEL port found in settings.ini: port=" + port_);
                     logMe.aLogger.info("PIXEL port found in settings.ini: port=" + port_);

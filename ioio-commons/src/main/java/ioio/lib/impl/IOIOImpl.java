@@ -50,10 +50,12 @@ import ioio.lib.api.exception.IncompatibilityException;
 import ioio.lib.impl.IOIOProtocol.PwmScale;
 import ioio.lib.impl.IncomingState.DisconnectListener;
 import ioio.lib.spi.Log;
+import java.io.File;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 public class IOIOImpl implements IOIO, DisconnectListener {
 	private static final String TAG = "IOIOImpl";
@@ -95,7 +97,7 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 			throw new ConnectionLostException();
 		}
 		addDisconnectListener(this);
-		Log.d(TAG, "Waiting for connection to PIXEL hardware");
+		Log.d(TAG, "Waiting for connection to Pixelcade LED hardware");
                 //logMe.aLogger.info("Waiting for PIXEL connection");
 		try {
 			try {
