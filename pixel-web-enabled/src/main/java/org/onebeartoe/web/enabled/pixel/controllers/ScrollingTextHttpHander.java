@@ -61,6 +61,10 @@ public class ScrollingTextHttpHander extends TextHttpHandler  //TO DO have TextH
     protected String getHttpText(HttpExchange exchange)
     {
         
+        if (WebEnabledPixel.isMister()) {
+            return "MiSTer detected so skipping scrolling text";
+        }
+        
         String text_ = null;
         String system_ = null;
         String game_ = null;

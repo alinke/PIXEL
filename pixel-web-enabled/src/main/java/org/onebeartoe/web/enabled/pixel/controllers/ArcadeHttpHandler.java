@@ -402,7 +402,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
 //                if (color_ != null)
 //                    color = WebEnabledPixel.getColorFromHexOrName(color_);
 
-                pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
+                    if (!WebEnabledPixel.isMister())  {  //MiSTER can't handle scrolling text due to font issue
+                        pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
+                    }
 
                 } else {
                   consoleFilePathGIF = pixelHome + "console/default-" + consoleNameMapped + ".gif";
@@ -519,7 +521,9 @@ public class ArcadeHttpHandler extends ImageResourceHttpHandler {
         else
             Pixel.setDoubleLine(false); //don't forget to set it back
           
-            pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
+            if (!WebEnabledPixel.isMister())  {
+                pixel.scrollText(text_, loop_, speed.longValue(), color, WebEnabledPixel.pixelConnected, scrollsmooth_);
+            }    
           
          
         } else {
