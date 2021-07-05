@@ -31,6 +31,8 @@ import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
@@ -241,8 +243,12 @@ public class Pixel
     private Boolean loop99999FlagGIF = false;
     private Boolean loop99999FlagText = false;
     
-    private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
+    //private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
+    private static boolean isALU = isPathValid("pixelcade/jre11/bin");
     
+    //private static boolean isMister = System.getenv("PATH").contains("/media/fat/Scripts");
+    
+    private static boolean isMister = isPathValid("/media/fat/Scripts");  //had to change to this as when adding pixelcade to startup , the environment path is not yet set so the above call will fail
     
     private String lastGIFName = "";
     private ArrayList<String> GIFPlayed = new ArrayList<>();
@@ -317,6 +323,9 @@ public class Pixel
         } else if (isALU){       
             pixelHome = "/opt/pixelcade/";
         }
+          else if (isMister) {
+            pixelHome = "/media/fat/pixelcade/";
+        }
         
         animationsPath = pixelHome + "animations" + File.separator;            
         decodedAnimationsPath = animationsPath + "decoded" + File.separator;
@@ -366,6 +375,28 @@ public class Pixel
 //            e.printStackTrace();
 //        }
     }
+    
+    public static boolean isPathValid(String path) { //using this for the MiSTer check
+        
+        File f = new File(path);
+        if (f.exists() && f.isDirectory()) {
+           return true;
+        }
+        else {
+            return false;
+        } 
+            
+
+//        try {
+//
+//            Paths.get(path);
+//
+//        } catch (InvalidPathException ex) {
+//            return false;
+//        }
+//
+//        return true;
+  }
 
     /**
      * Read the input stream into a byte array
@@ -3236,7 +3267,6 @@ private static String checksum(String filepath, MessageDigest md) throws IOExcep
     
     public void writeArcadeAnimation(String selectedPlatformName, String selectedFileName, boolean writeMode, int loop, boolean pixelConnected) throws NoSuchAlgorithmException
     {
-
         //we first need to check that pixel is connected and if not, let's write it to the queue
         //ledblinky needed this because ledblanky calls pixelweb.exe and then immediately sends some commands
         if (!pixelConnected) {

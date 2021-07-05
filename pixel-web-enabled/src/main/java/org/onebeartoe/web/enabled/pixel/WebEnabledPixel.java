@@ -24,6 +24,8 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -110,7 +112,7 @@ public class WebEnabledPixel implements ServiceListener {
     
   public static boolean dxEnvironment = true;
   
-  public static String pixelwebVersion = "3.5.8";
+  public static String pixelwebVersion = "3.6.1";
   
   public static LogMe logMe = null;
   
@@ -225,8 +227,12 @@ public class WebEnabledPixel implements ServiceListener {
   public static LCDPixelcade lcdDisplay = null;
   
   //private boolean isALU = System.getenv().containsValue("pixelcade/jre11/bin/java");
+  //private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
+  private static boolean isALU = isPathValid("pixelcade/jre11/bin");
   
-  private static boolean isALU = System.getenv("PATH").contains("pixelcade/jre11/bin");
+  //private static boolean isMister_ = System.getenv("PATH").contains("/media/fat/Scripts");
+  
+  private static boolean isMister_ = isPathValid("/media/fat/Scripts");  //had to change to this as when adding pixelcade to startup , the environment path is not yet set so the above call will fail
   
   //for LED Strip
   
@@ -315,8 +321,12 @@ public class WebEnabledPixel implements ServiceListener {
     if (isWindows()) {
           pixelHome = System.getProperty("user.dir") + File.separator;  //user dir is the folder where pixelweb.jar lives and would be placed there by the windows installer
     } else if (isALU){   
-          System.out.println("ALU Detected");
-          pixelHome = "/opt/pixelcade/";
+            System.out.println("ALU Detected");
+            pixelHome = "/opt/pixelcade/";
+    }
+      else if (isMister_) {
+            System.out.println("MiSTer Detected");
+            pixelHome = "/media/fat/pixelcade/";
     }
     
     File file = new File("settings.ini");
@@ -1286,6 +1296,28 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       return pixelHome;
   }
   
+  public static boolean isPathValid(String path) {
+      
+        File f = new File(path);
+        if (f.exists() && f.isDirectory()) {
+           return true;
+        }
+        else {
+            return false;
+        } 
+            
+
+//    try {
+//
+//        Paths.get(path);
+//
+//    } catch (InvalidPathException ex) {
+//        return false;
+//    }
+//
+//    return true;
+  }
+  
   public static Integer getAnimationNumber() {
      
       if (NumAnimationVersionsFirstRunFlag == false) { //then this was the first run so set to the max
@@ -1298,6 +1330,10 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
       }
       NumAnimationVersionsFirstRunFlag = true; //set the first run flag
       return AnimationVersionNumber;
+  }
+  
+  public static boolean isMister() {
+      return isMister_;
   }
   
   public static boolean isWindows() {
@@ -1996,6 +2032,8 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
 //                             
 //                    }
 //		}
+          
+            
                 
                 public void setColor(RGB rgb, byte r, byte g, byte b) {  //blue and green are switched, not sure but that may be strip dependent, may need to make this configurable
 				rgb.r = r;  
@@ -2101,6 +2139,7 @@ if (lcdMarquee_.equals("yes") && lcdDisplay != null) {
     public boolean delimiterIndicatesEndOfMessage() {
       return true;
     }
+ 
     
     public void serialEvent(SerialPortEvent event) {
       byte[] delimitedMessage = event.getReceivedData();
