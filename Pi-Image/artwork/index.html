@@ -1,164 +1,148 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="images.css" />
+    <title>Pixelcade Art Browser</title>
+  </head>
 
-    <head>		
-        <meta name="keywords" content="onebeartoe.com, cross platform remote volume control application">
-	
-        <meta name="description" content="onebeartoe.com remote volume control is a Java-powered desktop application.">
+  <body onload="loadImageResources(); updateMode();">
+    <script type="text/javascript" src="pixel.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="images.css" />
-        
-        <title>Pixelcade Art Browser</title>
-    </head>
+    <div
+      style="
+        display: block;
+        text-align: center;
+        font-size: 1.875em;
+        margin-bottom: 1%;
+      "
+    >
+      <h3>Pixelcade Art Browser</h3>
+    </div>
 
-    <body onload="loadImageResources(); updateMode();">
-        
-        <script type="text/javascript" src="pixel.js"></script>
-        
-	<div style="display: block; 										  				 
-             text-align: center;											  
-             font-size:1.875em; 
-             margin-bottom: 1%;">
-				 
-            <h3>Pixelcade Art Browser</h3>
-	</div>
-											 
-	<br/>
+    <br />
 
-        <hr/>
-        
-        <br/>
-        
-        <center >
-            <span style="font-size:1.875em;">
-                Mode:
-            </span>
-            
-            <select name="mode"
-                    id="mode"
-                    onchange="modeChanged(this.value);"
-                    style="width: 50%; height: 2em; font-size: 3em;">
-                
-                <option value="animations">Arcade Animations</option>
-                <option value="still">Arcade Marquees</option>
-                <!-- <option value="arcade">Arcade Marquees</option> -->
-                <option value="text" selected>Scrolling Text</option>
-                <!-- <option value="clock" >Clock</option> -->
-            </select>
-        </center>
+    <hr />
 
-        <div id="stillPanel">
-            <div>
-                <h3>Upload a New PNG or GIF Image</h3>
-                
-                <form method="POST" enctype="multipart/form-data" action="/upload">
-                    <input type="file" name="upload"/>
-                    <input type="hidden" name="upload-type" value="STILL_IMAGE"/>
-                    <input type="submit" value="Upload"/>
-                </form>
-            </div>
-            
-            <br/>
-        
-            <hr/>
+    <br />
 
-            <h3>Arcade Marquees</h3>
+    <div class="modal">
+      <div class="modal-content">
+        <p>
+          The Pixelcade Marquee will be blank until it has completed writing the
+          image.
+          <strong
+            >Please don't select anything else until the animation appears on
+            Pixelcade.</strong
+          >
+        </p>
+        <button onclick="closeModal()">Ok</button>
+      </div>
+    </div>
 
-            <div id="still">
+    <center>
+      <span style="font-size: 1.875em"> Mode: </span>
 
-            </div>
+      <select
+        name="mode"
+        id="mode"
+        onchange="modeChanged(this.value);"
+        style="width: 50%; height: 2em; font-size: 3em"
+      >
+        <option value="animations">Arcade Animations</option>
+        <option value="still">Arcade Marquees</option>
+        <option value="text" selected>Scrolling Text</option>
+      </select>
+    </center>
 
-            <br/>
-        </div>
-        
-        <!-- <div id="arcadePanel">
-            <div>
-                <h3>Upload a New Still Image</h3>
-                
-                <form method="POST" enctype="multipart/form-data" action="/upload">
-                    <input type="file" name="upload"/>
-                    <input type="hidden" name="upload-type" value="STILL_IMAGE"/>
-                    <input type="submit" value="Upload"/>
-                </form>
-            </div>
-            
-            <br/>
-        
-            <hr/>
-            <h3>Arcade Marquees</h3>
-            <div id="arcade">
-            </div>
-            <br/>
-        </div>
-        -->
-        
-        <div id="animationsPanel">
-            <div>
-                <h3>Upload a New GIF Animation</h3>
-                
-                <form method="POST" enctype="multipart/form-data" action="/upload">
-                    <input type="file" name="upload"/>
-                    <input type="hidden" name="upload-type" value="ANIMATED_GIF"/>
-                    <input type="submit" value="Upload"/>
-                </form>
-            </div>
-            <hr/>
+    <div id="stillPanel">
+      <div>
+        <h3>Upload a New PNG or GIF Image</h3>
 
-            <h3>Animations</h3>
+        <form method="POST" enctype="multipart/form-data" action="/upload">
+          <input type="file" name="upload" />
+          <input type="hidden" name="upload-type" value="STILL_IMAGE" />
+          <input type="submit" value="Upload" />
+        </form>
+      </div>
 
-            <div id="animations" >
+      <br />
 
-            </div>
-        </div>
+      <hr />
 
-        <div id="scrollingTextPanel">
-            <hr/>
+      <h3>Arcade Marquees</h3>
 
-            <h3>Scrolling Text</h3>
+      <div id="still"></div>
 
-            <input type="text" 
-                   value="Add your text here"
-                   onchange="changeScrollingText(this.value);"/>
-            
-            <br/>
-            
-            <label for="points">Speed:</label>
-            <input type="range" onmouseup="changeScrollingTextSpeed(this.value);" name="points" min="1" max="100">
-                
-            <br/>
-            
-            <label for="color">Color:</label>
-            <input type="color" name="color" onchange="changeScrollingTextColor(this.value);">
-        </div>
-        
-        <!--
-        <div id="clockPanel">
-            <hr/>
-            
-            <h3>Clock Mode</h3>
-        </div>
-        -->
-        
-        <hr/>
-        
-        <h3>Logs</h3>
-        
-        <div id="logs" class="logs" style="">
+      <br />
+    </div>
 
-        </div>
-        
-        <br/>
+    <div id="animationsPanel">
+      <div>
+        <h3>Upload a New GIF Animation</h3>
 
-        <hr/>
-        
-	<br/>
+        <form method="POST" enctype="multipart/form-data" action="/upload">
+          <input type="file" name="upload" />
+          <input type="hidden" name="upload-type" value="ANIMATED_GIF" />
+          <input type="submit" value="Upload" />
+        </form>
+      </div>
+      <hr />
 
-	<a href="http://pixelcade.ortg" 
-            style="display: block; 										  											 
-            text-align: center;											  
-            font-size:1.875em; ">
-            pixelcade.org
-	</a>											 
-    </body>
+      <h3>Animations</h3>
+
+      <div id="animations"></div>
+    </div>
+
+    <div id="scrollingTextPanel">
+      <hr />
+
+      <h3>Scrolling Text</h3>
+
+      <input
+        type="text"
+        value="Add your text here"
+        onchange="changeScrollingText(this.value);"
+      />
+
+      <br />
+
+      <label for="points">Speed:</label>
+      <input
+        type="range"
+        onmouseup="changeScrollingTextSpeed(this.value);"
+        name="points"
+        min="1"
+        max="100"
+      />
+
+      <br />
+
+      <label for="color">Color:</label>
+      <input
+        type="color"
+        name="color"
+        onchange="changeScrollingTextColor(this.value);"
+      />
+    </div>
+
+    <hr />
+
+    <h3>Logs</h3>
+
+    <div id="logs" class="logs" style=""></div>
+
+    <br />
+
+    <hr />
+
+    <br />
+
+    <a
+      href="http://pixelcade.ortg"
+      style="display: block; text-align: center; font-size: 1.875em"
+    >
+      pixelcade.org
+    </a>
+  </body>
 </html>
