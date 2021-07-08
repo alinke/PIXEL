@@ -1,37 +1,76 @@
-/**
-  *	CSS tags for image layout
-  */
-
-div.thumb-holder 
-{
-	width: 90%;
-	margin: 5px 20px;
+h3 {
+  margin: 0;
+}
+div.thumb-holder {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-gap: 2rem;
+  padding: 2rem;
 }
 
-div.thumb 
-{
-	float: left;
-	margin-right: 20px;
-	margin-left: 20px;
-	width: 29%;
-	margin-bottom: 10px;
+div.thumb {
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0.2rem 0.2rem 0.2rem rgb(0 0 0 / 20%);
+  transition: box-shadow 220ms ease-in-out;
+}
+div.thumb:hover {
+  box-shadow: 0.3rem 0.3rem 0.3rem rgb(0 0 0 / 20%);
 }
 
-div.thumb img
-{
-	display: block;
-        margin-left: auto;
-        margin-right: auto;
+div.thumb img {
+  width: 200px;
+  height: 50px;
+  margin: 1rem 0;
+  border: 2px solid #444;
+  border-radius: 4px;
+  box-shadow: 0.2rem 0.2rem 0.2rem rgb(145 145 145);
 }
 
-
-div.thumb p 
-{
-	text-align: center;
+div.thumb button {
+  width: 4rem;
+  height: 2rem;
 }
 
-div.spacer 
-{
-	clear: both;
-	/*stops the float*/
+button {
+  height: 2rem;
+}
+.modal {
+  background-color: rgba(45, 45, 45, 0.6);
+  top: 0;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: none;
+  justify-content: center;
+  z-index: 500;
+}
+.modal-content {
+  background-color: #fff;
+  padding: 16px;
+  width: 32rem;
+  height: 16rem;
+  top: 25%;
+  position: absolute;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.modal-content p {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+.modal-content button {
+  height: 3rem;
+  width: 50%;
+  align-self: center;
 }
