@@ -70,7 +70,7 @@ public class CliPixel
 
    if (cmd.hasOption("w")) {
     log.log(Level.INFO, "Using cli argument -w=" + cmd.getOptionValue("w"));
-    WebPortOption = Integer.parseInt(cmd.getOptionValue("p"));
+    WebPortOption = Integer.parseInt(cmd.getOptionValue("w"));
    }
    
   /* if (cmd.hasOption("p")) {
