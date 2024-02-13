@@ -1,368 +1,239 @@
-function changeControls(mode)
-{
-    switch(mode)
-    {
-        case "animations":
-        {
-            hideElement("stillPanel");
-            hideElement("scrollingTextPanel");
-            showElement("animationsPanel");
-            //hideElement("clockPanel");
-            //hideElement("arcadePanel");
-            break;
+function changeControls(mode) {
+  switch (mode) {
+    case "animations":
+      showElement("animationsPanel");
+      break;
+    case "still":
+      showElement("stillPanel");
+      break;
+
+    default:
+      // default is scrollingText
+      showElement("scrollingTextPanel");
+      break;
+  }
+}
+
+function changeScrollingText(text) {
+  modeChanged(`text?t=${text}`);
+}
+
+function changeScrollingTextSpeed(speed) {
+  modeChanged(`text/speed/${speed}`);
+}
+
+function changeScrollingTextColor(color) {
+  console.log(color);
+  modeChanged(`text/color/${color.substring(1)}`);
+}
+
+const htmlEscape = (value) => {
+  const output = value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+  return output;
+};
+
+const makeRequest = (url) => {
+  const xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function () {
+    logServerResponse(xmlhttp);
+  };
+  xmlhttp.open("POST", url, true);
+  xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlhttp.send("&p=3");
+};
+
+const closeModal = () => {
+  document.getElementsByClassName("modal")[0].style.display = "none";
+};
+
+function displayImage(imagePath, name) {
+  switch (imagePath) {
+    case "animations/save/":
+      makeRequest(`/animations/write/${name}`);
+      document.getElementsByClassName("modal")[0].style.display = "flex";
+      break;
+
+    case "animations/":
+      makeRequest(`/animations/stream/${name}`);
+      break;
+
+    case "images/save/":
+    default:
+      makeRequest(`/still/save/${name}`);
+      break;
+  }
+}
+
+function getLastUpdateOrigin() {}
+
+function hideElement(id) {
+  const element = document.getElementById(id);
+  element.style.display = "none";
+}
+
+function loadAnimations() {
+  const url = "/animations/list";
+  const elementName = "animations";
+  const imagePath = "animations/";
+
+  loadImageList(url, elementName, imagePath);
+}
+
+function loadImageList(url, elementName, imagePath) {
+  logEvent("loading " + elementName + "...");
+
+  const xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function () {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+      const list = xmlhttp.responseText;
+
+      const names = list.split("-+-");
+      let html = "<div class='thumb-holder'>";
+
+      const thumbcard = names.map((item) => {
+        const name = item.trim();
+
+        if (name === "") {
+          return "";
         }
-        case "still":
-        {
-            hideElement("animationsPanel");
-            hideElement("scrollingTextPanel");
-            showElement("stillPanel");
-            //hideElement("clockPanel");
-            //hideElement("arcadePanel"); 
-            break;
-        }
-       // case "clock":
-       // {
-       //     hideElement("animationsPanel");
-       //     hideElement("stillPanel");
-       //     hideElement("scrollingTextPanel");
-       //     hideElement("arcadePanel");
-            
-       //     showElement("clockPanel");
-            
-       //     break;
-       // }
 
-       // case "arcade":
-       // {
-       //     hideElement("animationsPanel");
-       //     hideElement("stillPanel");
-       //     hideElement("scrollingTextPanel");
-       //     hideElement("clockPanel");
+        const saveButton = `<button onclick='displayImage("${imagePath}save/", "${htmlEscape(
+          name
+        )}")'>Save</button>`;
+        const displayButton = `<button onclick='displayImage("${imagePath}", "${htmlEscape(
+          name
+        )}")'>Display</button>`;
 
-       //     showElement("arcadePanel");
+        const showSave =
+          imagePath === "images/" || imagePath === "animations/"
+            ? ` ${saveButton}`
+            : "";
+        const output =
+          `<div class='thumb'>` +
+          `<h3>${name}</h3>` +
+          `<img src="/files/${imagePath}${name}" alt="${name}" />` +
+          `<span>` +
+          displayButton +
+          showSave +
+          "</div>";
+        return output;
+      });
 
-       //     break;
-       // }
+      html += thumbcard.join("");
+      html += '<div class="spacer">&nbsp;</div>';
 
-        default:
-        {
-            // scrolling text
-            hideElement("animationsPanel");
-            hideElement("stillPanel");
-            showElement("scrollingTextPanel");
-            //hideElement("clockPanel");
-            //hideElement("arcadePanel");
-            break;
-        }
+      html += "</div>";
+
+      document.getElementById(elementName).innerHTML = html;
+      logEvent("done loading " + elementName);
     }
+  };
+
+  xmlhttp.open("POST", url, true);
+  xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlhttp.send("&p=3");
 }
 
-function changeScrollingText(text)
-{
-    var modeString = "text?t=" + text;
-    
-    modeChanged(modeString);
+function loadImageResources() {
+  loadStillImages();
+  loadAnimations(); //this works
 }
 
-function changeScrollingTextSpeed(speed)
-{
-    var speedString = "text/speed/" + speed;
-    
-    modeChanged(speedString);
+function loadStillImages() {
+  const url = "/still/list";
+  const elementName = "still";
+  const imagePath = "images/";
+
+  loadImageList(url, elementName, imagePath);
 }
 
-function changeScrollingTextColor(color)
-{
-    var hex = color.substring(1);
-    var colorString = "text/color/" + hex;
-    
-    modeChanged(colorString);
+function logServerResponse(xmlhttp) {
+  if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+    const s = xmlhttp.responseText;
+    logEvent(s);
+  }
 }
 
-function displayImage(imagePath, name)
-{
-    var mode;
-    
-    switch(imagePath)
-    {
-        case "animations/save/":
-        {
-            mode = "animations/write/";
-            alert("Pixelcade Marquee will be blank until writing has completed, please don't select anything else until the animation appears on Pixelcade");
-            break;
-        }
-        case "animations/":
-        {
-            mode = "animations/stream/";
-            break;
-        }
-        
-        case "images/save/":
-        {
-            mode = "still/save/";
-            break;
-        }
-        
-       // case "arcade/":
-       // {
-       //     mode = "arcade/";
-       //     break;
-       // }
+function logEvent(message) {
+  const e = document.getElementById("logs");
+  const logs = message + "<br/>" + e.innerHTML;
+  e.innerHTML = logs;
+}
 
-        default:
-        {
-            // still images
-            mode = "still/";
-        }
+function modeChanged(mode, imageName) {
+  if (imageName === null) {
+    imageName = "";
+  }
+
+  changeControls(mode);
+
+  const xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function () {
+    logServerResponse(xmlhttp);
+  };
+  const url = "/" + mode;
+
+  if (imageName != "" && !(imageName === undefined)) {
+    url += "/" + imageName;
+  }
+
+  xmlhttp.open("POST", url, true);
+  xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlhttp.send("&p=3");
+}
+
+function showElement(id) {
+  hideElement("stillPanel");
+  hideElement("scrollingTextPanel");
+  hideElement("animationsPanel");
+  const element = document.getElementById(id);
+  element.style.display = "block";
+}
+
+function updateMode() {
+  //    alert("in updateMode()");
+
+  const xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function () {
+    // display the correct mode UI
+    const response = xmlhttp.responseText;
+    const o = 2;
+
+    switch (response) {
+      case "ANIMATED_GIF": {
+        modeChanged("animations");
+
+        o = 0;
+
+        break;
+      }
+      case "STILL_IMAGE": {
+        modeChanged("still");
+        o = 1;
+        break;
+      }
+      default: {
+        // scrolling text
+        changeScrollingText("Pixelcade");
+
+        break;
+      }
     }
-    
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange=function()
-    {
-        logServerResponse(xmlhttp);
-    }
-    var url = "/" + mode + name; 
-    // alert(url); pop up for debugging
-    xmlhttp.open("POST", url, true);
-    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("&p=3");    
-}
 
-function getLastUpdateOrigin()
-{
-    
-    
-    
-}
+    document.getElementById("mode").selectedIndex = o;
 
-function hideElement(id)
-{
-    var element = document.getElementById(id);
-    element.style.display = 'none';
-}
+    xmlhttp.responseText += " uploaded";
 
-function loadAnimations()
-{
-    var url = "/animations/list";
-    var elementName = "animations";
-    var imagePath = "animations/";
-    
-    loadImageList(url, elementName, imagePath);
-}
+    logServerResponse(xmlhttp);
+  };
 
-//function loadArcade()
-//{
-//    var url = "/arcade/list";
-//    var elementName = "arcade";
-//    var imagePath = "arcade/";
-//    
-//    loadImageList(url, elementName, imagePath);
-//}
-
-
-function loadImageList(url, elementName, imagePath)
-{
-    logEvent("loading " + elementName + "...");
-    
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange=function()
-    {
-        if (xmlhttp.readyState==4 && xmlhttp.status==200)      
-        {
-            var list = xmlhttp.responseText;
-            
-            var names = list.split("-+-");
-            
-            var html = "<div class='thumb-holder'>";
-            
- //           var c = 0;
-            var columns = 4;
-            
-            for(var n in names)
-            {
-                var name = names[n].trim();
-                
-                var mod = parseInt(n) % columns;
-                if(mod == 0)
-                {
-                    html += "<tr>";
-                }
-                
-                if(name != "")
-                {
-                    html += "<div class='thumb'>";
-                    html += "<img src=\"/files/" + imagePath + name + "\" " + 
-                                   "width=\"100\" height=\"50\" alt=\"" + name +  "\"" + ">";
-
-                    html += "<p>" + name + "</p>";                    
-                    html += "<center style=\"margin-bottom: 40px;\">";
-                    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Display</button>";
-                    
-                    if(imagePath == "images/")
-                    {
-                        html += " ";
-                        html += "<button onclick=\"displayImage('" + imagePath + "save/" + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Save</button>";
-                    }
-                    
-                    if(imagePath == "animations/")
-                    {
-                        html += " ";
-                        html += "<button onclick=\"displayImage('" + imagePath + "save/" + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Save</button>";
-                    }
-
-                    // if(imagePath == "arcade/")
-                    //{
-                    //    html += " ";
-                    //    html += "<button onclick=\"displayImage('" + imagePath + "', '" + name + "')\" style=\"margin-left: auto; margin-right: auto;\">Save</button>";
-                    //}
-
-                    html += "</center>";
-                    html += "</div>";
-                }
-                
-                if(mod == 0)
-                {
-                    html += "</tr>";
-                }
-            }
-            
-            html += "<div class=\"spacer\">&nbsp;</div>";
-            
-            html += "</div>";
-            
-            var e = document.getElementById(elementName);
-            e.innerHTML = html;
-            
-            logEvent("done loading " + elementName);
-        }
-    }
-    
-    xmlhttp.open("POST", url, true);
-    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("&p=3");    
-}
-
-function loadImageResources()
-{
-    loadStillImages();
-    //loadArcade();
-    loadAnimations(); //this works
-}
-
-function loadStillImages()
-{
-    var url = "/still/list";
-    var elementName = "still";
-    var imagePath = "images/";
-    
-    loadImageList(url, elementName, imagePath);
-}
-
-function logServerResponse(xmlhttp)
-{
-    if (xmlhttp.readyState==4 && xmlhttp.status==200)      
-    {
-        var s = xmlhttp.responseText;
-        logEvent(s);
-    }
-}
-
-function logEvent(message)
-{
-    var e = document.getElementById("logs");
-    
-    var logs = message + "<br/>" + e.innerHTML;
-    
-    e.innerHTML = logs;
-}
-
-function modeChanged(mode, imageName)
-{
-    if(imageName === null)
-    {
-        imageName = "";
-    }
-    
-    changeControls(mode);
-    
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange=function()
-    {
-        logServerResponse(xmlhttp);
-    }
-    var url = "/" + mode;
-    
-    if(imageName != "" && !(imageName === undefined))
-    {
-        url += "/" + imageName;
-    }
-    
-    xmlhttp.open("POST", url, true);
-    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("&p=3");
-}
-
-function showElement(id)
-{
-    var element = document.getElementById(id);
-    element.style.display = 'block';
-}
-
-function updateMode()
-{
-//    alert("in updateMode()");
-    
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange=function()
-    {
-        // display the correct mode UI
-        var response = xmlhttp.responseText;
-        
-        var label = "Scrolling Text";
-        
-        var o = 2
-        
-        switch(response)
-        {
-            case "ANIMATED_GIF":
-            {
-                modeChanged("animations");
-
-                label = "Animations";
-                
-                o =0;
-
-                break;
-            }
-            case "STILL_IMAGE":
-            {
-                modeChanged("still");        
-                
-                label = "Still Images";
-
-                o = 1;
-                break;
-            }
-            default:
-            {
-                
-                // scrolling text
-                changeScrollingText('Pixelcade');
-
-                break;
-            }
-        }
-        
-        document.getElementById('mode').selectedIndex = o;
-        
-        xmlhttp.responseText += " uploaded";
-        
-        logServerResponse(xmlhttp);
-    }
-    
-    var url = "/upload/origin";
-    xmlhttp.open("POST", url, true);
-    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("&p=3");
-    
+  const url = "/upload/origin";
+  xmlhttp.open("POST", url, true);
+  xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlhttp.send("&p=3");
 }
